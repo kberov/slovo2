@@ -16,9 +16,13 @@ var cgiCmd = &cobra.Command{
 	Short: "Run Slovo as a CGI script.",
 	Long: `This command will be executed automatically if the GATEWAY_INTERFACE
 environment variable is set.`,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("cgiCmd.PreRun(cgiCmd): args: %v\n", args)
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		slovo.ServeCGI()
-		fmt.Println("cgi called")
+		//panic("how we got here?")
+		//fmt.Printf("cgiCmd.Run(cmd) cmd: %#v\n", cmd)
 	},
 }
 

@@ -5,6 +5,23 @@ import "fmt"
 const VERSION = "2024.01.05"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 
+type Config struct {
+	ConfigFile string
+	Serve      ServeConfig
+}
+
+type ServeConfig struct {
+	Port int
+}
+
+var DefaultConfig Config
+
+func init() {
+	DefaultConfig = Config{
+		ConfigFile: "etc/config.yaml",
+		Serve:      ServeConfig{Port: 3000},
+	}
+}
 func ServeCGI() {
 
 	fmt.Println("in slovo.ServeCGI()")

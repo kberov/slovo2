@@ -25,7 +25,20 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/kberov/slovo2/slovo"
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/file"
+	"github.com/knadh/koanf/v2"
+	"github.com/labstack/gommon/log"
 	"github.com/spf13/cobra"
+)
+
+const defaultLogHeader = `${prefix}:${time_rfc3339}:${level}:${short_file}:${line}`
+
+// Global koanf instance. Use . as the key path delimiter. This can be / or anything.
+var (
+	k      = koanf.New(".")
+	parser = yaml.Parser()
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -36,32 +49,59 @@ var rootCmd = &cobra.Command{
 изцяло осъществен наново на езика за програмиране Go. Автоматично открива и
 работи в CGI среда.
 ВНИМАНѤ!!!
-Още сме в началото, така че има много грешки и недостатъци.
+Още сме в началото, така че има много грешки и недостатъци. Уча се!
 `,
+
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	/*
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Printf("rootCmd.Run(rootCmd): args: %v\n", args)
+		},
+	*/
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	fmt.Println("in rootCmd.Execute")
+	fmt.Println("in cmd.Execute")
+	if os.Getenv("GATEWAY_INTERFACE") == "CGI/1.1" {
+		fmt.Println("in cmd.Execute GATEWAY_INTERFACE")
+		os.Args = []string{os.Args[0], "cgi"}
+	}
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
 }
 
+var cfgFile string
+var logger = log.New("slovo2")
+
 func init() {
+	logger.SetOutput(os.Stderr)
+	logger.SetLevel(log.WARN)
+	logger.SetHeader(defaultLogHeader)
 	cobra.EnableCommandSorting = false
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config_file", "c",
+		slovo.DefaultConfig.ConfigFile, "config file")
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.slovo2.yaml)")
-
+	// https://cobra.dev/#create-rootcmd
+	// You will additionally define flags and handle configuration in your init() function.
+	cobra.OnInitialize(initConfig)
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	//rootCmd.Flags().StringVar("config_file", "c", , "Read configuration from this file")
+}
+
+func initConfig() {
+	// Load YAML config or use slovo.DefaultConfig.
+	//if slovo.DefaultConfig.ConfigFile
+	if err := k.Load(file.Provider(cfgFile), parser); err != nil {
+		logger.Errorf("error loading config file: %v. Maybe you need to create it.", err)
+	}
+	fmt.Println("in root.go/initConfig()")
 }
