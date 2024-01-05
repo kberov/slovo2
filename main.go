@@ -21,7 +21,9 @@ THE SOFTWARE.
 */
 package main
 
-import "github.com/kberov/slovo2/cmd"
+import (
+	"github.com/kberov/slovo2/cmd"
+)
 
 func main() {
 	cmd.Execute()
