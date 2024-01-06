@@ -59,15 +59,23 @@ var rootCmd = &cobra.Command{
 			fmt.Printf("rootCmd.Run(rootCmd): args: %v\n", args)
 		},
 	*/
+	//	PreRun: func(cmd *cobra.Command, args []string) {
+	//		rootInitConfig()
+	//		//fmt.Printf("rootCmd.Run(rootCmd): args: %v\n", args)
+	//	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	fmt.Println("in cmd.Execute")
+	logger.Debug("in cmd.Execute")
 	if os.Getenv("GATEWAY_INTERFACE") == "CGI/1.1" {
-		fmt.Println("in cmd.Execute GATEWAY_INTERFACE")
+		logger.Debug("in cmd.Execute GATEWAY_INTERFACE")
 		os.Args = []string{os.Args[0], "cgi"}
+		if cgiCmd.Execute() != nil {
+			os.Exit(1)
+		}
+		return
 	}
 	err := rootCmd.Execute()
 	if err != nil {
@@ -91,10 +99,10 @@ func init() {
 		"Display more verbose output in console output. default: "+fmt.Sprintf("%v", debug))
 	// https://cobra.dev/#create-rootcmd
 	// You will additionally define flags and handle configuration in your init() function.
-	cobra.OnInitialize(rootInitConfig)
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	//rootCmd.Flags().StringVar("config_file", "c", , "Read configuration from this file")
+	cobra.OnInitialize(rootInitConfig)
 }
 
 func rootInitConfig() {

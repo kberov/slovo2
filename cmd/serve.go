@@ -13,9 +13,15 @@ var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Run Slovo as a Sever.",
 	Long:  `Starts Slovo as a HTTP server.`,
+	// I had to move init* functions here to make sure that only the parent and
+	// respective command's init* are run.
+	PreRun: func(cmd *cobra.Command, args []string) {
+		serveInitConfig()
+		logger.Debugf("serveCmd.Command().PreRun() called. args: %v ", args)
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.Debug("serveCmd.Command().Run() called.")
-		slovo.Serve()
+		slovo.Serve(logger)
 	},
 }
 
@@ -31,12 +37,12 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// serveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	serveCmd.Flags().IntVarP(&slovo.DefaultConfig.Serve.Port, "port", "p",
-		slovo.DefaultConfig.Serve.Port, "port to listen to")
-	cobra.OnInitialize(serveInitConfig)
+	serveCmd.Flags().StringVarP(&slovo.DefaultConfig.Serve.Location, "listen", "l",
+		slovo.DefaultConfig.Serve.Location, "Location to listen on")
+	//cobra.OnInitialize(serveInitConfig)
 }
 
 func serveInitConfig() {
 	logger.Debug("in serve.go/serveInitConfig()")
-	logger.Debugf("Listening on port %d.", slovo.DefaultConfig.Serve.Port)
+	logger.Debugf("Listening on %s.", slovo.DefaultConfig.Serve.Location)
 }
