@@ -4,8 +4,6 @@ Copyright © 2024 Красимир Беров
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/kberov/slovo2/slovo"
 	"github.com/spf13/cobra"
 )
@@ -16,8 +14,8 @@ var serveCmd = &cobra.Command{
 	Short: "Run Slovo as a Sever.",
 	Long:  `Starts Slovo as a HTTP server.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		logger.Debug("serveCmd.Command().Run() called.")
 		slovo.Serve()
-		fmt.Println("serve called")
 	},
 }
 
@@ -33,4 +31,12 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// serveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	serveCmd.Flags().IntVarP(&slovo.DefaultConfig.Serve.Port, "port", "p",
+		slovo.DefaultConfig.Serve.Port, "port to listen to")
+	cobra.OnInitialize(serveInitConfig)
+}
+
+func serveInitConfig() {
+	logger.Debug("in serve.go/serveInitConfig()")
+	logger.Debugf("Listening on port %d.", slovo.DefaultConfig.Serve.Port)
 }

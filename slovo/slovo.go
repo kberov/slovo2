@@ -6,6 +6,7 @@ const VERSION = "2024.01.05"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 
 type Config struct {
+	Debug      bool
 	ConfigFile string
 	Serve      ServeConfig
 }
@@ -18,6 +19,7 @@ var DefaultConfig Config
 
 func init() {
 	DefaultConfig = Config{
+		Debug:      false,
 		ConfigFile: "etc/config.yaml",
 		Serve:      ServeConfig{Port: 3000},
 	}

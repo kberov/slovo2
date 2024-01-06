@@ -75,33 +75,37 @@ func Execute() {
 	}
 }
 
-var cfgFile string
+var cfgFile = slovo.DefaultConfig.ConfigFile
+var debug = slovo.DefaultConfig.Debug
 var logger = log.New("slovo2")
 
 func init() {
 	logger.SetOutput(os.Stderr)
-	logger.SetLevel(log.WARN)
 	logger.SetHeader(defaultLogHeader)
 	cobra.EnableCommandSorting = false
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config_file", "c",
-		slovo.DefaultConfig.ConfigFile, "config file")
-
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config_file", "c", cfgFile, "config file")
+	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", debug,
+		"Display more verbose output in console output. default: "+fmt.Sprintf("%v", debug))
 	// https://cobra.dev/#create-rootcmd
 	// You will additionally define flags and handle configuration in your init() function.
-	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(rootInitConfig)
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	//rootCmd.Flags().StringVar("config_file", "c", , "Read configuration from this file")
 }
 
-func initConfig() {
-	// Load YAML config or use slovo.DefaultConfig.
+func rootInitConfig() {
+	if debug {
+		logger.SetLevel(log.DEBUG)
+		slovo.DefaultConfig.Debug = debug
+	}
+	//TODO: Load YAML config or use slovo.DefaultConfig.
 	//if slovo.DefaultConfig.ConfigFile
 	if err := k.Load(file.Provider(cfgFile), parser); err != nil {
-		logger.Errorf("error loading config file: %v. Maybe you need to create it.", err)
+		logger.Warnf("error loading config file: %v. Using slovo.DefaultConfig.", err)
 	}
-	fmt.Println("in root.go/initConfig()")
+	logger.Debug("in root.go/rootInitConfig()")
 }
