@@ -1,3 +1,4 @@
+//lint:file-ignore ST1000 Already documented in root.go
 /*
 Copyright © 2024 Красимир Беров
 */

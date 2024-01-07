@@ -1,8 +1,11 @@
+/*
+Package slovo contains code for the business logic of the application.
+*/
 package slovo
 
 import (
-	"net/http"
 	"net/http/cgi"
+	"reflect"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
@@ -11,14 +14,24 @@ import (
 const VERSION = "2024.01.05"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 
-
 func initEcho(logger *log.Logger) *echo.Echo {
 	e := echo.New()
 	e.Logger = logger
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
-	})
+	//e.GET("/", hello)...
+	loadRoutes(e)
 	return e
+}
+
+func loadRoutes(e *echo.Echo) {
+	for _, route := range DefaultConfig.Routes {
+		method := reflect.ValueOf(e).MethodByName(route.Method)
+		params := []reflect.Value{
+			reflect.ValueOf(route.Path),
+			reflect.ValueOf(handlers[route.Handler]),
+		}
+		// e.GET("/", hello)
+		method.Call(params)
+	}
 }
 
 func ServeCGI(logger *log.Logger) {

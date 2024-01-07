@@ -1,5 +1,8 @@
 /*
-Copyright © 2024 Красимир Беров
+Package cmd contains code for different actions. Each file is an action of the
+application. We use `cobra` for managing subcommands. this is the root command.
+
+# Copyright © 2024 Красимир Беров
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
