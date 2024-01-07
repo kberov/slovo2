@@ -1,8 +1,10 @@
 package slovo
 
 import (
+	"errors"
 	"net/http"
 
+	"github.com/kberov/gledki"
 	"github.com/labstack/echo/v4"
 )
 
@@ -30,10 +32,20 @@ func ppdfcpu(c echo.Context) error {
 	return c.JSON(http.StatusCreated, pdfMsg)
 }
 
+// pdfcpuMessage is produced by ppdfcpu()
 type pdfcpuMessage struct {
 	Name  string `json:"name" xml:"name" form:"name" query:"name"`
 	Email string `json:"email" xml:"email" form:"email" query:"email"`
 	Msg   string `json:"msg" xml:"msg" form:"msg" query:"msg"`
+}
+
+/*
+Displays a HTML form for ppdfcpu() and caches it on disk for subsequent static
+rendering by slovo2 or Apache (when running in CGI mode).
+GET /v2/epub
+*/
+func ppdfcpuForm(c echo.Context) error {
+	return errors.New("temporary until we have a renderer")
 }
 
 /*
@@ -47,17 +59,32 @@ c.FormValue("email") - string "em@site.com"
 c.FormValue("payed") - bool "yes|1"/"no|0"
 */
 func pepubcpu(c echo.Context) error {
-	return c.String(http.StatusOK, "Hello, World!")
+	return c.String(http.StatusOK, "TODO!")
 }
 
 // GET / hello
 func hello(c echo.Context) error {
-	return c.String(http.StatusOK, "Hello, World!")
+	// We can use all methods of gledki.Gledki
+	g := c.Echo().Renderer.(*EchoRenderer)
+	g.Stash = gledki.Stash{
+		"generator": "Slovo2",
+		"version":   VERSION,
+		"codename":  CODENAME,
+	}
+
+	return c.Render(200, "hello",
+		gledki.Stash{
+			"title":    "Здравейте!",
+			"greeting": "Добре дошли!",
+		},
+	)
+	//return c.String(http.StatusOK, "Hello, World!")
 }
 
 // We need this map because the function names are stored in yaml config as
 // strings. This map is used in loadRoutes() to match HTTP handlers by name.
-var handlers = map[string]func(c echo.Context) error{
-	"hello":   hello,
-	"ppdfcpu": ppdfcpu,
+var handlers = map[string]echo.HandlerFunc{
+	"hello":       hello,
+	"ppdfcpu":     ppdfcpu,
+	"ppdfcpuForm": ppdfcpuForm,
 }

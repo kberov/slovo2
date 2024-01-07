@@ -11,12 +11,21 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-const VERSION = "2024.01.05"
+const VERSION = "2024.01.08"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 
 func initEcho(logger *log.Logger) *echo.Echo {
 	e := echo.New()
 	e.Logger = logger
+	e.Renderer = GledkiMust(
+		DefaultConfig.Renderer.TemplatesRoot,
+		DefaultConfig.Renderer.Ext,
+		DefaultConfig.Renderer.Tags,
+		DefaultConfig.Renderer.LoadFiles,
+		logger,
+	)
+	e.Static(DefaultConfig.EchoStatic.Prefix, DefaultConfig.EchoStatic.Root)
+
 	//e.GET("/", hello)...
 	loadRoutes(e)
 	return e

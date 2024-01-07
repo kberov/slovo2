@@ -10,7 +10,24 @@ type Config struct {
 	ConfigFile string
 	Serve      ServeConfig
 	ServeCGI   ServeCGIConfig
-	Routes     []Route
+	// List of routes to be created by Echo
+	Routes []Route
+	// Arguments for GledkiRenderer
+	Renderer RendererConfig
+	// Directory for static content. For example e.Static("/","public").
+	EchoStatic EchoStaticConfig
+}
+
+type EchoStaticConfig struct {
+	Prefix string
+	Root   string
+}
+
+type RendererConfig struct {
+	TemplatesRoot string
+	Ext           string
+	Tags          [2]string
+	LoadFiles     bool
 }
 
 type Route struct {
@@ -49,10 +66,24 @@ func init() {
 			SERVER_PROTOCOL: "HTTP/1.1",
 			REQUEST_URI:     "/",
 		},
-		// How to store methods by names in YAML
+		// Store methods by names in YAML!
 		Routes: []Route{
 			Route{Method: http.MethodGet, Path: "/", Handler: "hello"},
+			Route{Method: http.MethodGet, Path: "/v2/ppdfcpu", Handler: "ppdfcpuForm"},
 			Route{Method: http.MethodPost, Path: "/v2/ppdfcpu", Handler: "ppdfcpu"},
+		},
+		Renderer: RendererConfig{
+			// Templates root folder. Must exist
+			TemplatesRoot: "templates",
+			Ext:           ".htm",
+			// Delimiters for template tags
+			Tags: [2]string{"${", "}"},
+			// Should the files be loaded at start?
+			LoadFiles: false,
+		},
+		EchoStatic: EchoStaticConfig{
+			Prefix: "/",
+			Root:   "public",
 		},
 	}
 }
