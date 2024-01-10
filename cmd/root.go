@@ -87,7 +87,6 @@ func Execute() {
 }
 
 var cfgFile = slovo.DefaultConfig.ConfigFile
-var debug = slovo.DefaultConfig.Debug
 var logger = log.New("slovo2")
 
 func init() {
@@ -98,8 +97,8 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config_file", "c", cfgFile, "config file")
-	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", debug,
-		"Display more verbose output in console output. default: "+fmt.Sprintf("%v", debug))
+	rootCmd.PersistentFlags().BoolVarP(&slovo.DefaultConfig.Debug, "debug", "d", slovo.DefaultConfig.Debug,
+		"Display more verbose output in console output. default: "+fmt.Sprintf("%v", slovo.DefaultConfig.Debug))
 	// https://cobra.dev/#create-rootcmd
 	// You will additionally define flags and handle configuration in your init() function.
 	// Cobra also supports local flags, which will only run
@@ -109,9 +108,8 @@ func init() {
 }
 
 func rootInitConfig() {
-	if debug {
+	if slovo.DefaultConfig.Debug {
 		logger.SetLevel(log.DEBUG)
-		slovo.DefaultConfig.Debug = debug
 	}
 	//TODO: Load YAML config or use slovo.DefaultConfig.
 	//if slovo.DefaultConfig.ConfigFile

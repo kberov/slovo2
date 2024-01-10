@@ -1,2 +1,5 @@
 **/tags
 slovo2
+data/**
+nohup.out
+templates/**/*.htmc

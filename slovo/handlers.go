@@ -2,11 +2,19 @@ package slovo
 
 import (
 	"errors"
+	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"os/exec"
+	"time"
 
 	"github.com/kberov/gledki"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/random"
 )
+
+var spf = fmt.Sprintf
 
 // This file contains the controllers (http handler functions) for slovo
 
@@ -27,16 +35,50 @@ c.FormValue("email") - string "em@site.com"
 c.FormValue("order") - string "1JK123"
 */
 func ppdfcpu(c echo.Context) error {
-	pdfMsg := pdfcpuMessage{Name: "Jon Смит", Email: "ala@bala.bg",
-		Msg: `Gotowo: <a href://"site.com/book.pdf">Ime na kniga</a>`}
+	passw := random.String(8, random.Uppercase, random.Numeric)
+	// TODO: store it in the yaml struct for the book and get it from there.
+	t := time.Now()
+	year, month, day := t.Date()
+	hour, min := t.Hour(), t.Minute()
+
+	sourceFileName := "data/pdf/IS.pdf"
+	dir := spf("data/pdf/%d/%d/%d", year, month, day)
+	downloadFileName := spf("%s/%d%d-%sIS.pdf", dir, hour, min, passw[:3])
+	pdfMsg := pdfcpuMessage{
+		Download: downloadFileName,
+		Passwd:   passw,
+		Name:     "Jon Смит",
+		Email:    "ala@bala.bg",
+		Msg:      spf(`Gotowo: <a href://"site.com/%s">Ime na kniga</a>`, downloadFileName),
+	}
+	os.MkdirAll(dir, 0755)
+	// TODO: add most of these to DefaultConfig
+	cmdArgs := []string{
+		spf("%s<%s>", pdfMsg.Name, pdfMsg.Email),
+		"font:Pliska-Italic, points:9, off:0 20, sc:1.0 abs, pos:bc, rot:0",
+		sourceFileName,
+		downloadFileName,
+		passw,
+	}
+	c.Echo().Logger.Debugf("pdfcpu.sh %v", cmdArgs)
+	cmd := exec.Command("./bin/pdfcpu_stamp_encrypt.sh", cmdArgs...)
+	err := cmd.Start()
+	if err != nil {
+		log.Fatal(err)
+	}
+	/*
+	 */
+
 	return c.JSON(http.StatusCreated, pdfMsg)
 }
 
 // pdfcpuMessage is produced by ppdfcpu()
 type pdfcpuMessage struct {
-	Name  string `json:"name" xml:"name" form:"name" query:"name"`
-	Email string `json:"email" xml:"email" form:"email" query:"email"`
-	Msg   string `json:"msg" xml:"msg" form:"msg" query:"msg"`
+	Download string `json:"download" xml:"download" form:"download" query:"download"`
+	Passwd   string `json:"passwd" xml:"passwd" form:"passwd" query:"passwd"`
+	Name     string `json:"name" xml:"name" form:"name" query:"name"`
+	Email    string `json:"email" xml:"email" form:"email" query:"email"`
+	Msg      string `json:"msg" xml:"msg" form:"msg" query:"msg"`
 }
 
 /*

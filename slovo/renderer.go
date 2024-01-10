@@ -12,6 +12,8 @@ type EchoRenderer struct {
 }
 
 func GledkiMust(root string, ext string, tags [2]string, loadFiles bool, logger gledki.Logger) *EchoRenderer {
+	gledki.CacheTemplates = !DefaultConfig.Debug
+	logger.Debugf("CacheTemplates: %v", gledki.CacheTemplates)
 	tpls, err := gledki.New(root, ext, tags, false)
 	if err != nil {
 		logger.Fatal(err.Error())
@@ -28,7 +30,7 @@ func (g *EchoRenderer) Render(w io.Writer, name string, data any, c echo.Context
 	if isStash {
 		g.MergeStash(stash)
 	} else {
-		c.Echo().Logger.Warn("'data' parameter must be of type gledki.Stash for the GledkiRenderer() to replace values in teplates.")
+		c.Echo().Logger.Warn("'data' parameter must be of type gledki.Stash for the GledkiRenderer() to interpolate values in templates.")
 	}
 	_, err := g.Execute(w, name)
 	return err
