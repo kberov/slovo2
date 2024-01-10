@@ -39,7 +39,10 @@ type Route struct {
 	// easily enable/disable a route. So we use a map in slovo/handlers.go `var
 	// handlers = map[string]func(c echo.Context) error`
 	Handler string
-	Path    string
+	// Path is the REQUEST_PATH
+	Path string
+	// MiddlewareFuncs is optional
+	MiddlewareFuncs []string
 }
 
 type ServeConfig struct {

@@ -5,7 +5,6 @@ package slovo
 
 import (
 	"net/http/cgi"
-	"reflect"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
@@ -31,15 +30,22 @@ func initEcho(logger *log.Logger) *echo.Echo {
 	return e
 }
 
+// Add routes, specified in DefaultConfig.Routes to echo routes handler.
 func loadRoutes(e *echo.Echo) {
 	for _, route := range DefaultConfig.Routes {
-		method := reflect.ValueOf(e).MethodByName(route.Method)
-		params := []reflect.Value{
-			reflect.ValueOf(route.Path),
-			reflect.ValueOf(handlers[route.Handler]),
+		// find middleware and attach to the route if specified in configuration
+		if mfuncs := route.MiddlewareFuncs; mfuncs != nil && mfuncs[0] != "" {
+			var definedMFuncs []echo.MiddlewareFunc
+			for _, funcName := range mfuncs {
+				if f, ok := middlewareFuncs[funcName]; ok {
+					definedMFuncs = append(definedMFuncs, f)
+				}
+			}
+			e.Add(route.Method, route.Path, handlerFuncs[route.Handler], definedMFuncs...)
+			continue
 		}
-		// e.GET("/", hello)
-		method.Call(params)
+		// otherwise simply add the route without []echo.MiddlewareFunc
+		e.Add(route.Method, route.Path, handlerFuncs[route.Handler])
 	}
 }
 
