@@ -38,12 +38,12 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// serveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	serveCmd.Flags().StringVarP(&slovo.DefaultConfig.Serve.Location, "listen", "l",
-		slovo.DefaultConfig.Serve.Location, "Location to listen on")
+	serveCmd.Flags().StringVarP(&slovo.Cfg.Serve.Location, "listen", "l",
+		slovo.Cfg.Serve.Location, "Location to listen on")
 	//cobra.OnInitialize(serveInitConfig)
 }
 
 func serveInitConfig() {
 	logger.Debug("in serve.go/serveInitConfig()")
-	logger.Debugf("Listening on %s.", slovo.DefaultConfig.Serve.Location)
+	logger.Debugf("Listening on %s.", slovo.Cfg.Serve.Location)
 }

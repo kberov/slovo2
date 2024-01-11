@@ -12,7 +12,7 @@ type EchoRenderer struct {
 }
 
 func GledkiMust(root string, ext string, tags [2]string, loadFiles bool, logger gledki.Logger) *EchoRenderer {
-	gledki.CacheTemplates = !DefaultConfig.Debug
+	gledki.CacheTemplates = !Cfg.Debug
 	logger.Debugf("CacheTemplates: %v", gledki.CacheTemplates)
 	tpls, err := gledki.New(root, ext, tags, false)
 	if err != nil {

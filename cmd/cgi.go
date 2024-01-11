@@ -26,8 +26,6 @@ environment variable is set.`,
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		slovo.ServeCGI(logger)
-		//panic("how we got here?")
-		// logger.Debugf("cgiCmd.Run(cmd) cmd: %#v\n", cmd)
 	},
 }
 
@@ -44,17 +42,17 @@ func init() {
 	// is called directly, e.g.:
 	// cgiCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	cgiCmd.Flags().StringVarP(
-		&slovo.DefaultConfig.ServeCGI.REQUEST_URI,
+		&slovo.Cfg.ServeCGI.REQUEST_URI,
 		"REQUEST_URI", "U",
-		slovo.DefaultConfig.ServeCGI.REQUEST_URI, "Request URI")
+		slovo.Cfg.ServeCGI.REQUEST_URI, "Request URI")
 	cgiCmd.Flags().StringVarP(
-		&slovo.DefaultConfig.ServeCGI.REQUEST_METHOD,
+		&slovo.Cfg.ServeCGI.REQUEST_METHOD,
 		"REQUEST_METHOD", "M",
-		slovo.DefaultConfig.ServeCGI.REQUEST_METHOD, "Request method")
+		slovo.Cfg.ServeCGI.REQUEST_METHOD, "Request method")
 	cgiCmd.Flags().StringVarP(
-		&slovo.DefaultConfig.ServeCGI.SERVER_PROTOCOL,
+		&slovo.Cfg.ServeCGI.SERVER_PROTOCOL,
 		"SERVER_PROTOCOL", "P",
-		slovo.DefaultConfig.ServeCGI.SERVER_PROTOCOL, "Server protocol")
+		slovo.Cfg.ServeCGI.SERVER_PROTOCOL, "Server protocol")
 	//cobra.OnInitialize(rootInitConfig)
 	//cobra.OnInitialize(cgiInitConfig)
 }
@@ -65,14 +63,14 @@ func cgiInitConfig() {
 
 	// minimum ENV values for emulating a CGI request on the command line
 	var env = map[string]string{
-		"SERVER_PROTOCOL": slovo.DefaultConfig.ServeCGI.SERVER_PROTOCOL,
-		"REQUEST_METHOD":  slovo.DefaultConfig.ServeCGI.REQUEST_METHOD,
+		"SERVER_PROTOCOL": slovo.Cfg.ServeCGI.SERVER_PROTOCOL,
+		"REQUEST_METHOD":  slovo.Cfg.ServeCGI.REQUEST_METHOD,
 		//"HTTP_HOST":           "dev.xn--b1arjbl.xn--90ae",
 		//"HTTP_REFERER":        "elsewhere",
 		//"HTTP_USER_AGENT":     "slovo2client",
 		//"HTTP_ACCEPT_CHARSET": "utf-8",
 		// "HTTP_FOO_BAR":    "baz",
-		"REQUEST_URI": slovo.DefaultConfig.ServeCGI.REQUEST_URI,
+		"REQUEST_URI": slovo.Cfg.ServeCGI.REQUEST_URI,
 		// "CONTENT_LENGTH":  "123",
 		// "CONTENT_TYPE":    "text/xml",
 		// "REMOTE_ADDR":     "5.6.7.8",

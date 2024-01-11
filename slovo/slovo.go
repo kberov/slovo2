@@ -16,23 +16,24 @@ const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 func initEcho(logger *log.Logger) *echo.Echo {
 	e := echo.New()
 	e.Logger = logger
+	CfgR := Cfg.Renderer
 	e.Renderer = GledkiMust(
-		DefaultConfig.Renderer.TemplatesRoot,
-		DefaultConfig.Renderer.Ext,
-		DefaultConfig.Renderer.Tags,
-		DefaultConfig.Renderer.LoadFiles,
+		CfgR.TemplatesRoot,
+		CfgR.Ext,
+		CfgR.Tags,
+		CfgR.LoadFiles,
 		logger,
 	)
-	e.Static(DefaultConfig.EchoStatic.Prefix, DefaultConfig.EchoStatic.Root)
+	e.Static(Cfg.EchoStatic.Prefix, Cfg.EchoStatic.Root)
 
-	//e.GET("/", hello)...
+	// e.GET("/", hello)...
 	loadRoutes(e)
 	return e
 }
 
-// Add routes, specified in DefaultConfig.Routes to echo routes handler.
+// Add routes, specified in DefaultConfig.Routes to echo's routes handler.
 func loadRoutes(e *echo.Echo) {
-	for _, route := range DefaultConfig.Routes {
+	for _, route := range Cfg.Routes {
 		// find middleware and attach to the route if specified in configuration
 		if mfuncs := route.MiddlewareFuncs; mfuncs != nil && mfuncs[0] != "" {
 			var definedMFuncs []echo.MiddlewareFunc
@@ -60,5 +61,5 @@ func ServeCGI(logger *log.Logger) {
 func Serve(logger *log.Logger) {
 	logger.Debug("in slovo.Serve()")
 	e := initEcho(logger)
-	logger.Fatal(e.Start(DefaultConfig.Serve.Location))
+	logger.Fatal(e.Start(Cfg.Serve.Location))
 }

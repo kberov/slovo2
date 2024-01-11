@@ -54,7 +54,7 @@ func ppdfcpu(c echo.Context) error {
 	os.MkdirAll(dir, 0755)
 	// TODO: add most of these to DefaultConfig
 	cmdArgs := []string{
-		spf("%s<%s>", pdfMsg.Name, pdfMsg.Email),
+		spf("За %s<%s>", pdfMsg.Name, pdfMsg.Email),
 		"font:Pliska-Italic, points:9, off:0 20, sc:1.0 abs, pos:bc, rot:0",
 		sourceFileName,
 		downloadFileName,
@@ -66,8 +66,6 @@ func ppdfcpu(c echo.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	/*
-	 */
 
 	return c.JSON(http.StatusCreated, pdfMsg)
 }

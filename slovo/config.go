@@ -50,17 +50,18 @@ type ServeConfig struct {
 }
 
 // ServeCGIConfig contains minimum ENV values for emulating a CGI request on
-// the command line
+// the command line.
 type ServeCGIConfig struct {
 	REQUEST_METHOD  string
 	SERVER_PROTOCOL string
 	REQUEST_URI     string
 }
 
-var DefaultConfig Config
+var Cfg Config
 
 func init() {
-	DefaultConfig = Config{
+	// Default configuration
+	Cfg = Config{
 		Debug:      false,
 		ConfigFile: "etc/config.yaml",
 		Serve:      ServeConfig{Location: "localhost:3000"},
