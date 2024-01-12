@@ -22,12 +22,12 @@ var spf = fmt.Sprintf
 // Display
 
 /*
-Personalize a pdf file using pdfcpu for personal usage.
-Send back a link to the file to be downnloaded and a password for opening
+Personalizes a pdf file using pdfcpu for personal usage.
+Sends back a link to the file to be downnloaded and a password for opening
 the file.
-Store a record with order number and the link for download
-snd back a message with the order num to the user saying that with this
-order the file can be rtreived again in case of loss or file corruption.
+Store a record with order number and the link for download.
+Sends back a message with the order num to the user saying that with this
+order the file can be retreived again in case of loss or file corruption.
 
 POST /v2/ppdfcpu application/json
 c.FormValue("name") - string  "First Last"
@@ -104,6 +104,7 @@ func pepubcpu(c echo.Context) error {
 
 // GET / hello
 func hello(c echo.Context) error {
+	c.Logger().Debugf("in hello")
 	// We can use all methods of gledki.Gledki
 	g := c.Echo().Renderer.(*EchoRenderer)
 	g.Stash = gledki.Stash{

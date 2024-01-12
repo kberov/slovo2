@@ -15,6 +15,7 @@ const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 
 func initEcho(logger *log.Logger) *echo.Echo {
 	e := echo.New()
+	e.Debug = Cfg.Debug
 	e.Logger = logger
 	CfgR := Cfg.Renderer
 	e.Renderer = GledkiMust(
@@ -25,13 +26,15 @@ func initEcho(logger *log.Logger) *echo.Echo {
 		logger,
 	)
 	e.Static(Cfg.EchoStatic.Prefix, Cfg.EchoStatic.Root)
-
+	// TODO add Validator  and other needed stugff. See
+	// https://echo.labstack.com/docs/customization
 	// e.GET("/", hello)...
 	loadRoutes(e)
 	return e
 }
 
-// Add routes, specified in DefaultConfig.Routes to echo's routes handler.
+// Add routes, specified in DefaultConfig.Routes to echo's routes handler. See
+// https://echo.labstack.com/docs/routing
 func loadRoutes(e *echo.Echo) {
 	for _, route := range Cfg.Routes {
 		// find middleware and attach to the route if specified in configuration
