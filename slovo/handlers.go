@@ -14,6 +14,8 @@ import (
 	"github.com/labstack/gommon/random"
 )
 
+type Map = gledki.Stash
+
 var spf = fmt.Sprintf
 
 // This file contains the controllers (http handler functions) for slovo
@@ -107,14 +109,14 @@ func hello(c echo.Context) error {
 	c.Logger().Debugf("in hello")
 	// We can use all methods of gledki.Gledki
 	g := c.Echo().Renderer.(*EchoRenderer)
-	g.Stash = gledki.Stash{
+	g.Stash = Map{
 		"generator": "Slovo2",
 		"version":   VERSION,
 		"codename":  CODENAME,
 	}
 
 	return c.Render(200, "hello",
-		gledki.Stash{
+		Map{
 			"title":    "Здравейте!",
 			"greeting": "Добре дошли!",
 		},

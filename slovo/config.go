@@ -2,6 +2,8 @@ package slovo
 
 import (
 	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
 //lint:file-ignore ST1003 ALL_CAPS match the ENV variable names
@@ -72,9 +74,9 @@ func init() {
 		},
 		// Store methods by names in YAML!
 		Routes: []Route{
-			Route{Method: http.MethodGet, Path: "/", Handler: "hello"},
-			Route{Method: http.MethodGet, Path: "/v2/ppdfcpu", Handler: "ppdfcpuForm"},
-			Route{Method: http.MethodPost, Path: "/v2/ppdfcpu", Handler: "ppdfcpu"},
+			Route{Method: echo.GET, Path: "/", Handler: "hello"},
+			Route{Method: echo.GET, Path: "/v2/ppdfcpu", Handler: "ppdfcpuForm"},
+			Route{Method: echo.POST, Path: "/v2/ppdfcpu", Handler: "ppdfcpu"},
 		},
 		Renderer: RendererConfig{
 			// Templates root folder. Must exist
