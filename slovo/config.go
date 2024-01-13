@@ -18,6 +18,12 @@ type Config struct {
 	Renderer RendererConfig
 	// Directory for static content. For example e.Static("/","public").
 	EchoStatic EchoStaticConfig
+	DB         DBConfig
+}
+
+type DBConfig struct {
+	DSN    string
+	tables []string
 }
 
 type EchoStaticConfig struct {
@@ -90,6 +96,10 @@ func init() {
 		EchoStatic: EchoStaticConfig{
 			Prefix: "/",
 			Root:   "public",
+		},
+		DB: DBConfig{
+			DSN:    "data/slovo.dev.sqlite",
+			tables: []string{},
 		},
 	}
 }

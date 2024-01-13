@@ -11,6 +11,8 @@ require (
 	github.com/spf13/cobra v1.8.0
 )
 
+require github.com/jmoiron/sqlx v1.3.5 // indirect
+
 require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
