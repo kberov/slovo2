@@ -23,7 +23,7 @@ type Config struct {
 
 type DBConfig struct {
 	DSN    string
-	tables []string
+	Tables []string
 }
 
 type EchoStaticConfig struct {
@@ -99,7 +99,7 @@ func init() {
 		},
 		DB: DBConfig{
 			DSN:    "data/slovo.dev.sqlite",
-			tables: []string{},
+			Tables: []string{"domove", "stranici", "celini", "products"},
 		},
 	}
 }
