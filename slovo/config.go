@@ -4,10 +4,15 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
+
+const ANY = "ANY"
 
 //lint:file-ignore ST1003 ALL_CAPS match the ENV variable names
 type Config struct {
+	// Default Language
+	Language   string
 	Debug      bool
 	ConfigFile string
 	Serve      ServeConfig
@@ -17,8 +22,9 @@ type Config struct {
 	// Arguments for GledkiRenderer
 	Renderer RendererConfig
 	// Directory for static content. For example e.Static("/","public").
-	EchoStatic EchoStaticConfig
-	DB         DBConfig
+	EchoStatic    EchoStaticConfig
+	DB            DBConfig
+	RewriteConfig middleware.RewriteConfig
 }
 
 type DBConfig struct {
@@ -70,6 +76,7 @@ var Cfg Config
 func init() {
 	// Default configuration
 	Cfg = Config{
+		Language:   "bg",
 		Debug:      false,
 		ConfigFile: "etc/config.yaml",
 		Serve:      ServeConfig{Location: "localhost:3000"},
@@ -81,6 +88,7 @@ func init() {
 		// Store methods by names in YAML!
 		Routes: []Route{
 			Route{Method: echo.GET, Path: "/", Handler: "hello"},
+			Route{Method: ANY, Path: "/:page_alias.:lang.html", Handler: "straniciExecute"},
 			Route{Method: echo.GET, Path: "/v2/ppdfcpu", Handler: "ppdfcpuForm"},
 			Route{Method: echo.POST, Path: "/v2/ppdfcpu", Handler: "ppdfcpu"},
 		},
@@ -100,6 +108,12 @@ func init() {
 		DB: DBConfig{
 			DSN:    "data/slovo.dev.sqlite",
 			Tables: []string{"domove", "stranici", "celini", "products"},
+		},
+		RewriteConfig: middleware.RewriteConfig{
+
+			Rules: map[string]string{
+				"^/$": "/коренъ.bg-bg.htm",
+			},
 		},
 	}
 }

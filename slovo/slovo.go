@@ -7,6 +7,7 @@ import (
 	"net/http/cgi"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 )
 
@@ -25,6 +26,10 @@ func initEcho(logger *log.Logger) *echo.Echo {
 		CfgR.LoadFiles,
 		logger,
 	)
+	// Add middleware to the Echo instance
+	//e.Pre(middleware.RewriteWithConfig(middleware.RewriteConfig{}))
+	e.Pre(middleware.RewriteWithConfig(Cfg.RewriteConfig))
+
 	e.Static(Cfg.EchoStatic.Prefix, Cfg.EchoStatic.Root)
 	// TODO add Validator  and other needed stugff. See
 	// https://echo.labstack.com/docs/customization
@@ -38,13 +43,24 @@ func initEcho(logger *log.Logger) *echo.Echo {
 func loadRoutes(e *echo.Echo) {
 	for _, route := range Cfg.Routes {
 		// find middleware and attach to the route if specified in configuration
+		var definedMFuncs []echo.MiddlewareFunc
 		if mfuncs := route.MiddlewareFuncs; mfuncs != nil && mfuncs[0] != "" {
-			var definedMFuncs []echo.MiddlewareFunc
 			for _, funcName := range mfuncs {
 				if f, ok := middlewareFuncs[funcName]; ok {
 					definedMFuncs = append(definedMFuncs, f)
 				}
 			}
+		}
+
+		if route.Method == ANY {
+			if definedMFuncs != nil {
+				e.Any(route.Path, handlerFuncs[route.Handler], definedMFuncs...)
+			} else {
+				e.Any(route.Path, handlerFuncs[route.Handler])
+			}
+			continue
+		}
+		if definedMFuncs != nil {
 			e.Add(route.Method, route.Path, handlerFuncs[route.Handler], definedMFuncs...)
 			continue
 		}

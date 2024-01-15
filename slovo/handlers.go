@@ -127,9 +127,10 @@ func hello(c echo.Context) error {
 // We need this map because the function names are stored in yaml config as
 // strings. This map is used in loadRoutes() to match HTTP handlerFuncs by name.
 var handlerFuncs = map[string]echo.HandlerFunc{
-	"hello":       hello,
-	"ppdfcpu":     ppdfcpu,
-	"ppdfcpuForm": ppdfcpuForm,
+	"hello":           hello,
+	"ppdfcpu":         ppdfcpu,
+	"ppdfcpuForm":     ppdfcpuForm,
+	"straniciExecute": straniciExecute,
 }
 
 // This map is for the same purpuse as above but for one or more middleware
