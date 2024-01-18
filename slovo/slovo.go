@@ -27,9 +27,9 @@ func initEcho(logger *log.Logger) *echo.Echo {
 		logger,
 	)
 	// Add middleware to the Echo instance
-	//e.Pre(middleware.RewriteWithConfig(middleware.RewriteConfig{}))
 	e.Pre(middleware.RewriteWithConfig(Cfg.RewriteConfig))
-
+	// Request ID middleware generates a unique id for a request.
+	e.Use(middleware.RequestID())
 	e.Static(Cfg.EchoStatic.Prefix, Cfg.EchoStatic.Root)
 	// TODO add Validator  and other needed stugff. See
 	// https://echo.labstack.com/docs/customization
@@ -61,11 +61,11 @@ func loadRoutes(e *echo.Echo) {
 			continue
 		}
 		if definedMFuncs != nil {
-			e.Add(route.Method, route.Path, handlerFuncs[route.Handler], definedMFuncs...)
+			e.Add(route.Method, route.Path, handlerFuncs[route.Handler], definedMFuncs...).Name = route.Name
 			continue
 		}
 		// otherwise simply add the route without []echo.MiddlewareFunc
-		e.Add(route.Method, route.Path, handlerFuncs[route.Handler])
+		e.Add(route.Method, route.Path, handlerFuncs[route.Handler]).Name = route.Name
 	}
 }
 
