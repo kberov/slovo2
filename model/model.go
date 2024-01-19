@@ -5,11 +5,12 @@ package model
 import (
 	"fmt"
 	"strings"
+	"unicode"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/kberov/slovo2/slovo"
-	"github.com/labstack/gommon/random"
+	"github.com/labstack/gommon/log"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/valyala/fasttemplate"
 )
 
 // import "github.com/jmoiron/sqlx"
@@ -29,6 +30,16 @@ type ModelI interface {
 }
 */
 
+const defaultLogHeader = `${prefix}:${time_rfc3339}:${level}:${short_file}:${line}`
+
+// Logger must be instantiated before using any function from this package
+var Logger *log.Logger
+
+// DSN must be set before using DB() funstion
+var DSN string
+
+var spf = fmt.Sprintf
+
 /*
 Record is a generic constraint on the allowed types. Each type here is the
 record type in a table with the same name in lowercase. Note! these types
@@ -41,26 +52,55 @@ type Record interface {
 		PasswLogin | Products | Stranici | UserGroup | Users | UsersInvoicesLastID
 }
 
-var spf = fmt.Sprintf
-
 var record2Table = map[string]string{}
 
-func Record2Table[T Record](r *T) string {
-	typestr := spf("%T", r)
+// Record2Table converts struct type name like *model.UsersInvoicesLastID to
+// users_invoices_last_id and returns it. Caches the converted name for
+// subsequent calls.
+func Record2Table[T Record](record *T) string {
+	typestr := spf("%T", record)
 	if table, ok := record2Table[typestr]; ok {
 		return table
 	}
-	// TODO: benchmark if this is faster than a regex
 	table, _ := strings.CutPrefix(typestr, "*model.")
+
 	table = strings.Replace(table, "ID", "_id", 1)
-	for i, l := range random.Uppercase {
-		lstr := string(l)
-		if strings.Contains(table, lstr) {
-			table = strings.ReplaceAll(table, lstr, "_"+string(random.Lowercase[i]))
+	var snakeCase strings.Builder
+	for _, r := range table {
+		if unicode.IsUpper(r) {
+			snakeCase.Write([]byte{'_', byte(unicode.ToLower(r))})
+			continue
 		}
+		snakeCase.WriteRune(r)
 	}
-	record2Table[typestr] = table[1:]
+	// remove the prefixed underscore for the first uppercase letter
+	record2Table[typestr] = snakeCase.String()[1:]
 	return record2Table[typestr]
+}
+
+var field2Column = map[string]string{}
+
+// Field2Column converts ColumName to column_name and returns it. Works only
+// with latin letters. Caches the converted field for subsequent calls.
+func Field2Column(field string) string {
+	if field == "ID" {
+		return "id"
+	}
+	if f, ok := field2Column[field]; ok {
+		return f
+	}
+	field = strings.Replace(field, "ID", "_id", -1)
+	var snakeCase strings.Builder
+	for _, r := range field {
+		if unicode.IsUpper(r) {
+			snakeCase.Write([]byte{'_', byte(unicode.ToLower(r))})
+			continue
+		}
+		snakeCase.WriteRune(r)
+	}
+	// remove the prefixed underscore for the first uppercase letter
+	field2Column[field] = snakeCase.String()[1:]
+	return field2Column[field]
 }
 
 /*
@@ -72,7 +112,7 @@ type Table struct {
 }
 
 func GetByID[T Record](r *T, id int32) error {
-	table := fmt.Sprintf("%T", *r)
+	table := Record2Table(r)
 	println(table)
 	return nil
 }
@@ -83,18 +123,22 @@ func DB() *sqlx.DB {
 	if globalConnection != nil {
 		return globalConnection
 	}
-	globalConnection = sqlx.MustConnect("sqlite3", slovo.Cfg.DB.DSN)
+	Logger.Debug("database:", DSN)
+
+	globalConnection = sqlx.MustConnect("sqlite3", DSN)
+	globalConnection.MapperFunc(Field2Column)
 	return globalConnection
 }
 
-type TableInfo struct {
-	TableColumns []TableColumn
-}
-
-type TableColumn struct {
-	CID       int    `db:cid`
-	Name      string `db:name`
-	Type      string `db:type`
-	NotNull   uint8  `db:notnull`
-	DfltValue string `db:dflt_value`
+/*
+SQLFor compooses an SQL query for the given key. Returns the composed query.
+*/
+func SQLFor(query, table string) string {
+	q := queryTemplates[query].(string)
+	queryTemplates["table"] = table
+	for strings.Contains(q, "${") {
+		q = fasttemplate.ExecuteStringStd(q, "${", "}", queryTemplates)
+	}
+	delete(queryTemplates, "table")
+	return q
 }

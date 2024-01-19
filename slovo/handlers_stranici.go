@@ -17,7 +17,7 @@ func straniciExecute(c echo.Context) error {
 	c.Logger().Debug(data)
 	return c.Render(200, "stranici/execute",
 		Map{
-			"title":    "Целина в страница еди коя си!",
+			"title":    "Страница еди коя си!",
 			"greeting": "Добре дошли! на страница " + data,
 		},
 	)

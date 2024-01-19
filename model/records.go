@@ -1,5 +1,10 @@
 package model
 
+import (
+	"database/sql"
+	"time"
+)
+
 // Domove is a records from table domove.
 // In this file we strore records by table name. Each type represents a row in
 // the respective table after which it is named.
@@ -25,7 +30,7 @@ type Stranici struct {
 	PageType    string
 	Permissions string
 	Sorting     int32
-	Template    string
+	Template    sql.NullString
 	UserID      int32
 	GroupID     int32
 	Tstamp      int32
@@ -35,6 +40,17 @@ type Stranici struct {
 	Hidden      int32
 	Deleted     int32
 	ChangedBy   string
+}
+
+// FindForDisplay returns a page from the database to be displayed. The page
+// must have the given alias, readable by the given user, be in the given
+// domain  and published(=2).
+func (s *Stranici) FindForDisplay(alias string, user *Users, domain string) error {
+	table := Record2Table(&Stranici{})
+	SQL := SQLFor("GET_PAGE_FOR_DISPLAY", table)
+	now := time.Now().Unix()
+	Logger.Debugf("SQL:\n%s", SQL)
+	return DB().Get(s, SQL, user.ID, user.ID, alias, alias, alias, alias, domain, domain, domain, now, now)
 }
 
 type Celini struct {
