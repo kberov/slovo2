@@ -22,10 +22,10 @@ environment variable is set.`,
 	// respective command's init* are run.
 	PreRun: func(cmd *cobra.Command, args []string) {
 		cgiInitConfig()
-		logger.Debugf("cgiCmd.PreRun(cgiCmd): args: %v", args)
+		Logger.Debugf("cgiCmd.PreRun(cgiCmd): args: %v", args)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		slovo.ServeCGI(logger)
+		slovo.ServeCGI(Logger)
 	},
 }
 
@@ -59,7 +59,7 @@ func init() {
 
 func cgiInitConfig() {
 	// TODO
-	logger.Debugf("in cgiCmd.cgiInitConfig()")
+	Logger.Debugf("in cgiCmd.cgiInitConfig()")
 
 	// minimum ENV values for emulating a CGI request on the command line
 	var env = map[string]string{
@@ -78,7 +78,7 @@ func cgiInitConfig() {
 	}
 	for k, v := range env {
 		if os.Getenv(k) == "" {
-			logger.Debugf("Setting %s: %s", k, v)
+			Logger.Debugf("Setting %s: %s", k, v)
 			os.Setenv(k, v)
 		}
 	}

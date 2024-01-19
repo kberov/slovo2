@@ -18,11 +18,11 @@ var serveCmd = &cobra.Command{
 	// respective command's init* are run.
 	PreRun: func(cmd *cobra.Command, args []string) {
 		serveInitConfig()
-		logger.Debugf("serveCmd.Command().PreRun() called. args: %v ", args)
+		Logger.Debugf("serveCmd.Command().PreRun() called. args: %v ", args)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		logger.Debug("serveCmd.Command().Run() called.")
-		slovo.Serve(logger)
+		Logger.Debug("serveCmd.Command().Run() called.")
+		slovo.Serve(Logger)
 	},
 }
 
@@ -44,6 +44,6 @@ func init() {
 }
 
 func serveInitConfig() {
-	logger.Debug("in serve.go/serveInitConfig()")
-	logger.Debugf("Listening on %s.", slovo.Cfg.Serve.Location)
+	Logger.Debug("in serve.go/serveInitConfig()")
+	Logger.Debugf("Listening on %s.", slovo.Cfg.Serve.Location)
 }

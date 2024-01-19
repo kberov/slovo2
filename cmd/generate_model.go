@@ -22,7 +22,7 @@ database file or add it to the configuration section Cfg.Db.DSN
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		// logger.Warnf("%#v", slovo.Cfg.DB.Tables)
-		logger.Print("generate/model called")
+		Logger.Print("generate/model called")
 		generateRecordTypes(slovo.Cfg.DB.Tables)
 
 	},
@@ -43,11 +43,11 @@ WHERE type ='table'AND  name NOT LIKE 'sqlite_%';
 `
 
 func generateRecordTypes(tables []string) {
-	logger.Printf("tables from the command line: %#v", tables)
+	Logger.Printf("tables from the command line: %#v", tables)
 	dbh := model.DB()
 	rows, err := dbh.Query(selectTables)
 	if err != nil {
-		logger.Warn("Error" + err.Error())
+		Logger.Warn("Error" + err.Error())
 		return
 	}
 	var tablesInDB []string
@@ -56,15 +56,15 @@ func generateRecordTypes(tables []string) {
 		var objType string
 		err = rows.Scan(&objectName, &objType)
 		if err != nil {
-			logger.Warn("Error" + err.Error())
+			Logger.Warn("Error" + err.Error())
 			return
 		}
-		logger.Debug(objectName + " " + objType)
+		Logger.Debug(objectName + " " + objType)
 		if slices.Contains(tables, objectName) {
 			tablesInDB = append(tablesInDB, objectName)
 		}
 	}
-	logger.Printf("The following of the requested tables wer found in the database: %#v", tablesInDB)
+	Logger.Printf("The following of the requested tables wer found in the database: %#v", tablesInDB)
 	//p := model.Products{}
 	p := model.Stranici{}
 	model.GetByID(&p, 1)

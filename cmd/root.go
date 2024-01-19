@@ -71,9 +71,9 @@ var rootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	logger.Debug("in cmd.Execute")
+	Logger.Debug("in cmd.Execute")
 	if os.Getenv("GATEWAY_INTERFACE") == "CGI/1.1" {
-		logger.Debug("in cmd.Execute GATEWAY_INTERFACE")
+		Logger.Debug("in cmd.Execute GATEWAY_INTERFACE")
 		os.Args = []string{os.Args[0], "cgi"}
 		if cgiCmd.Execute() != nil {
 			os.Exit(1)
@@ -87,11 +87,11 @@ func Execute() {
 }
 
 var cfgFile = slovo.Cfg.ConfigFile
-var logger = log.New("slovo2")
+var Logger = log.New("slovo2")
 
 func init() {
-	logger.SetOutput(os.Stderr)
-	logger.SetHeader(defaultLogHeader)
+	Logger.SetOutput(os.Stderr)
+	Logger.SetHeader(defaultLogHeader)
 	cobra.EnableCommandSorting = false
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
@@ -110,14 +110,14 @@ func init() {
 
 func rootInitConfig() {
 	if slovo.Cfg.Debug {
-		logger.SetLevel(log.DEBUG)
+		Logger.SetLevel(log.DEBUG)
 	}
 	// TODO: Try to Load YAML config if cfgFile != slovo.Cfg.ConfigFile - default value
 	// if slovo.Cfg.ConfigFile....
 	if cfgFile != slovo.Cfg.ConfigFile {
 		if err := k.Load(file.Provider(cfgFile), parser); err != nil {
-			logger.Warnf("error loading config file: %v. Using slovo.DefaultConfig.", err)
+			Logger.Warnf("error loading config file: %v. Using slovo.DefaultConfig.", err)
 		}
 	}
-	logger.Debug("in root.go/rootInitConfig()")
+	Logger.Debug("in root.go/rootInitConfig()")
 }
