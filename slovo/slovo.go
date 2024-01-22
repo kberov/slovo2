@@ -6,6 +6,7 @@ package slovo
 import (
 	"net/http/cgi"
 
+	"github.com/kberov/slovo2/model"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -18,6 +19,8 @@ func initEcho(logger *log.Logger) *echo.Echo {
 	e := echo.New()
 	e.Debug = Cfg.Debug
 	e.Logger = logger
+	model.Logger = logger
+	model.DSN = Cfg.DB.DSN
 	CfgR := Cfg.Renderer
 	e.Renderer = GledkiMust(
 		CfgR.TemplatesRoot,

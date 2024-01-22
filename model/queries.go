@@ -6,7 +6,7 @@ type SQLMap map[string]any
 
 var queryTemplates = SQLMap{
 	"INSERT":  `INSERT INTO ${table} (${columns}) VALUES(${placeholders})`,
-	"GetById": `SELECT * FROM ${table} WHERE id=?`,
+	"GetByID": `SELECT * FROM ${table} WHERE id=?`,
 	"SELECT":  `SELECT ${columns} FROM ${table} ${WHERE} LIMIT ${limit} OFFSET ${offset}`,
 	// 0. WHERE alias = $alias failed to match
 	// 1. Suppose the user stumbled on a link with the old most recent alias.

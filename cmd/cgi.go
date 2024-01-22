@@ -42,6 +42,10 @@ func init() {
 	// is called directly, e.g.:
 	// cgiCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	cgiCmd.Flags().StringVarP(
+		&slovo.Cfg.ServeCGI.HTTP_HOST,
+		"HTTP_HOST", "H",
+		slovo.Cfg.ServeCGI.HTTP_HOST, "The server host to which the client request is directed.")
+	cgiCmd.Flags().StringVarP(
 		&slovo.Cfg.ServeCGI.REQUEST_URI,
 		"REQUEST_URI", "U",
 		slovo.Cfg.ServeCGI.REQUEST_URI, "Request URI")
@@ -65,14 +69,14 @@ func cgiInitConfig() {
 	var env = map[string]string{
 		"SERVER_PROTOCOL": slovo.Cfg.ServeCGI.SERVER_PROTOCOL,
 		"REQUEST_METHOD":  slovo.Cfg.ServeCGI.REQUEST_METHOD,
-		//"HTTP_HOST":           "dev.xn--b1arjbl.xn--90ae",
+		"HTTP_HOST":       slovo.Cfg.ServeCGI.HTTP_HOST,
 		//"HTTP_REFERER":        "elsewhere",
 		//"HTTP_USER_AGENT":     "slovo2client",
-		//"HTTP_ACCEPT_CHARSET": "utf-8",
+		"HTTP_ACCEPT_CHARSET": "utf-8",
 		// "HTTP_FOO_BAR":    "baz",
 		"REQUEST_URI": slovo.Cfg.ServeCGI.REQUEST_URI,
 		// "CONTENT_LENGTH":  "123",
-		// "CONTENT_TYPE":    "text/xml",
+		"CONTENT_TYPE": "text/html",
 		// "REMOTE_ADDR":     "5.6.7.8",
 		// "REMOTE_PORT":     "54321",
 	}

@@ -8,6 +8,7 @@ import (
 	"unicode"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/kberov/slovo2/util"
 	"github.com/labstack/gommon/log"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/valyala/fasttemplate"
@@ -32,10 +33,10 @@ type ModelI interface {
 
 const defaultLogHeader = `${prefix}:${time_rfc3339}:${level}:${short_file}:${line}`
 
-// Logger must be instantiated before using any function from this package
+// Logger must be instantiated before using any function from this package.
 var Logger *log.Logger
 
-// DSN must be set before using DB() funstion
+// DSN must be set before using DB() function.
 var DSN string
 
 var spf = fmt.Sprintf
@@ -78,31 +79,6 @@ func Record2Table[T Record](record *T) string {
 	return record2Table[typestr]
 }
 
-var field2Column = map[string]string{}
-
-// Field2Column converts ColumName to column_name and returns it. Works only
-// with latin letters. Caches the converted field for subsequent calls.
-func Field2Column(field string) string {
-	if field == "ID" {
-		return "id"
-	}
-	if f, ok := field2Column[field]; ok {
-		return f
-	}
-	field = strings.Replace(field, "ID", "_id", -1)
-	var snakeCase strings.Builder
-	for _, r := range field {
-		if unicode.IsUpper(r) {
-			snakeCase.Write([]byte{'_', byte(unicode.ToLower(r))})
-			continue
-		}
-		snakeCase.WriteRune(r)
-	}
-	// remove the prefixed underscore for the first uppercase letter
-	field2Column[field] = snakeCase.String()[1:]
-	return field2Column[field]
-}
-
 /*
 Table is the base implementation for all tables in the database
 */
@@ -112,22 +88,21 @@ type Table struct {
 }
 
 func GetByID[T Record](r *T, id int32) error {
-	table := Record2Table(r)
-	println(table)
-	return nil
+	sql := SQLFor("GetByID", Record2Table(r))
+	return DB().Get(r, sql, id)
 }
 
-var globalConnection *sqlx.DB
+var global *sqlx.DB
 
 func DB() *sqlx.DB {
-	if globalConnection != nil {
-		return globalConnection
+	if global != nil {
+		return global
 	}
 	Logger.Debug("database:", DSN)
 
-	globalConnection = sqlx.MustConnect("sqlite3", DSN)
-	globalConnection.MapperFunc(Field2Column)
-	return globalConnection
+	global = sqlx.MustConnect("sqlite3", DSN)
+	global.MapperFunc(util.CamelToSnakeCase)
+	return global
 }
 
 /*

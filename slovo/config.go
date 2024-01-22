@@ -87,8 +87,9 @@ type ServeConfig struct {
 }
 
 // ServeCGIConfig contains minimum ENV values for emulating a CGI request on
-// the command line.
+// the command line. See https://www.rfc-editor.org/rfc/rfc3875
 type ServeCGIConfig struct {
+	HTTP_HOST       string
 	REQUEST_METHOD  string
 	SERVER_PROTOCOL string
 	REQUEST_URI     string
@@ -118,6 +119,7 @@ func init() {
 		ConfigFile: "etc/config.yaml",
 		Serve:      ServeConfig{Location: "localhost:3000"},
 		ServeCGI: ServeCGIConfig{
+			HTTP_HOST:       "xn--b1arjbl.xn--90ae",
 			REQUEST_METHOD:  http.MethodGet,
 			SERVER_PROTOCOL: "HTTP/1.1",
 			REQUEST_URI:     "/",

@@ -4,19 +4,24 @@ package util
 import (
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
-// Slogify converts a title or upper cased sequence of words to lowercased
-// words. Spaces are replaced with connector string. The default
-// connector is an empty string. If `stripPunct` is true, removes any
-// punctuation character.
+// Slogify converts a sequence of words to lowercased words. Spaces are
+// replaced with connector string. Consequitive spaces are treated as one
+// space. The default connector is an empty string. If `stripPunct` is true,
+// removes any punctuation character.
 func Slogify(text string, connector string, stripPunct bool) string {
-	var slog strings.Builder
-	words := strings.Split(text, " ")
+	words := strings.Split(strings.ToLower(text), " ")
 	wordsLen := len(words)
 
+	var slog strings.Builder
 	for i, word := range words {
-		word = strings.ToLower(word)
+		// Treat consequittive spaces as one by removing empty words, resulted
+		// from doubled spaces.
+		if len(word) == 0 {
+			continue
+		}
 		var wordSlog strings.Builder
 		for _, r := range word {
 			if stripPunct && unicode.IsPunct(r) {
@@ -32,33 +37,36 @@ func Slogify(text string, connector string, stripPunct bool) string {
 	return slog.String()
 }
 
-// ToSnakeCase is used to convert structure fields to
+// CamelToSnakeCase is used to convert structure fields to
 // snake case table columns by sqlx.DB.MapperFunc. See tests for examples.
-func ToSnakeCase(text string) string {
+func CamelToSnakeCase(text string) string {
+	if utf8.RuneCountInString(text) == 2 {
+		return strings.ToLower(text)
+	}
 	var snakeCase strings.Builder
-	var wordBoundary = true
+	var wordBegins = true
 	var prevWasUpper = true
 	for _, r := range text {
-		wordBoundary, prevWasUpper = lowerLetter(&snakeCase, r, wordBoundary, prevWasUpper, "_")
+		wordBegins, prevWasUpper = lowerLetter(&snakeCase, r, wordBegins, prevWasUpper, "_")
 	}
 	return snakeCase.String()
 }
 
-func lowerLetter(snakeCase *strings.Builder, r rune, wordBoundary, prevWasUpper bool, connector string) (bool, bool) {
-	if unicode.IsUpper(r) && !wordBoundary {
+func lowerLetter(snakeCase *strings.Builder, r rune, wordBegins, prevWasUpper bool, connector string) (bool, bool) {
+	if unicode.IsUpper(r) && !wordBegins {
 		snakeCase.WriteString(connector)
 		snakeCase.WriteRune(unicode.ToLower(r))
-		wordBoundary = true
+		wordBegins = true
 		prevWasUpper = true
-		return wordBoundary, prevWasUpper
+		return wordBegins, prevWasUpper
 	}
 	// handle case `ID` and beginning of word
-	if wordBoundary && prevWasUpper {
+	if wordBegins && prevWasUpper {
 		snakeCase.WriteRune(unicode.ToLower(r))
-		wordBoundary = false
+		wordBegins = false
 		prevWasUpper = false
-		return wordBoundary, prevWasUpper
+		return wordBegins, prevWasUpper
 	}
 	snakeCase.WriteRune(r)
-	return wordBoundary, prevWasUpper
+	return wordBegins, prevWasUpper
 }

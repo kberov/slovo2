@@ -13,8 +13,9 @@ func TestSlogifyStripPunctEmptyConnector(t *testing.T) {
 		"OwnerID":                      "ownerid",
 		"PageType":                     "pagetype",
 		"UsersInvoicesLastID":          "usersinvoiceslastid",
-		"ПРОСТРАННО ЖИТИЕ НА РОМИЛ ВИДИНСКИ": "пространножитиенаромилвидински",
-		"Пространно Житие НА Ромил Видински": "пространножитиенаромилвидински",
+		"ПРОСТРАННО ЖИТИЕ НА РОМИЛ ВИДИНСКИ":        "пространножитиенаромилвидински",
+		"Пространно Житие НА Ромил Видински":        "пространножитиенаромилвидински",
+		"Пространно    Житие НА     Ромил Видински": "пространножитиенаромилвидински",
 	}
 
 	for k, v := range slovoplet {
@@ -32,8 +33,9 @@ func TestSlogifyStripPunctWithConnector(t *testing.T) {
 		"OwnerID":                       "ownerid",
 		"PageType":                      "pagetype",
 		"UsersInvoicesLastID":           "usersinvoiceslastid",
-		"ПРОСТРАННО ЖИТИЕ НА РОМИЛ ВИДИНСКИ": "пространно-житие-на-ромил-видински",
-		"Пространно Житие НА Ромил Видински": "пространно-житие-на-ромил-видински",
+		"ПРОСТРАННО ЖИТИЕ НА РОМИЛ ВИДИНСКИ":           "пространно-житие-на-ромил-видински",
+		"Пространно Житие НА Ромил Видински":           "пространно-житие-на-ромил-видински",
+		"Пространно      Житие      НА Ромил Видински": "пространно-житие-на-ромил-видински",
 		"Users Invoices LastID": "users-invoices-lastid",
 		"Ѩꙁꙑкъ!?$":              "ѩꙁꙑкъ$",
 	}
@@ -51,17 +53,18 @@ func TestSlogifyStripPunctWithConnector(t *testing.T) {
 
 func TestToSnakeCase(t *testing.T) {
 	slovo := map[string]string{
-		"Кънигы":                "кънигы",
-		"НашитеКънигы":          "нашите_кънигы",
-		"OwnerID":               "owner_id",
-		"PageType":              "page_type",
-		"UsersInvoicesLastID":   "users_invoices_last_id",
-		"Users Invoices LastID": "users _invoices _last_id",
+		"Кънигы":              "кънигы",
+		"НашитеКънигы":        "нашите_кънигы",
+		"OwnerID":             "owner_id",
+		"PageType":            "page_type",
+		"UsersInvoicesLastID": "users_invoices_last_id",
+		"ID":                  "id",
+		"ИД":                  "ид",
 	}
 
 	for k, v := range slovo {
 		t.Run(k, func(t *testing.T) {
-			slova := util.ToSnakeCase(k)
+			slova := util.CamelToSnakeCase(k)
 			t.Logf("%s => %s|%s", k, slova, v)
 			if slova != v {
 				t.Fail()

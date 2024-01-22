@@ -49,7 +49,7 @@ func (s *Stranici) FindForDisplay(alias string, user *Users, domain string) erro
 	table := Record2Table(&Stranici{})
 	SQL := SQLFor("GET_PAGE_FOR_DISPLAY", table)
 	now := time.Now().Unix()
-	Logger.Debugf("SQL:\n%s", SQL)
+	Logger.Debugf("FindForDisplay(%s,%#v,%v) SQL:\n%s", alias, user, domain, SQL)
 	return DB().Get(s, SQL, user.ID, user.ID, alias, alias, alias, alias, domain, domain, domain, now, now)
 }
 
