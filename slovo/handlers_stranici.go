@@ -6,7 +6,8 @@ import (
 )
 
 func straniciExecute(c echo.Context) error {
-	c.Logger().Debugf("in straniciExecute")
+	log := c.Logger()
+	log.Debugf("in straniciExecute")
 	lang := c.Param("lang")
 	/*if lang == "" && len(c.Request().Header["Accept-Language"]) > 0 {
 		lang = c.Request().Header["Accept-Language"][0]
@@ -21,10 +22,15 @@ func straniciExecute(c echo.Context) error {
 	user := new(model.Users)
 	model.GetByID(user, 2)
 	page := new(model.Stranici)
-	domain := c.Request().Host
+	domain := hostName(c)
+
 	if err := page.FindForDisplay(pageAlias, user, domain); err != nil {
+		log.Errorf("page: %#v; error:%s", page, err)
 		return err
 	}
+	//now we have in page a structure
+	log.Debugf("page: %#v; unicode domain: %s", page, iHostName(c))
+
 	return c.Render(200, "stranici/execute",
 		Map{
 			"title":      "Страница еди коя си!",

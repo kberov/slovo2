@@ -72,11 +72,11 @@ func cgiInitConfig() {
 		"HTTP_HOST":       slovo.Cfg.ServeCGI.HTTP_HOST,
 		//"HTTP_REFERER":        "elsewhere",
 		//"HTTP_USER_AGENT":     "slovo2client",
-		"HTTP_ACCEPT_CHARSET": "utf-8",
+		"HTTP_ACCEPT_CHARSET": slovo.Cfg.ServeCGI.HTTP_ACCEPT_CHARSET,
 		// "HTTP_FOO_BAR":    "baz",
 		"REQUEST_URI": slovo.Cfg.ServeCGI.REQUEST_URI,
 		// "CONTENT_LENGTH":  "123",
-		"CONTENT_TYPE": "text/html",
+		"CONTENT_TYPE": slovo.Cfg.ServeCGI.CONTENT_TYPE,
 		// "REMOTE_ADDR":     "5.6.7.8",
 		// "REMOTE_PORT":     "54321",
 	}

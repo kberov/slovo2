@@ -36,7 +36,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const defaultLogHeader = `${prefix}:${time_rfc3339}:${level}:${short_file}:${line}`
+// const defaultLogHeader = `${prefix}:${time_rfc3339}:${level}:${short_file}:${line}`
+// See possible placeholders in  github.com/labstack/gommon@v0.4.2/log/log.go function log()
+// See https://echo.labstack.com/docs/customization
+const defaultLogHeader = `${prefix}:${level}:${short_file}:${line}`
 
 // Global koanf instance. Use . as the key path delimiter. This can be / or anything.
 var (
@@ -51,8 +54,7 @@ var rootCmd = &cobra.Command{
 	Long: `Наследникът на Слово – многократно по-бърз. Със запазен дух, но
 изцяло осъществен наново на езика за програмиране Go. Автоматично открива и
 работи в CGI среда.
-ВНИМАНѤ!!!
-Още сме в началото, така че има много грешки и недостатъци. Уча се!
+ВНИМАНѤ!!! Още сме в началото, така че има много грешки и недостатъци. Уча се!
 `,
 
 	// Uncomment the following line if your bare application
@@ -92,6 +94,7 @@ var Logger = log.New("slovo2")
 func init() {
 	Logger.SetOutput(os.Stderr)
 	Logger.SetHeader(defaultLogHeader)
+
 	cobra.EnableCommandSorting = false
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,

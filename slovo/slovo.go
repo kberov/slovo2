@@ -1,5 +1,5 @@
 /*
-Package slovo contains code for the business logic of the application.
+Package slovo contains code for preparing web pages for the site -- the front-end.
 */
 package slovo
 
@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-const VERSION = "2024.01.10"
+const VERSION = "2024.01.24"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 
 func initEcho(logger *log.Logger) *echo.Echo {
@@ -81,7 +81,7 @@ func ServeCGI(logger *log.Logger) {
 }
 
 func Serve(logger *log.Logger) {
-	logger.Debug("in slovo.Serve()")
+	logger.Debugf("in slovo.Serve() We will Serve(%s)", Cfg.Serve.Location)
 	e := initEcho(logger)
 	logger.Fatal(e.Start(Cfg.Serve.Location))
 }

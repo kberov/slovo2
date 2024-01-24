@@ -89,10 +89,12 @@ type ServeConfig struct {
 // ServeCGIConfig contains minimum ENV values for emulating a CGI request on
 // the command line. See https://www.rfc-editor.org/rfc/rfc3875
 type ServeCGIConfig struct {
-	HTTP_HOST       string
-	REQUEST_METHOD  string
-	SERVER_PROTOCOL string
-	REQUEST_URI     string
+	HTTP_HOST           string
+	REQUEST_METHOD      string
+	SERVER_PROTOCOL     string
+	REQUEST_URI         string
+	HTTP_ACCEPT_CHARSET string
+	CONTENT_TYPE        string
 }
 
 var Cfg Config
@@ -110,6 +112,7 @@ var handlerFuncs = map[string]echo.HandlerFunc{
 // This map is for the same purpose as above but for one or more middleware
 // functions for the corresponding HandlerFunc.
 var middlewareFuncs = map[string]echo.MiddlewareFunc{}
+var defaultHost = "dev.xn--b1arjbl.xn--90ae"
 
 func init() {
 	// Default configuration
@@ -117,12 +120,18 @@ func init() {
 		Languages:  []string{"bg"},
 		Debug:      true,
 		ConfigFile: "etc/config.yaml",
-		Serve:      ServeConfig{Location: "localhost:3000"},
+		Serve:      ServeConfig{Location: spf("%s:3000", defaultHost)},
 		ServeCGI: ServeCGIConfig{
-			HTTP_HOST:       "xn--b1arjbl.xn--90ae",
-			REQUEST_METHOD:  http.MethodGet,
-			SERVER_PROTOCOL: "HTTP/1.1",
-			REQUEST_URI:     "/",
+			// These are set as environment variables when the command `cgi` is
+			// executed on the command line and if they are not passed as flags
+			// or not set by the environment. These are the default values for
+			// flags in command `cgi`.
+			HTTP_HOST:           defaultHost,
+			REQUEST_METHOD:      http.MethodGet,
+			SERVER_PROTOCOL:     "HTTP/1.1",
+			REQUEST_URI:         "/",
+			HTTP_ACCEPT_CHARSET: "utf-8",
+			CONTENT_TYPE:        "text/html",
 		},
 		// Store methods by names in YAML!
 		Routes: []Route{
@@ -135,7 +144,8 @@ func init() {
 			Route{Method: echo.POST, Path: "/v2/ppdfcpu", Handler: "ppdfcpu", Name: "ppdfcpuForm"},
 		},
 		RewriteConfig: middleware.RewriteConfig{
-			// TODO: think how to assign this function when parsing yaml. We need some custom unmarshaller.
+			// TODO: think how to assign this function when parsing yaml. We
+			// need some custom unmarshaller.
 			Skipper: func(c echo.Context) bool {
 				req := c.Request()
 				escapedURI, err := url.PathUnescape(req.RequestURI)
