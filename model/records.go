@@ -2,6 +2,7 @@ package model
 
 import (
 	"database/sql"
+	"strings"
 	"time"
 )
 
@@ -45,12 +46,31 @@ type Stranici struct {
 // FindForDisplay returns a page from the database to be displayed. The page
 // must have the given alias, readable by the given user, be in the given
 // domain  and published(=2).
-func (s *Stranici) FindForDisplay(alias string, user *Users, domain string) error {
+func (s *Stranici) FindForDisplay(alias string, user *Users, preview uint8, domain string) error {
 	table := Record2Table(&Stranici{})
 	SQL := SQLFor("GET_PAGE_FOR_DISPLAY", table)
 	now := time.Now().Unix()
 	Logger.Debugf("FindForDisplay(alias:%s,user.ID:%d, domain:%s) SQL:\n%s", alias, user.ID, domain, SQL)
-	return DB().Get(s, SQL, user.ID, user.ID, alias, alias, alias, alias, domain, domain, domain, now, now)
+	return DB().Get(s, SQL, user.ID, user.ID, preview, alias, alias, alias, alias, domain, domain, domain, now, now)
+}
+
+// IsDir returns true if the permissions field starts with `d`.
+func (s *Stranici) IsDir() bool { return strings.HasPrefix(s.Permissions, "d") }
+
+/*
+TemplatePath returns the path to the template file to be used for this page
+record.
+*/
+func (s *Stranici) TemplatePath() string {
+	return s.Template.String
+}
+
+/*
+HasTemplate tells if this page has a custom template to be used for this
+page record.
+*/
+func (s *Stranici) HasTemplate() bool {
+	return len(s.Template.String) > 0
 }
 
 type Celini struct {

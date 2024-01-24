@@ -5,7 +5,6 @@ package model
 import (
 	"fmt"
 	"strings"
-	"unicode"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/kberov/slovo2/util"
@@ -64,18 +63,8 @@ func Record2Table[T Record](record *T) string {
 		return table
 	}
 	table, _ := strings.CutPrefix(typestr, "*model.")
-
-	table = strings.Replace(table, "ID", "_id", 1)
-	var snakeCase strings.Builder
-	for _, r := range table {
-		if unicode.IsUpper(r) {
-			snakeCase.Write([]byte{'_', byte(unicode.ToLower(r))})
-			continue
-		}
-		snakeCase.WriteRune(r)
-	}
-	// remove the prefixed underscore for the first uppercase letter
-	record2Table[typestr] = snakeCase.String()[1:]
+	table = util.CamelToSnakeCase(table)
+	record2Table[typestr] = table
 	return record2Table[typestr]
 }
 

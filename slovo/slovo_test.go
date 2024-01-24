@@ -21,8 +21,9 @@ func TestSLOG(t *testing.T) {
 	}
 }
 
+var dom = "dev.xn--b1arjbl.xn--90ae"
+
 func TestHosts(t *testing.T) {
-	dom := "dev.xn--b1arjbl.xn--90ae"
 	for _, h := range []string{spf("http://%s:3000", dom), spf("http://%s", dom)} {
 		e := echo.New()
 		req := httptest.NewRequest(http.MethodGet, h, nil)
@@ -41,5 +42,17 @@ func TestHosts(t *testing.T) {
 		} else {
 			t.Fatalf("UNExpected unicode host name: %s", ihost)
 		}
+	}
+}
+
+func Test_publishedStatus(t *testing.T) {
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, spf("http://%s/alabala?preview=bla", dom), nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	if publishedStatus(c) == 1 {
+		t.Log("right guess for published")
+	} else {
+		t.Fatalf("publishedStatus(c) returned wrong status: %d", publishedStatus(c))
 	}
 }

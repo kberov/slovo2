@@ -33,3 +33,10 @@ func iHostName(c echo.Context) (host string) {
 	}
 	return
 }
+
+func publishedStatus(c echo.Context) uint8 {
+	if len(c.QueryParam("preview")) > 0 {
+		return 1
+	}
+	return 2
+}

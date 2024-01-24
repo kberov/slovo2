@@ -24,7 +24,7 @@ func straniciExecute(c echo.Context) error {
 	page := new(model.Stranici)
 	domain := hostName(c)
 
-	if err := page.FindForDisplay(pageAlias, user, domain); err != nil {
+	if err := page.FindForDisplay(pageAlias, user, publishedStatus(c), domain); err != nil {
 		log.Errorf("page: %#v; error:%s", page, err)
 		return err
 	}

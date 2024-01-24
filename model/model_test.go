@@ -20,7 +20,7 @@ func TestStranici_FindForDisplay(t *testing.T) {
 	user := new(Users)
 	GetByID(user, 2) // guest
 	str := new(Stranici)
-	if err := str.FindForDisplay("вѣра", user, "dev.xn--b1arjbl.xn--90ae"); err != nil {
+	if err := str.FindForDisplay("вѣра", user, 2, "dev.xn--b1arjbl.xn--90ae"); err != nil {
 		t.Fatalf("Error: %s", err.Error())
 	}
 	t.Logf("Stranica: %#v", str)

@@ -30,7 +30,7 @@ func (g *EchoRenderer) Render(w io.Writer, name string, data any, c echo.Context
 	if isStash {
 		g.MergeStash(stash)
 	} else {
-		c.Echo().Logger.Warn("'data' parameter must be of type gledki.Stash for the GledkiRenderer() to interpolate values in templates.")
+		c.Echo().Logger.Error("'data' parameter must be of type gledki.Stash for the GledkiRenderer() to interpolate values in templates.")
 	}
 	_, err := g.Execute(w, name)
 	return err

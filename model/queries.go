@@ -25,15 +25,17 @@ var queryTemplates = SQLMap{
 	( ${table}.permissions LIKE '%r_x' AND ${table}.published = 2 ) 
 	-- owner can read and execute
 	OR ( ${table}.permissions LIKE '_r_x%' AND ${table}.user_id = ? )
-	-- user has the group group_id and the page is rx by this group_id and is published
-	OR (( ${table}.group_id IN (SELECT group_id from user_group WHERE user_id=?)
-		AND ${table}.permissions LIKE '____r_x%' AND ${table}.published = 2 ))
-		)`,
+	-- user has the group group_id and the page is rx by this group_id and is published(0|1|2)
+	OR (
+		( ${table}.group_id IN (SELECT group_id from user_group WHERE user_id=?)
+			AND ${table}.permissions LIKE '____r_x%' AND ${table}.published = ? 
+		)
+	)
+)`,
 	"GET_PAGE_FOR_DISPLAY": `SELECT * FROM ${table} WHERE (
 		${PERMISSIONS_ARE}
 		AND ( alias = ? OR alias  = ${ALIAS_IS})
 		AND ${table}.deleted = 0 AND ${table}.dom_id = ${PUBLISHED_DOMAIN_ID_BY_NAME_IS}
-		-- Todo: implement case when the table is previewed
 		AND ${table}.hidden = 0 
 		AND ( ${table}.start = 0 OR ${table}.start < ? )
 		AND ( ${table}.stop = 0 OR ${table}.stop > ? )
