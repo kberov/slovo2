@@ -21,7 +21,7 @@ var queryTemplates = SQLMap{
 		WHERE (? LIKE '%' || domain OR aliases LIKE ? OR ips LIKE ?) AND published = 2 LIMIT 1)`,
 	// To be embedded in other queries
 	"PERMISSIONS_ARE": `(
-	-- others can read and execute AND page is published
+	-- others can read and execute AND stranica/celina is published
 	( ${table}.permissions LIKE '%r_x' AND ${table}.published = 2 ) 
 	-- owner can read and execute
 	OR ( ${table}.permissions LIKE '_r_x%' AND ${table}.user_id = ? )
@@ -32,12 +32,41 @@ var queryTemplates = SQLMap{
 		)
 	)
 )`,
-	"GET_PAGE_FOR_DISPLAY": `SELECT * FROM ${table} WHERE (
+	"GET_PAGE_FOR_DISPLAY": `SELECT ${table}.*, c.title, c.body, c.language, c.data_type, c.data_format
+		FROM ${table}
+		JOIN celini AS c ON (
+    		stranici.id = c.page_id AND c.pid=0 AND c.permissions LIKE 'd%'
+    		AND c.language=? AND c.data_type='title'
+    		AND c.published = stranici.published)
+		WHERE (
 		${PERMISSIONS_ARE}
-		AND ( alias = ? OR alias  = ${ALIAS_IS})
-		AND ${table}.deleted = 0 AND ${table}.dom_id = ${PUBLISHED_DOMAIN_ID_BY_NAME_IS}
+		AND ( ${table}.alias = ? OR ${table}.alias  = ${ALIAS_IS})
+		AND ${table}.dom_id = ${PUBLISHED_DOMAIN_ID_BY_NAME_IS}
 		AND ${table}.hidden = 0 
+		${AND_FOR_DISPLAY}
+		) LIMIT 1`,
+	"GET_CELINA_FOR_DISPLAY": `SELECT * from ${table} WHERE (
+		page_id=? AND language LIKE ? AND box=?
+		AND ${PERMISSIONS_ARE}
+		AND ( ${table}.alias = ? OR ${table}.alias  = ${ALIAS_IS})
+		AND ${table}.bad=0 
+		${AND_FOR_DISPLAY}
+		)
+		`,
+	"CELINI_FOR_DISPLAY_IN_PAGE": `
+	SELECT ${columns} FROM ${table} WHERE (
+		page_id = ?	AND pid = ? and box= 'main'
+		-- find exact language or at least first part, e.g. (bg-)
+		AND (language LIKE ?)
+		AND ${PERMISSIONS_ARE}
+		${AND_FOR_DISPLAY}
+	) 
+	ORDER BY featured DESC, id DESC, sorting ASC
+	LIMIT ? OFFSET ?
+		`,
+	"AND_FOR_DISPLAY": `
+		AND ${table}.deleted = 0
 		AND ( ${table}.start = 0 OR ${table}.start < ? )
 		AND ( ${table}.stop = 0 OR ${table}.stop > ? )
-		)`,
+		`,
 }

@@ -2,5 +2,5 @@
 **/tags
 slovo2
 data/**
-nohup.out
+*.out
 templates/**/*.htmc

@@ -3,7 +3,7 @@ module github.com/kberov/slovo2
 go 1.21.4
 
 require (
-	github.com/kberov/gledki v0.4.2
+	github.com/kberov/gledki v0.5.0
 	github.com/knadh/koanf/parsers/yaml v0.1.0
 	github.com/knadh/koanf/providers/file v0.1.0
 	github.com/knadh/koanf/v2 v2.0.1
@@ -38,4 +38,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/kberov/gledki v0.4.2 => ../gledki
+replace github.com/kberov/gledki v0.5.0 => ../gledki

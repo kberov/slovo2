@@ -41,17 +41,29 @@ type Stranici struct {
 	Hidden      int32
 	Deleted     int32
 	ChangedBy   string
+	// Here are fields from Celini. We may get them with some Get, when we
+	// select from both tables. When selecting only from stranici table, these
+	// will be empty. These are populated from the celina which is created when
+	// the page is created and holds all the other celini in this page.
+	Title       string
+	Description string
+	Keywords    string
+	Tags        string
+	Language    string
+	Body        string
+	DataType    string
+	DataFormat  string
 }
 
 // FindForDisplay returns a page from the database to be displayed. The page
 // must have the given alias, readable by the given user, be in the given
 // domain  and published(=2).
-func (s *Stranici) FindForDisplay(alias string, user *Users, preview uint8, domain string) error {
-	table := Record2Table(&Stranici{})
+func (s *Stranici) FindForDisplay(alias string, user *Users, preview uint8, domain string, lang string) error {
+	table := Record2Table(s)
 	SQL := SQLFor("GET_PAGE_FOR_DISPLAY", table)
 	now := time.Now().Unix()
-	Logger.Debugf("FindForDisplay(alias:%s,user.ID:%d, domain:%s) SQL:\n%s", alias, user.ID, domain, SQL)
-	return DB().Get(s, SQL, user.ID, user.ID, preview, alias, alias, alias, alias, domain, domain, domain, now, now)
+	//Logger.Debugf("FindForDisplay(alias:%s,user.ID:%d, domain:%s) SQL:\n%s", alias, user.ID, domain, SQL)
+	return DB().Get(s, SQL, lang[:2], user.ID, user.ID, preview, alias, alias, alias, alias, domain, domain, domain, now, now)
 }
 
 // IsDir returns true if the permissions field starts with `d`.
@@ -102,6 +114,14 @@ type Celini struct {
 	Stop        int32
 	ChangedBy   string
 	Published   int32
+}
+
+func (ce *Celini) FindForDisplay(page *Stranici, alias string, user *Users, preview uint8, language string, box string) error {
+	SQL := SQLFor("GET_CELINA_FOR_DISPLAY", Record2Table(ce))
+	now := time.Now().Unix()
+	// Logger.Debugf("GET_CELINA_FOR_DISPLAY(page.ID:%#v, user.ID:%d, preview:%v, alias:%s,  language: %s, now:%d) SQL:\n%s",
+	//	page.ID, user.ID, preview, alias, language, now, SQL)
+	return DB().Get(ce, SQL, page.ID, language+`%`, box, user.ID, user.ID, preview, alias, alias, alias, alias, now, now)
 }
 
 type Aliases struct {
