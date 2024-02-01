@@ -188,7 +188,9 @@ func init() {
 			Root:   "public",
 		},
 		DB: DBConfig{
-			DSN:    "data/slovo.dev.sqlite",
+			DSN: "data/slovo.dev.sqlite",
+			// This may not be needed in the Go implementation - not used for
+			// now, as here the implementation is more static.
 			Tables: []string{"domove", "stranici", "celini", "products"},
 		},
 	}

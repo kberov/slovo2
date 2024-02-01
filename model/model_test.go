@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/labstack/gommon/log"
 )
@@ -41,6 +42,7 @@ func TestCelini_FindForDisplay(t *testing.T) {
 
 	//t.Logf("Stranica: %#v", cel)
 }
+
 func TestSQLFor(t *testing.T) {
 	table := Record2Table(&Stranici{})
 	SQL := SQLFor("GET_PAGE_FOR_DISPLAY", table)
@@ -49,4 +51,21 @@ func TestSQLFor(t *testing.T) {
 		t.Fatalf("SQL contains placeholders:\n%s", SQL)
 	}
 	t.Log(SQL)
+}
+
+func TestSelectMenuItems(t *testing.T) {
+	user := new(Users)
+	GetByID(user, 2) // guest
+	domain, lang, pub := "dev.xn--b1arjbl.xn--90ae", "bg", 2
+	if items, err := SelectMenuItems(QArgs{
+		"now":     time.Now().Unix(),
+		"user_id": user.ID,
+		"domain":  domain,
+		"pub":     pub,
+		"lang":    lang,
+	}); err != nil {
+		t.Fatalf("SelectMenuItems failed: %v", err)
+	} else {
+		t.Logf("Rows: %#v", items)
+	}
 }

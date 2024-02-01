@@ -1,6 +1,11 @@
 package slovo
 
 import (
+	"bytes"
+	"io"
+	"time"
+
+	"github.com/kberov/gledki"
 	"github.com/kberov/slovo2/model"
 	"github.com/labstack/echo/v4"
 )
@@ -47,6 +52,29 @@ func straniciExecute(c echo.Context) error {
 			"greeting":   "Добре дошли! на страница " + data,
 			"page.Alias": page.Alias,
 			"page.ID":    spf("%d", page.ID),
+			"main_menu": prepareMenu(c, Map{
+				"now":     time.Now().Unix(),
+				"user_id": user.ID,
+				"domain":  domain,
+				"pub":     preview,
+				"lang":    lang,
+			}),
 		},
 	)
+}
+
+func prepareMenu(c echo.Context, args Map) gledki.TagFunc {
+	return gledki.TagFunc(func(w io.Writer, tag string) (int, error) {
+		items, err := model.SelectMenuItems(args)
+		if err != nil {
+			c.Logger().Error(err.Error())
+			return w.Write([]byte("error retrieving items... see log for details"))
+		}
+		c.Logger().Debugf("[]Stranici: %#v", items)
+		html := bytes.NewBuffer([]byte(""))
+		for _, p := range items {
+			html.WriteString(spf(`<a href="/%s.%s.html">%s</a>`, p.Alias, p.Language, p.Title))
+		}
+		return w.Write(html.Bytes())
+	})
 }

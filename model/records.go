@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+// QArgs is for passing named arguments to statement handlers returned by
+// DB().PrepareNamed(SQL).
+type QArgs = map[string]any
+
 // Domove is a records from table domove.
 // In this file we strore records by table name. Each type represents a row in
 // the respective table after which it is named.
@@ -23,12 +27,20 @@ type Domove struct {
 	Templates   string
 }
 
+type PageType string
+
+const (
+	Regular PageType = "regular"
+	Root    PageType = "root"
+)
+
+// Stranici represents a Record in table stranici.
 type Stranici struct {
 	ID          int32
 	Pid         int32
 	DomID       int32
 	Alias       string
-	PageType    string
+	PageType    PageType
 	Permissions string
 	Sorting     int32
 	Template    sql.NullString
@@ -55,15 +67,28 @@ type Stranici struct {
 	DataFormat  string
 }
 
-// FindForDisplay returns a page from the database to be displayed. The page
-// must have the given alias, readable by the given user, be in the given
-// domain  and published(=2).
+/*
+FindForDisplay returns a page from the database to be displayed. The page
+must have the given alias, readable by the given user, be in the given
+domain  and published(=2).
+*/
 func (s *Stranici) FindForDisplay(alias string, user *Users, preview uint8, domain string, lang string) error {
 	table := Record2Table(s)
 	SQL := SQLFor("GET_PAGE_FOR_DISPLAY", table)
-	now := time.Now().Unix()
-	//Logger.Debugf("FindForDisplay(alias:%s,user.ID:%d, domain:%s) SQL:\n%s", alias, user.ID, domain, SQL)
-	return DB().Get(s, SQL, lang[:2], user.ID, user.ID, preview, alias, alias, alias, alias, domain, domain, domain, now, now)
+	args := map[string]any{
+		"alias":   alias,
+		"domain":  domain,
+		"lang":    lang[:2] + `%`,
+		"now":     time.Now().Unix(),
+		"user_id": user.ID,
+		"pub":     preview,
+	}
+	// Logger.Debugf("FindForDisplay(GET_PAGE_FOR_DISPLAY) SQL:\n%s", SQL)
+	if stmt, err := DB().PrepareNamed(SQL); err != nil {
+		return err
+	} else {
+		return stmt.Get(s, args)
+	}
 }
 
 // IsDir returns true if the permissions field starts with `d`.
@@ -85,6 +110,51 @@ func (s *Stranici) HasTemplate() bool {
 	return len(s.Template.String) > 0
 }
 
+type Box string
+
+const (
+	Main   Box = "main"
+	Left   Box = "left"
+	Right  Box = "right"
+	Header Box = "header"
+	Footer Box = "footer"
+)
+
+/*
+StrMenuItem holds subset of the fields of a page and some fields from Celini
+for pdisplaying a link in the main menu. The query to populate this struct is
+SELECT_PAGES_FOR_MAIN_MENU.
+*/
+type StrMenuItem struct {
+	ID          int32
+	Pid         int32
+	Alias       string
+	Title       string
+	Language    string
+	Permissions string
+}
+
+/*
+SelectMenuItems populates a []StrMenuItem slice and returns it or an
+error from DB().
+*/
+func SelectMenuItems(args QArgs) (items []StrMenuItem, err error) {
+	SQL := SQLFor("SELECT_PAGES_FOR_MAIN_MENU", "stranici")
+	//Logger.Debugf("SelectMenuItems(%#v) SQL:\n%s", args, SQL)
+	stmt, err := DB().PrepareNamed(SQL)
+	if err != nil {
+		return nil, err
+	}
+	err = stmt.Select(&items, args)
+	if err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+// IsDir returns true if the permissions field starts with `d`.
+func (s *StrMenuItem) IsDir() bool { return strings.HasPrefix(s.Permissions, "d") }
+
 type Celini struct {
 	ID          int32
 	Alias       string
@@ -103,7 +173,7 @@ type Celini struct {
 	Keywords    string
 	Tags        string
 	Body        string
-	Box         string
+	Box         Box
 	Language    string
 	Permissions string
 	Featured    int32
@@ -118,10 +188,21 @@ type Celini struct {
 
 func (ce *Celini) FindForDisplay(page *Stranici, alias string, user *Users, preview uint8, language string, box string) error {
 	SQL := SQLFor("GET_CELINA_FOR_DISPLAY", Record2Table(ce))
-	now := time.Now().Unix()
-	// Logger.Debugf("GET_CELINA_FOR_DISPLAY(page.ID:%#v, user.ID:%d, preview:%v, alias:%s,  language: %s, now:%d) SQL:\n%s",
-	//	page.ID, user.ID, preview, alias, language, now, SQL)
-	return DB().Get(ce, SQL, page.ID, language+`%`, box, user.ID, user.ID, preview, alias, alias, alias, alias, now, now)
+	args := map[string]any{
+		"alias":   alias,
+		"box":     box,
+		"lang":    language + `%`,
+		"now":     time.Now().Unix(),
+		"page_id": page.ID,
+		"user_id": user.ID,
+		"pub":     preview,
+	}
+	// Logger.Debugf("GET_CELINA_FOR_DISPLAY SQL:\n%s", SQL)
+	if stmt, err := DB().PrepareNamed(SQL); err != nil {
+		return err
+	} else {
+		return stmt.Get(ce, args)
+	}
 }
 
 type Aliases struct {
