@@ -6,10 +6,6 @@ import (
 	"time"
 )
 
-// QArgs is for passing named arguments to statement handlers returned by
-// DB().PrepareNamed(SQL).
-type QArgs = map[string]any
-
 // Domove is a records from table domove.
 // In this file we strore records by table name. Each type represents a row in
 // the respective table after which it is named.
@@ -33,6 +29,29 @@ const (
 	Regular PageType = "regular"
 	Root    PageType = "root"
 )
+
+// StranicaArgs is a struct which we will populate by using the Echo binding mechanizm
+// to pass these arguments to SQL queries and whereever needed. For binding
+// these struct fields to values from different places, we use our custom
+// [slovo.Binder].
+type StranicaArgs struct {
+	// Alias for a page: "вѣра"
+	Alias string `param:"stranica"`
+	// Alias for an article/paragraph/book/product/content: "чуждият-hôtel"
+	// Celina string `param:"celina"`
+	// Language for the content (for now only "bg")
+	Lang string `param:"lang"`
+	// Format of the content (for now only "html")
+	Format string `param:"format"`
+	// Required Published status (0:no|1:preview|2:yes) Default: 2
+	Pub uint8
+	// UserID - current user_id. Default 2(guest)
+	// TODO: Implement authentication via some custom header or JWT - not Cookies
+	UserID int32
+	// Slovo is a multidomain CMS. Get it from c.Request().Host
+	Domain string
+	Now    int64
+}
 
 // Stranici represents a Record in table stranici.
 type Stranici struct {
@@ -70,20 +89,14 @@ type Stranici struct {
 /*
 FindForDisplay returns a page from the database to be displayed. The page
 must have the given alias, readable by the given user, be in the given
-domain  and published(=2).
+domain  and published(=2). `args` is a struct containing the arguments for
+stmt.Get. It is put together in slovo.Binder.Bind().
 */
-func (s *Stranici) FindForDisplay(alias string, user *Users, preview uint8, domain string, lang string) error {
+func (s *Stranici) FindForDisplay(args *StranicaArgs) error {
 	table := Record2Table(s)
 	SQL := SQLFor("GET_PAGE_FOR_DISPLAY", table)
-	args := map[string]any{
-		"alias":   alias,
-		"domain":  domain,
-		"lang":    lang[:2] + `%`,
-		"now":     time.Now().Unix(),
-		"user_id": user.ID,
-		"pub":     preview,
-	}
 	// Logger.Debugf("FindForDisplay(GET_PAGE_FOR_DISPLAY) SQL:\n%s", SQL)
+
 	if stmt, err := DB().PrepareNamed(SQL); err != nil {
 		return err
 	} else {
@@ -138,7 +151,7 @@ type StrMenuItem struct {
 SelectMenuItems populates a []StrMenuItem slice and returns it or an
 error from DB().
 */
-func SelectMenuItems(args QArgs) (items []StrMenuItem, err error) {
+func SelectMenuItems(args *StranicaArgs) (items []StrMenuItem, err error) {
 	SQL := SQLFor("SELECT_PAGES_FOR_MAIN_MENU", "stranici")
 	//Logger.Debugf("SelectMenuItems(%#v) SQL:\n%s", args, SQL)
 	stmt, err := DB().PrepareNamed(SQL)

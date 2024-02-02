@@ -29,6 +29,8 @@ func initEcho(logger *log.Logger) *echo.Echo {
 		CfgR.LoadFiles,
 		logger,
 	)
+	// Use our binder which embeds echo.DefaultBinder
+	e.Binder = &Binder{}
 	// Add middleware to the Echo instance
 	e.Pre(middleware.RewriteWithConfig(Cfg.RewriteConfig))
 	// Request ID middleware generates a unique id for a request.
