@@ -2,7 +2,6 @@ package slovo
 
 import (
 	"net"
-	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -39,12 +38,8 @@ func iHostName(c echo.Context) (host string) {
 func publishedStatus(c echo.Context) uint8 {
 	preview := c.QueryParam("preview")
 	c.Logger().Debugf("preview in bind: %#v", preview)
-	if len(preview) > 0 {
-		i, err := strconv.ParseUint(preview, 10, 8)
-		if err != nil || (i > 2) {
-			return uint8(2)
-		}
-		return uint8(i)
+	if preview != "" {
+		return uint8(1)
 	}
 	return uint8(2)
 }

@@ -13,23 +13,36 @@ type Binder struct {
 	*echo.DefaultBinder
 }
 
+/*
+Bind binds some variables into a structure to be passed to queries for
+Stranici and Celini.
+*/
 func (b *Binder) Bind(args any, c echo.Context) (err error) {
+	// Here we handle untagged fields - those which values cannot be simply got
+	// from any of the supported by [echo] tags.
+	switch t := args.(type) {
+	case *model.StranicaArgs: //,*model.CelinaArgs:
+		a := t
+		// TODO implement authentication and see if we need the whole user somewhere.
+		// user := new(model.Users)
+		// Default user - guest
+		// model.GetByID(user, 2)
+		// a.UserID = user.ID
+		a.UserID = 2
+		a.Pub = publishedStatus(c)
+		a.Domain = hostName(c)
+		a.Now = time.Now().Unix()
+	//case *model.SomeOtherArgs:
+	//	a := t
+	// etc
+	default:
+		c.Logger().Warnf("Unknown type: %T", args)
+	}
+
 	/* Using default binder */
-	if err = b.DefaultBinder.Bind(args, c); err != nil {
+	if err = b.DefaultBinder.Bind(args, c); err != echo.ErrUnsupportedMediaType {
 		return err
 	}
 
-	// Define our custom implementation here
-	// TODO: See Echo.DefaultBinder for implementation details and follow it's
-	// pattern if better for the case.
-	a := args.(*model.StranicaArgs)
-	// TODO implement authentication and see if we need the whole user somewhere.
-	// user := new(model.Users)
-	// model.GetByID(user, 2)
-	// a.UserID = user.ID
-	a.UserID = 2
-	a.Pub = publishedStatus(c)
-	a.Domain = hostName(c)
-	a.Now = time.Now().Unix()
 	return
 }

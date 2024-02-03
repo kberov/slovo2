@@ -19,18 +19,16 @@ func GledkiMust(root string, ext string, tags [2]string, loadFiles bool, logger 
 		logger.Fatal(err.Error())
 	}
 	tpls.Logger = logger
-	r := &EchoRenderer{tpls}
-	return r
+	return &EchoRenderer{tpls}
 }
 
 // Render abides to the echo.Echo interface for echo.Renderer, but expects the
 // template data to be of type gledki.Stash which actually is map[string]any.
 func (g *EchoRenderer) Render(w io.Writer, name string, data any, c echo.Context) error {
-	stash, isStash := data.(gledki.Stash)
-	if isStash {
+	if stash, isStash := data.(gledki.Stash); isStash {
 		g.MergeStash(stash)
 	} else {
-		c.Echo().Logger.Error("'data' parameter must be of type gledki.Stash for the GledkiRenderer() to interpolate values in templates.")
+		c.Logger().Error("'data' parameter must be of type gledki.Stash for the GledkiRenderer() to interpolate values in templates.")
 	}
 	_, err := g.Execute(w, name)
 	return err

@@ -109,18 +109,13 @@ func (s *Stranici) IsDir() bool { return strings.HasPrefix(s.Permissions, "d") }
 
 /*
 TemplatePath returns the path to the template file to be used for this page
-record.
+record or the given `defaultTemplate`.
 */
-func (s *Stranici) TemplatePath() string {
-	return s.Template.String
-}
-
-/*
-HasTemplate tells if this page has a custom template to be used for this
-page record.
-*/
-func (s *Stranici) HasTemplate() bool {
-	return len(s.Template.String) > 0
+func (s *Stranici) TemplatePath(defaultTemplate string) string {
+	if s.Template.Valid {
+		return s.Template.String
+	}
+	return defaultTemplate
 }
 
 type Box string
