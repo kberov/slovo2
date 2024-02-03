@@ -9,22 +9,30 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
+var args *StranicaArgs
+
 func init() {
 	Logger = log.New("DB")
 	Logger.SetOutput(os.Stderr)
 	Logger.SetHeader(defaultLogHeader)
 	Logger.SetLevel(log.DEBUG)
 	DSN = "../data/slovo.dev.sqlite"
+	args = &StranicaArgs{
+		Alias:  "вѣра",
+		UserID: 2,
+		Domain: "dev.xn--b1arjbl.xn--90ae",
+		Pub:    2,
+		Lang:   "bg",
+		Now:    time.Now().Unix(),
+	}
 }
 
 func TestStranici_FindForDisplay(t *testing.T) {
-	user := new(Users)
-	GetByID(user, 2) // guest
 	str := new(Stranici)
-	if err := str.FindForDisplay("вѣра", user, 2, "dev.xn--b1arjbl.xn--90ae", "bg"); err != nil {
+	if err := str.FindForDisplay(args); err != nil {
 		t.Fatalf("Error: %s", err.Error())
 	}
-	t.Logf("Stranica: %#v", str)
+	// t.Logf("Stranica: %#v", str)
 }
 
 func TestCelini_FindForDisplay(t *testing.T) {
@@ -50,22 +58,11 @@ func TestSQLFor(t *testing.T) {
 	if strings.Contains(SQL, "${") {
 		t.Fatalf("SQL contains placeholders:\n%s", SQL)
 	}
-	t.Log(SQL)
+	//t.Log(SQL)
 }
 
 func TestSelectMenuItems(t *testing.T) {
-	user := new(Users)
-	GetByID(user, 2) // guest
-	domain, lang, pub := "dev.xn--b1arjbl.xn--90ae", "bg", 2
-	if items, err := SelectMenuItems(QArgs{
-		"now":     time.Now().Unix(),
-		"user_id": user.ID,
-		"domain":  domain,
-		"pub":     pub,
-		"lang":    lang,
-	}); err != nil {
+	if _, err := SelectMenuItems(args); err != nil {
 		t.Fatalf("SelectMenuItems failed: %v", err)
-	} else {
-		t.Logf("Rows: %#v", items)
-	}
+	} // else {//t.Logf("Rows: %#v", items)}
 }
