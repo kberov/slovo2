@@ -121,3 +121,27 @@ nav a.active, nav .tabs a.active {
   color: var(--color-success) !important;
   font-weight: bolder !important;
 }
+nav .tabs a {
+  padding: 0rem 1rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 412px) {
+  section.stranici, section.celini {
+    padding-top: 20rem;
+  }
+}
+@media (max-width: 480px) {
+  section.stranici, section.celini {
+    padding-top: 15rem;
+  }
+}
+
+@media (max-width: 459px) {
+  section.stranici, section.celini {
+    padding-top: 19rem;
+  }
+}
+@media (max-width: 700px) {
+ /* TODO */
+}
