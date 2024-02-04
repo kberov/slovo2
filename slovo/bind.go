@@ -21,7 +21,7 @@ func (b *Binder) Bind(args any, c echo.Context) (err error) {
 	// Here we handle untagged fields - those which values cannot be simply got
 	// from any of the supported by [echo] tags.
 	switch t := args.(type) {
-	case *model.StranicaArgs: //,*model.CelinaArgs:
+	case *model.StraniciArgs: //,*model.CelinaArgs:
 		a := t
 		// TODO implement authentication and see if we need the whole user somewhere.
 		// user := new(model.Users)

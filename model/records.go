@@ -30,15 +30,15 @@ const (
 	Root    PageType = "root"
 )
 
-// StranicaArgs is a struct which we will populate by using the Echo binding mechanizm
+// StraniciArgs is a struct which we will populate by using the Echo binding mechanizm
 // to pass these arguments to SQL queries and whereever needed. For binding
 // these struct fields to values from different places, we use our custom
 // [slovo.Binder].
-type StranicaArgs struct {
+type StraniciArgs struct {
 	// Alias for a page: "вѣра"
 	Alias string `param:"stranica"`
 	// Alias for an article/paragraph/book/product/content: "чуждият-hôtel"
-	// Celina string `param:"celina"`
+	Celina string `param:"celina"`
 	// Language for the content (for now only "bg")
 	Lang string `param:"lang"`
 	// Format of the content (for now only "html")
@@ -92,7 +92,7 @@ must have the given alias, readable by the given user, be in the given
 domain  and published(=2). `args` is a struct containing the arguments for
 stmt.Get. It is put together in slovo.Binder.Bind().
 */
-func (s *Stranici) FindForDisplay(args *StranicaArgs) error {
+func (s *Stranici) FindForDisplay(args *StraniciArgs) error {
 	table := Record2Table(s)
 	SQL := SQLFor("GET_PAGE_FOR_DISPLAY", table)
 	// Logger.Debugf("FindForDisplay(GET_PAGE_FOR_DISPLAY) SQL:\n%s", SQL)
@@ -146,7 +146,7 @@ type StrMenuItem struct {
 SelectMenuItems populates a []StrMenuItem slice and returns it or an
 error from DB().
 */
-func SelectMenuItems(args *StranicaArgs) (items []StrMenuItem, err error) {
+func SelectMenuItems(args *StraniciArgs) (items []StrMenuItem, err error) {
 	SQL := SQLFor("SELECT_PAGES_FOR_MAIN_MENU", "stranici")
 	//Logger.Debugf("SelectMenuItems(%#v) SQL:\n%s", args, SQL)
 	stmt, err := DB().PrepareNamed(SQL)

@@ -12,7 +12,7 @@ import (
 
 func straniciExecute(c echo.Context) error {
 	log := c.Logger()
-	args := new(model.StranicaArgs)
+	args := new(model.StraniciArgs)
 	if err := c.Bind(args); err != nil {
 		return c.String(http.StatusBadRequest, "Грешна заявка!")
 	}
@@ -38,7 +38,7 @@ func straniciExecute(c echo.Context) error {
 mainMenu returns a gledki.TagFunc which prepares and returns the HTML for
 the tag `mainMenu` in the template.
 */
-func mainMenu(c echo.Context, args *model.StranicaArgs, stash Map) gledki.TagFunc {
+func mainMenu(c echo.Context, args *model.StraniciArgs, stash Map) gledki.TagFunc {
 	return func(w io.Writer, tag string) (int, error) {
 		items, err := model.SelectMenuItems(args)
 		if err != nil {

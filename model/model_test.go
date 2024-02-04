@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-var args *StranicaArgs
+var args *StraniciArgs
 
 func init() {
 	Logger = log.New("DB")
@@ -17,7 +17,7 @@ func init() {
 	Logger.SetHeader(defaultLogHeader)
 	Logger.SetLevel(log.DEBUG)
 	DSN = "../data/slovo.dev.sqlite"
-	args = &StranicaArgs{
+	args = &StraniciArgs{
 		Alias:  "вѣра",
 		UserID: 2,
 		Domain: "dev.xn--b1arjbl.xn--90ae",
