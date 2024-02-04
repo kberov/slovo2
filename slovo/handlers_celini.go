@@ -1,20 +1,28 @@
 package slovo
 
-import "github.com/labstack/echo/v4"
+import (
+	"net/http"
+
+	"github.com/kberov/slovo2/model"
+	"github.com/labstack/echo/v4"
+)
 
 func celiniExecute(c echo.Context) error {
 	c.Logger().Debugf("in celiniExecute")
-	pageAlias := c.Param("stranica")
-	paragraphAlias := c.Param("celina")
-	lang := c.Param("lang")
-	path := c.Request().URL.Path
-	data := spf("Params: pagealias: %s, paragraphalias:%s,lang:%s; Path:%s; PathInfo:%s; QUERY_STRING:%s",
-		pageAlias, paragraphAlias, lang, c.Path(), path, c.QueryString())
-	c.Logger().Debug(data)
-	return c.Render(200, "hello",
+	log := c.Logger()
+	args := new(model.StraniciArgs)
+	if err := c.Bind(args); err != nil {
+		return c.String(http.StatusBadRequest, "Грешна заявка!")
+	}
+	cel := new(model.Celini)
+	if err := cel.FindForDisplay(args); err != nil {
+		log.Errorf("celina: %#v; error:%w; ErrType: %T; args: %#v", cel, err, err, args)
+		return handleNotFound(c, args, err)
+	}
+	return c.Render(http.StatusOK, "hello",
 		Map{
 			"title":    "Целина в страница еди коя си!",
-			"greeting": "Добре дошли! на страница " + data,
+			"greeting": "Добре дошли! на страница ",
 		},
 	)
 }

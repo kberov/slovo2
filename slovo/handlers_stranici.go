@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/kberov/gledki"
 	"github.com/kberov/slovo2/model"
@@ -11,17 +12,16 @@ import (
 )
 
 func straniciExecute(c echo.Context) error {
-	log := c.Logger()
 	args := new(model.StraniciArgs)
 	if err := c.Bind(args); err != nil {
 		return c.String(http.StatusBadRequest, "Грешна заявка!")
 	}
+
 	page := new(model.Stranici)
 	if err := page.FindForDisplay(args); err != nil {
-		log.Errorf("page: %#v; error:%s", page, err)
-		return err
+		c.Logger().Errorf("page: %#v; error:%w; ErrType: %T; args: %#v", page, err, err, args)
+		return handleNotFound(c, args, err)
 	}
-	// log.Debugf("Stranica: %#v", page)
 	stash := Map{
 		"lang":       page.Language,
 		"title":      page.Title,
@@ -31,7 +31,16 @@ func straniciExecute(c echo.Context) error {
 	stash["pageBody"] = pageBody(c, page, stash)
 	stash["mainMenu"] = mainMenu(c, args, stash)
 
-	return c.Render(200, page.TemplatePath("stranici/execute"), stash)
+	return c.Render(http.StatusOK, page.TemplatePath("stranici/execute"), stash)
+}
+
+func handleNotFound(c echo.Context, args *model.StraniciArgs, err error) error {
+	stash := Map{"lang": args.Lang, "title": "Няма такава страница!"}
+	if strings.Contains(err.Error(), `no rows`) {
+		stash["mainMenu"] = mainMenu(c, args, stash)
+		return c.Render(http.StatusNotFound, `not_found`, stash)
+	}
+	return err
 }
 
 /*
