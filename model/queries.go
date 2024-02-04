@@ -16,6 +16,10 @@ var queryTemplates = SQLMap{
     	WHERE alias_table='${table}' AND (old_alias=:alias) ORDER BY ID DESC LIMIT 1)
  	 OR ${table}.id=(SELECT alias_id FROM aliases
     	WHERE alias_table='${table}' AND (old_alias=:alias OR new_alias=:alias) ORDER BY ID DESC LIMIT 1)`,
+	"CELINA_ALIAS_IS": `(SELECT new_alias FROM aliases
+    	WHERE alias_table='celini' AND (old_alias=:celina) ORDER BY ID DESC LIMIT 1)
+ 	 OR celini.id=(SELECT alias_id FROM aliases
+    	WHERE alias_table='celini' AND (old_alias=:celina OR new_alias=:celina) ORDER BY ID DESC LIMIT 1)`,
 	// To be embedded in other queries
 	"PUBLISHED_DOMAIN_ID_BY_NAME_IS": `(SELECT id FROM domove
 		WHERE (:domain LIKE '%' || domain OR aliases LIKE :domain OR ips LIKE :domain) AND published = 2 LIMIT 1)`,
@@ -42,14 +46,15 @@ var queryTemplates = SQLMap{
 		${PERMISSIONS_ARE}
 		AND ( ${table}.alias = :alias OR ${table}.alias  = ${ALIAS_IS})
 		AND ${table}.dom_id = ${PUBLISHED_DOMAIN_ID_BY_NAME_IS}
-		AND ${table}.hidden = 0 
+		AND ${table}.hidden = 0
 		${AND_FOR_DISPLAY}
 		) LIMIT 1`,
 	"GET_CELINA_FOR_DISPLAY": `SELECT * from ${table} WHERE (
-		page_id=:page_id AND language LIKE :lang AND box=:box
+		page_id=(SELECT id from stranici WHERE alias = :alias)
+		AND language LIKE :lang AND box = :box
 		AND ${PERMISSIONS_ARE}
-		AND ( ${table}.alias = :alias OR ${table}.alias  = ${ALIAS_IS})
-		AND ${table}.bad=0 
+		AND ( ${table}.alias = :celina OR ${table}.alias  = ${CELINA_ALIAS_IS})
+		AND ${table}.bad = 0
 		${AND_FOR_DISPLAY}
 		)
 		`,

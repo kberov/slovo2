@@ -3,7 +3,6 @@ package model
 import (
 	"database/sql"
 	"strings"
-	"time"
 )
 
 // Domove is a records from table domove.
@@ -37,8 +36,10 @@ const (
 type StraniciArgs struct {
 	// Alias for a page: "вѣра"
 	Alias string `param:"stranica"`
-	// Alias for an article/paragraph/book/product/content: "чуждият-hôtel"
+	// Alias for an article/paragraph/book/product/content. Example: "чуждият-hôtel"
 	Celina string `param:"celina"`
+	// Box on the page where to be put  the body of aa celina
+	Box Box
 	// Language for the content (for now only "bg")
 	Lang string `param:"lang"`
 	// Format of the content (for now only "html")
@@ -68,14 +69,18 @@ type Stranici struct {
 	Tstamp      int32
 	Start       int32
 	Stop        int32
-	Published   int32
-	Hidden      int32
-	Deleted     int32
+	Published   uint8
+	Hidden      bool
+	Deleted     bool
 	ChangedBy   string
-	// Here are fields from Celini. We may get them with some Get, when we
-	// select from both tables. When selecting only from stranici table, these
-	// will be empty. These are populated from the celina which is created when
-	// the page is created and holds all the other celini in this page.
+	/*
+		Here are fields from Celini. We may get them with some Get, when we
+		select from both tables. When selecting only from stranici table, these
+		will be empty. When selecting default content for a page these are
+		populated from the celina with the same `alias` field as the page. This
+		celina is created when the page is created and holds all the other
+		celini in this page.
+	*/
 	Title       string
 	Description string
 	Keywords    string
@@ -121,11 +126,11 @@ func (s *Stranici) TemplatePath(defaultTemplate string) string {
 type Box string
 
 const (
-	Main   Box = "main"
-	Left   Box = "left"
-	Right  Box = "right"
-	Header Box = "header"
-	Footer Box = "footer"
+	MainBox   Box = "main"
+	LeftBox   Box = "left"
+	RightBox  Box = "right"
+	HeaderBox Box = "header"
+	FooterBox Box = "footer"
 )
 
 /*
@@ -163,6 +168,27 @@ func SelectMenuItems(args *StraniciArgs) (items []StrMenuItem, err error) {
 // IsDir returns true if the permissions field starts with `d`.
 func (s *StrMenuItem) IsDir() bool { return strings.HasPrefix(s.Permissions, "d") }
 
+// CelDataType represents the logical data type for a celina. Based on it we
+// choose the appropriate template for displaying it.
+// "default": "note",
+// "enum":["title", "note", "writing", "book", "chapter", "question", "answer", "paragraph"]
+type CelDataType string
+
+const (
+	Title     CelDataType = "title"
+	Note      CelDataType = "note"
+	Writing   CelDataType = "writing"
+	Book      CelDataType = "book"
+	Chapter   CelDataType = "chapter"
+	Question  CelDataType = "question"
+	Answer    CelDataType = "Answer"
+	Paragraph             = "paragraph"
+)
+
+func (d CelDataType) String() string {
+	return string(d)
+}
+
 type Celini struct {
 	ID          int32
 	Alias       string
@@ -172,7 +198,7 @@ type Celini struct {
 	UserID      int32
 	GroupID     int32
 	Sorting     int32
-	DataType    string
+	DataType    CelDataType
 	DataFormat  string
 	CreatedAt   int32
 	Tstamp      int32
@@ -186,30 +212,35 @@ type Celini struct {
 	Permissions string
 	Featured    int32
 	Accepted    int32
-	Bad         int32
-	Deleted     int32
+	Bad         bool
+	Deleted     bool
 	Start       int32
 	Stop        int32
-	ChangedBy   string
-	Published   int32
+	ChangedBy   sql.NullString
+	Published   uint8
 }
 
-func (ce *Celini) FindForDisplay(page *Stranici, alias string, user *Users, preview uint8, language string, box string) error {
-	SQL := SQLFor("GET_CELINA_FOR_DISPLAY", Record2Table(ce))
-	args := map[string]any{
-		"alias":   alias,
-		"box":     box,
-		"lang":    language + `%`,
-		"now":     time.Now().Unix(),
-		"page_id": page.ID,
-		"user_id": user.ID,
-		"pub":     preview,
-	}
-	// Logger.Debugf("GET_CELINA_FOR_DISPLAY SQL:\n%s", SQL)
+func (cel *Celini) FindForDisplay(args *StraniciArgs) error {
+	SQL := SQLFor("GET_CELINA_FOR_DISPLAY", Record2Table(cel))
+	args.Lang = args.Lang + `%`
+	Logger.Debugf("GET_CELINA_FOR_DISPLAY SQL:\n%s", SQL)
 	if stmt, err := DB().PrepareNamed(SQL); err != nil {
 		return err
 	} else {
-		return stmt.Get(ce, args)
+		return stmt.Get(cel, args)
+	}
+}
+
+var celiniTemplatesDir = "celini/"
+
+func (cel *Celini) TemplatePath(defaultTemplate string) string {
+
+	switch cel.DataType {
+	case Writing, Book, Note:
+		return celiniTemplatesDir + cel.DataType.String()
+	default:
+		// TODO:define templates and behaviour for all data types
+		return celiniTemplatesDir + `writing`
 	}
 }
 

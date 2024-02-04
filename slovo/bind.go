@@ -19,9 +19,10 @@ Stranici and Celini.
 */
 func (b *Binder) Bind(args any, c echo.Context) (err error) {
 	// Here we handle untagged fields - those which values cannot be simply got
-	// from any of the supported by [echo] tags.
+	// from any of the supported by [echo] tags. But we need them to make
+	// proper SQL queries.
 	switch t := args.(type) {
-	case *model.StraniciArgs: //,*model.CelinaArgs:
+	case *model.StraniciArgs:
 		a := t
 		// TODO implement authentication and see if we need the whole user somewhere.
 		// user := new(model.Users)
@@ -32,6 +33,9 @@ func (b *Binder) Bind(args any, c echo.Context) (err error) {
 		a.Pub = publishedStatus(c)
 		a.Domain = hostName(c)
 		a.Now = time.Now().Unix()
+		// By default the main box is displayed as the main content on the
+		// rendered page.
+		a.Box = model.MainBox
 	//case *model.SomeOtherArgs:
 	//	a := t
 	// etc

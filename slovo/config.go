@@ -162,9 +162,9 @@ func init() {
 				// row in table 'stranici' for example to 'index' if you want your root page
 				// to have alias 'index'. Also change the 'lang' here as desired.
 				// Defaults:
-				regexp.MustCompile("^$"):             "/коренъ/bg/html",
-				regexp.MustCompile("^/$"):            "/коренъ/bg/html",
-				regexp.MustCompile("^/index.html?$"): "/коренъ/bg/html",
+				regexp.MustCompile("^$"):                    "/коренъ/bg/html",
+				regexp.MustCompile("^/$"):                   "/коренъ/bg/html",
+				regexp.MustCompile(spf("^/index.%s$", EXT)): "/коренъ/bg/html",
 				// Страница	            /:stranica/:lang/:ext
 				regexp.MustCompile(spf(`^/%s\.%s%s`, SLOG, EXT, QS)):          "/$1/bg/$2$3",
 				regexp.MustCompile(spf(`^/%s\.%s\.%s%s`, SLOG, LNG, EXT, QS)): "/$1/$2/$3$4",

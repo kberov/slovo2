@@ -37,7 +37,6 @@ func iHostName(c echo.Context) (host string) {
 // Allow only valid values 0,1,2
 func publishedStatus(c echo.Context) uint8 {
 	preview := c.QueryParam("preview")
-	c.Logger().Debugf("preview in bind: %#v", preview)
 	if preview != "" {
 		return uint8(1)
 	}

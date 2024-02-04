@@ -21,6 +21,7 @@ func init() {
 		Alias:  "вѣра",
 		UserID: 2,
 		Domain: "dev.xn--b1arjbl.xn--90ae",
+		Box:    MainBox,
 		Pub:    2,
 		Lang:   "bg",
 		Now:    time.Now().Unix(),
@@ -36,19 +37,17 @@ func TestStranici_FindForDisplay(t *testing.T) {
 }
 
 func TestCelini_FindForDisplay(t *testing.T) {
-	user := new(Users)
-	GetByID(user, 2) // guest
-	page := new(Stranici)
-	GetByID(page, 11)
+	args.Alias = "ѩꙁыкъ"
+	args.Celina = "благодарност"
+	t.Logf("StraniciArgs: %#v", args)
 	cel := new(Celini)
-	if err := cel.FindForDisplay(page, "благодарност", user, 2, "bg", "main"); err != nil {
+	if err := cel.FindForDisplay(args); err != nil {
 		t.Fatalf("Error: %s", err.Error())
 	}
 	if cel.ID != 54 {
 		t.Fatalf("record not found. expected ID was 54, but it is %d", cel.ID)
 	}
-
-	//t.Logf("Stranica: %#v", cel)
+	// t.Logf("Celina: %#v", cel)
 }
 
 func TestSQLFor(t *testing.T) {
