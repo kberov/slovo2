@@ -97,4 +97,27 @@ var queryTemplates = SQLMap{
 		${AND_FOR_DISPLAY}
 		) ORDER BY ${table}.sorting
 		`,
+	"SELECT_CHILD_PAGES": `SELECT 
+		${table}.id AS id,
+		${table}.pid AS pid,
+		${table}.alias AS alias,
+		c.title AS title,
+		c.language as language,
+		c.body as body
+		FROM ${table}
+		JOIN celini AS c ON (
+    		${table}.id = c.page_id AND c.pid=0 AND c.permissions LIKE 'd%'
+    		AND c.language=:lang AND c.data_type='title'
+    		AND c.published = ${table}.published)
+		WHERE (
+		${table}.pid=(
+			SELECT id FROM ${table} WHERE alias=:alias
+			AND dom_id = ${PUBLISHED_DOMAIN_ID_BY_NAME_IS}
+			AND ( ${table}.alias = :alias OR ${table}.alias = ${ALIAS_IS})
+		)
+		AND ${PERMISSIONS_ARE}
+		AND ${table}.hidden = 0 
+		${AND_FOR_DISPLAY}
+		) ORDER BY ${table}.sorting
+	`,
 }

@@ -29,6 +29,8 @@ const EXT = `(html?)`
 // QS stands for QUERY_STRING - this is the rest of the URL. We match anything.
 const QS = `(.*)?`
 
+const rootPageAlias = `коренъ`
+
 //lint:file-ignore ST1003 ALL_CAPS match the ENV variable names
 type Config struct {
 	// Languages is a list of supported languages. the last is the default.
@@ -162,9 +164,9 @@ func init() {
 				// row in table 'stranici' for example to 'index' if you want your root page
 				// to have alias 'index'. Also change the 'lang' here as desired.
 				// Defaults:
-				regexp.MustCompile("^$"):                    "/коренъ/bg/html",
-				regexp.MustCompile("^/$"):                   "/коренъ/bg/html",
-				regexp.MustCompile(spf("^/index.%s$", EXT)): "/коренъ/bg/html",
+				regexp.MustCompile("^$"):                    spf("/%s/bg/html", rootPageAlias),
+				regexp.MustCompile("^/$"):                   spf("/%s/bg/html", rootPageAlias),
+				regexp.MustCompile(spf("^/index.%s$", EXT)): spf("/%s/bg/html", rootPageAlias),
 				// Страница	            /:stranica/:lang/:ext
 				regexp.MustCompile(spf(`^/%s\.%s%s`, SLOG, EXT, QS)):          "/$1/bg/$2$3",
 				regexp.MustCompile(spf(`^/%s\.%s\.%s%s`, SLOG, LNG, EXT, QS)): "/$1/$2/$3$4",

@@ -30,7 +30,7 @@ func init() {
 
 func TestStranici_FindForDisplay(t *testing.T) {
 	str := new(Stranici)
-	if err := str.FindForDisplay(args); err != nil {
+	if err := str.FindForDisplay(*args); err != nil {
 		t.Fatalf("Error: %s", err.Error())
 	}
 	// t.Logf("Stranica: %#v", str)
@@ -41,7 +41,7 @@ func TestCelini_FindForDisplay(t *testing.T) {
 	args.Celina = "благодарност"
 	t.Logf("StraniciArgs: %#v", args)
 	cel := new(Celini)
-	if err := cel.FindForDisplay(args); err != nil {
+	if err := cel.FindForDisplay(*args); err != nil {
 		t.Fatalf("Error: %s", err.Error())
 	}
 	if cel.ID != 54 {
@@ -61,7 +61,19 @@ func TestSQLFor(t *testing.T) {
 }
 
 func TestSelectMenuItems(t *testing.T) {
-	if _, err := SelectMenuItems(args); err != nil {
+	if _, err := SelectMenuItems(*args); err != nil {
 		t.Fatalf("SelectMenuItems failed: %v", err)
 	} // else {//t.Logf("Rows: %#v", items)}
+}
+
+func TestListStranici(t *testing.T) {
+	myArgs := *args
+	myArgs.Alias = "коренъ"
+	stranici, err := ListStranici(myArgs)
+	if err != nil {
+		t.Fatalf("ListStranici failed: %v", err)
+	} // else {//t.Logf("Rows: %#v", items)}
+	if stranici[0].ID != 21 {
+		t.Fatalf("ListStranici failed: %v", "Unexpected page at index 0")
+	}
 }

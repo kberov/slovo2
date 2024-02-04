@@ -97,7 +97,7 @@ must have the given alias, readable by the given user, be in the given
 domain  and published(=2). `args` is a struct containing the arguments for
 stmt.Get. It is put together in slovo.Binder.Bind().
 */
-func (s *Stranici) FindForDisplay(args *StraniciArgs) error {
+func (s *Stranici) FindForDisplay(args StraniciArgs) error {
 	table := Record2Table(s)
 	SQL := SQLFor("GET_PAGE_FOR_DISPLAY", table)
 	// Logger.Debugf("FindForDisplay(GET_PAGE_FOR_DISPLAY) SQL:\n%s", SQL)
@@ -121,6 +121,24 @@ func (s *Stranici) TemplatePath(defaultTemplate string) string {
 		return s.Template.String
 	}
 	return defaultTemplate
+}
+
+// ListStranici returns a slice of pages which are children of the page with
+// StraniciArgs.Alias.
+func ListStranici(args StraniciArgs) (items []Stranici, err error) {
+
+	SQL := SQLFor("SELECT_CHILD_PAGES", "stranici")
+	//Logger.Debugf("ListStranici(%#v) SQL:\n%s", args, SQL)
+	stmt, err := DB().PrepareNamed(SQL)
+	if err != nil {
+		return nil, err
+	}
+
+	err = stmt.Select(&items, args)
+	if err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 type Box string
@@ -151,9 +169,9 @@ type StrMenuItem struct {
 SelectMenuItems populates a []StrMenuItem slice and returns it or an
 error from DB().
 */
-func SelectMenuItems(args *StraniciArgs) (items []StrMenuItem, err error) {
+func SelectMenuItems(args StraniciArgs) (items []StrMenuItem, err error) {
 	SQL := SQLFor("SELECT_PAGES_FOR_MAIN_MENU", "stranici")
-	//Logger.Debugf("SelectMenuItems(%#v) SQL:\n%s", args, SQL)
+	Logger.Debugf("SelectMenuItems(%#v) SQL:\n%s", args, SQL)
 	stmt, err := DB().PrepareNamed(SQL)
 	if err != nil {
 		return nil, err
@@ -220,10 +238,10 @@ type Celini struct {
 	Published   uint8
 }
 
-func (cel *Celini) FindForDisplay(args *StraniciArgs) error {
+func (cel *Celini) FindForDisplay(args StraniciArgs) error {
 	SQL := SQLFor("GET_CELINA_FOR_DISPLAY", Record2Table(cel))
 	args.Lang = args.Lang + `%`
-	Logger.Debugf("GET_CELINA_FOR_DISPLAY SQL:\n%s", SQL)
+	//Logger.Debugf("GET_CELINA_FOR_DISPLAY SQL:\n%s", SQL)
 	if stmt, err := DB().PrepareNamed(SQL); err != nil {
 		return err
 	} else {

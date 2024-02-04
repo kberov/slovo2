@@ -10,6 +10,10 @@ body.dark {
   --color-darkGrey: #888;
   --color-primary: #17c16f;
   --color-error: #ea4f4f;
+  --color-default: #fff;
+}
+body {
+  --color-default: #000;
 }
 
 body > .container {
@@ -117,11 +121,12 @@ body.dark > footer {
   background-color: #262626;
 }
 
-nav a.active, nav .tabs a.active {
-  color: var(--color-success) !important;
-  font-weight: bolder !important;
+.nav > .tabs > a.active {
+  font-weight: bold !important;
+  color: var(--color-default);
+  /* text-shadow: 1px 1px 2px var(--color-success);  */
 }
-nav .tabs a {
+.nav .tabs > a {
   padding: 0rem 1rem;
   white-space: nowrap;
 }
@@ -144,4 +149,9 @@ nav .tabs a {
 }
 @media (max-width: 700px) {
  /* TODO */
+}
+
+.блъгарьскъ {
+  font-family: Roboto;
+  font-weight: bold;
 }
