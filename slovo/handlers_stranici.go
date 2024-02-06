@@ -3,7 +3,6 @@ package slovo
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"regexp"
@@ -20,27 +19,16 @@ func straniciExecute(c echo.Context) error {
 	if err := c.Bind(args); err != nil {
 		return c.String(http.StatusBadRequest, "Грешна заявка!")
 	}
-
 	page := new(model.Stranici)
 	if err := page.FindForDisplay(*args); err != nil {
 		c.Logger().Errorf("page: %#v; error:%w; ErrType: %T; args: %#v", page, err, err, args)
 		return handleNotFound(c, args, err)
 	}
-	stash := Map{
-		"lang":       page.Language,
-		"title":      page.Title,
-		"page.Alias": page.Alias,
-		"page.ID":    spf("%d", page.ID),
-	}
-	stash["pageBody"] = pageBody(c, page, stash)
-	stash["mainMenu"] = mainMenu(c, args, stash)
-	stash["categoryPages"] = categoryPages(c, *args, stash)
-
-	return c.Render(http.StatusOK, page.TemplatePath("stranici/execute"), stash)
+	return c.Render(http.StatusOK, page.TemplatePath("stranici/execute"), buildStash(c, page, args))
 }
 
 func handleNotFound(c echo.Context, args *model.StraniciArgs, err error) error {
-	stash := Map{"lang": args.Lang, "title": "Няма такава страница!"}
+	stash := Stash{"lang": args.Lang, "title": "Няма такава страница!"}
 	if strings.Contains(err.Error(), `no rows`) {
 		stash["mainMenu"] = mainMenu(c, args, stash)
 		return c.Render(http.StatusNotFound, `not_found`, stash)
@@ -48,11 +36,42 @@ func handleNotFound(c echo.Context, args *model.StraniciArgs, err error) error {
 	return err
 }
 
+// buildStash adds all the needed tags to be replaced in template wit their
+// values. Returns the prepared stash - a map["string"]any.
+func buildStash(c echo.Context, page *model.Stranici, args *model.StraniciArgs) Stash {
+	stash := Stash{
+		"lang":       page.Language,
+		"title":      page.Title,
+		"page.Alias": page.Alias,
+		"page.ID":    spf("%d", page.ID),
+	}
+	stash["mainMenu"] = mainMenu(c, args, stash)
+	stash["pageBody"] = page.Body
+	/*
+	   TODO: Implement custom logic depending on the page.Template which has to be filled in.
+	   It has to work somehow automatically. We should not have to write new
+	   code if new template is added in the site, or maybe have a limited set
+	   of templates which can be chosen from a select<options> dropdown in the
+	   control panel and have some mechanism to bind code to templates. We
+	   actually already have it with the TagFunc concept from fasttemplate.
+	*/
+	switch page.Template.String {
+	case `stranici/templates/dom`:
+		stash["categoryPages"] = categoryPages(c, *args, stash)
+	// other cases maybe
+	// case`stranici/other/special/view`
+	default:
+		stash["categoryCelini"] = categoryCelini(c, *args, stash)
+	}
+
+	return stash
+}
+
 /*
 mainMenu returns a gledki.TagFunc which prepares and returns the HTML for
 the tag `mainMenu` in the template.
 */
-func mainMenu(c echo.Context, args *model.StraniciArgs, stash Map) gledki.TagFunc {
+func mainMenu(c echo.Context, args *model.StraniciArgs, stash Stash) gledki.TagFunc {
 	return func(w io.Writer, tag string) (int, error) {
 		items, err := model.SelectMenuItems(*args)
 		if err != nil {
@@ -71,63 +90,74 @@ func mainMenu(c echo.Context, args *model.StraniciArgs, stash Map) gledki.TagFun
 	}
 }
 
-/*
-pageBody returns a gledki.TagFunc which prepares and returns the HTML for
-the tag `pageBody` in the template.
-*/
-func pageBody(c echo.Context, page *model.Stranici, stash Map) gledki.TagFunc {
-	// TODO: Implement custom logic depending on the page.Template which has to be filled in.
-	// It has to work somehow automatically. We should not have to write new
-	// code if new template is added in the site, or maybe have a limited set
-	// of templates which can be chosen from a select<options> dropdown in the
-	// control panel.
-	return func(w io.Writer, tag string) (int, error) {
-		switch page.Template.String {
-		case `stranici/templates/dom`:
-			return w.Write([]byte(page.Body))
-		default:
-			return w.Write([]byte(page.Body))
-		}
-	}
-}
-
 // categoryPages displays the list of pages in the home page.
-func categoryPages(c echo.Context, args model.StraniciArgs, stash Map) gledki.TagFunc {
+func categoryPages(c echo.Context, args model.StraniciArgs, stash Stash) string {
 	t, ok := c.Echo().Renderer.(*EchoRenderer)
 	if !ok {
 		err := errors.New(spf("slovo2 works only with the `gledki` template engine. This is %T", c.Echo().Renderer))
 		c.Logger().Error(err)
-		return func(w io.Writer, tag string) (int, error) {
-			return 0, err
-		}
+		return ""
 	}
 
-	return func(w io.Writer, tag string) (int, error) {
-		templatePath := `stranici/_dom_item`
-		partialTemplate, err := t.Compile(templatePath)
-		if err != nil {
-			return 0, err
-		}
-		pagesBB := bytes.NewBuffer([]byte(""))
-		childrenPages, err := model.ListStranici(args)
-		if err != nil {
-			c.Logger().Error(err)
-			return w.Write(pagesBB.Bytes())
-		}
-		for _, page := range childrenPages {
-			stash := Map{
-				"id":    spf("%d", page.ID),
-				"title": page.Title,
-				"lang":  page.Language,
-				"alias": page.Alias,
-				"body":  substring(stripHTML(page.Body), 0, 220),
-			}
-			if _, err := t.FtExecStd(partialTemplate, pagesBB, stash); err != nil {
-				return 0, fmt.Errorf("Problem rendering partial template %s TagFunc: %s", partialTemplate, err.Error())
-			}
-		}
-		return w.Write(pagesBB.Bytes())
+	// File does not have directives in it self, so only LoadFile() is
+	// enough. No need to Compile().
+	templatePath := `stranici/_dom_item`
+	partialTemplate, err := t.LoadFile(templatePath)
+	if err != nil {
+		c.Logger().Error(err)
+		return ""
 	}
+	childrenPages, err := model.ListStranici(args)
+	if err != nil {
+		c.Logger().Error(err)
+		return ""
+	}
+	var view strings.Builder
+	for _, page := range childrenPages {
+		stash := Stash{
+			"id":    spf("%d", page.ID),
+			"title": page.Title,
+			"lang":  page.Language,
+			"alias": page.Alias,
+			"body":  substring(stripHTML(page.Body), 0, 220),
+		}
+		view.WriteString(t.FtExecStringStd(partialTemplate, stash))
+	}
+	return view.String()
+}
+
+// categoryCelini displays the list of celini in the respective category page.
+func categoryCelini(c echo.Context, args model.StraniciArgs, stash Stash) string {
+
+	t, ok := c.Echo().Renderer.(*EchoRenderer)
+	if !ok {
+		err := errors.New(spf("slovo2 works only with the `gledki` template engine. This is %T", c.Echo().Renderer))
+		c.Logger().Error(err)
+		return ""
+	}
+	partialT, err := t.LoadFile("stranici/_cel_item")
+	if err != nil {
+		c.Logger().Error(err)
+		return ""
+	}
+	celini, err := model.ListCelini(args)
+	if err != nil {
+		c.Logger().Error(err)
+		return ""
+	}
+	var view strings.Builder
+	for _, cel := range celini {
+		hash := Stash{
+			"id":       spf("%d", cel.ID),
+			"title":    substring(cel.Title, 0, 20) + "…",
+			"body":     substring(stripHTML(cel.Body), 0, 200),
+			"alias":    cel.Alias,
+			"strAlias": args.Alias,
+			"lang":     cel.Language,
+		}
+		view.WriteString(t.FtExecStringStd(partialT, hash))
+	}
+	return view.String()
 }
 
 var reHTML = regexp.MustCompile(`<[^>]+>`)

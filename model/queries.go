@@ -58,16 +58,17 @@ var queryTemplates = SQLMap{
 		${AND_FOR_DISPLAY}
 		)
 		`,
-	"CELINI_FOR_DISPLAY_IN_PAGE": `
-	SELECT ${columns} FROM ${table} WHERE (
-		page_id = ?	AND pid = ? and box = 'main'
+	"CELINI_FOR_LIST_IN_PAGE": `
+	SELECT id, alias, title, body, language FROM ${table} WHERE (
+		page_id = (SELECT id FROM stranici WHERE alias=:alias)
+		AND pid = (SELECT id FROM celini WHERE alias=:alias) and box = :box
 		-- find exact language or at least first part, e.g. (bg-)
-		AND (language LIKE ?)
+		AND (language LIKE :lang)
 		AND ${PERMISSIONS_ARE}
 		${AND_FOR_DISPLAY}
 	) 
 	ORDER BY featured DESC, id DESC, sorting ASC
-	LIMIT ? OFFSET ?
+	LIMIT :limit OFFSET :offset
 		`,
 	"AND_FOR_DISPLAY": `
 		AND ${table}.deleted = 0

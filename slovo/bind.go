@@ -20,7 +20,8 @@ Stranici and Celini.
 func (b *Binder) Bind(args any, c echo.Context) (err error) {
 	// Here we handle untagged fields - those which values cannot be simply got
 	// from any of the supported by [echo] tags. But we need them to make
-	// proper SQL queries.
+	// proper SQL queries. We also set default values for some potentially
+	// tagget fiedls like Limit and Offset.
 	switch t := args.(type) {
 	case *model.StraniciArgs:
 		a := t
@@ -36,6 +37,8 @@ func (b *Binder) Bind(args any, c echo.Context) (err error) {
 		// By default the main box is displayed as the main content on the
 		// rendered page.
 		a.Box = model.MainBox
+		a.Limit = 100
+		a.Offset = 0
 	//case *model.SomeOtherArgs:
 	//	a := t
 	// etc

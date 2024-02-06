@@ -21,7 +21,7 @@ func celiniExecute(c echo.Context) error {
 		log.Errorf("celina: %#v; error:%w; ErrType: %T; args: %#v", cel, err, err, args)
 		return handleNotFound(c, args, err)
 	}
-	stash := Map{
+	stash := Stash{
 		"lang":       cel.Language,
 		"title":      cel.Title,
 		"page.Alias": cel.Alias,
@@ -37,7 +37,7 @@ func celiniExecute(c echo.Context) error {
 celBody returns a gledki.TagFunc which prepares and returns the HTML for
 the tag `celBody` in the template.
 */
-func celBody(c echo.Context, cel *model.Celini, stash Map) gledki.TagFunc {
+func celBody(c echo.Context, cel *model.Celini, stash Stash) gledki.TagFunc {
 
 	// prepare different values for the stash depnding on the DataType
 	return func(w io.Writer, tag string) (int, error) {

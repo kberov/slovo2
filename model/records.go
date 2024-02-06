@@ -52,6 +52,8 @@ type StraniciArgs struct {
 	// Slovo is a multidomain CMS. Get it from c.Request().Host
 	Domain string
 	Now    int64
+	Limit  int "query:limit"
+	Offset int "query:offset"
 }
 
 // Stranici represents a Record in table stranici.
@@ -171,7 +173,7 @@ error from DB().
 */
 func SelectMenuItems(args StraniciArgs) (items []StrMenuItem, err error) {
 	SQL := SQLFor("SELECT_PAGES_FOR_MAIN_MENU", "stranici")
-	Logger.Debugf("SelectMenuItems(%#v) SQL:\n%s", args, SQL)
+	// Logger.Debugf("SelectMenuItems(%#v) SQL:\n%s", args, SQL)
 	stmt, err := DB().PrepareNamed(SQL)
 	if err != nil {
 		return nil, err
@@ -260,6 +262,25 @@ func (cel *Celini) TemplatePath(defaultTemplate string) string {
 		// TODO:define templates and behaviour for all data types
 		return celiniTemplatesDir + `writing`
 	}
+}
+
+// ListCelini returns a slice of celini which are children of the page with
+// StraniciArgs.Alias. The celina used for title of the page in the respective
+// language is `pid` for these celini.
+func ListCelini(args StraniciArgs) (items []Celini, err error) {
+
+	SQL := SQLFor("CELINI_FOR_LIST_IN_PAGE", "celini")
+	// Logger.Debugf("ListCelini(%#v) SQL:\n%s", args, SQL)
+	stmt, err := DB().PrepareNamed(SQL)
+	if err != nil {
+		return nil, err
+	}
+
+	err = stmt.Select(&items, args)
+	if err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 type Aliases struct {

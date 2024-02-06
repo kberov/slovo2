@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type Map = gledki.Stash
+type Stash = gledki.Stash
 
 var spf = fmt.Sprintf
 
@@ -36,14 +36,14 @@ func hello(c echo.Context) error {
 	c.Logger().Debugf("in hello")
 	// We can use all methods of gledki.Gledki
 	g := c.Echo().Renderer.(*EchoRenderer)
-	g.Stash = Map{
+	g.Stash = Stash{
 		"generator": "Slovo2",
 		"version":   VERSION,
 		"codename":  CODENAME,
 	}
 
 	return c.Render(200, "hello",
-		Map{
+		Stash{
 			"title":    "Здравейте!",
 			"greeting": "Добре дошли!",
 		},
