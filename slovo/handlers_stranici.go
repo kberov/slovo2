@@ -49,6 +49,7 @@ func buildStraniciStash(c echo.Context, page *model.Stranici, args *model.Strani
 		"title":      page.Title,
 		"page.Alias": page.Alias,
 		"page.ID":    spf("%d", page.ID),
+		"ogType":     "website",
 	}
 	stash["mainMenu"] = mainMenu(c, args, stash)
 	stash["pageBody"] = page.Body

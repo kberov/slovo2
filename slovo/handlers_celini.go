@@ -1,11 +1,10 @@
 package slovo
 
 import (
-	"io"
 	"net/http"
+	"regexp"
 	"time"
 
-	"github.com/kberov/gledki"
 	"github.com/kberov/slovo2/model"
 	"github.com/labstack/echo/v4"
 )
@@ -34,6 +33,7 @@ func buildCeliniStash(c echo.Context, cel *model.Celini, args *model.StraniciArg
 		"lang":       cel.Language,
 		"title":      cel.Title,
 		"page.Alias": cel.Alias,
+		"ogType":     "article",
 		"cel.ID":     spf("%d", cel.ID),
 		"UserNames":  user.FirstName + ` ` + user.LastName,
 		"CreatedAt":  created.Format(time.DateOnly),
@@ -49,15 +49,28 @@ func buildCeliniStash(c echo.Context, cel *model.Celini, args *model.StraniciArg
 celBody returns a gledki.TagFunc which prepares and returns the HTML for
 the tag `celBody` in the template.
 */
-func celBody(c echo.Context, cel *model.Celini, stash Stash) gledki.TagFunc {
-
+func celBody(c echo.Context, cel *model.Celini, stash Stash) string {
 	// prepare different values for the stash depnding on the DataType
-	return func(w io.Writer, tag string) (int, error) {
-		switch cel.DataType {
-		case model.Book:
-			return w.Write([]byte(cel.Body))
-		default:
-			return w.Write([]byte(cel.Body))
-		}
+	switch cel.DataType {
+	case model.Book:
+		return cel.Body
+	default:
+		stash["ogImage"] = ogImage(c, cel.Body)
+		return cel.Body
 	}
+}
+
+var reOgImage = regexp.MustCompile(`(?i:<img.+?src="([^"]+\.(?:png|jpe?g|webp)))"`)
+
+/*
+ogImage finds the first image tag in the celBody string and returns the value
+of its src attribute. If not found, returns an empty string
+*/
+func ogImage(c echo.Context, celBody string) string {
+	match := reOgImage.FindStringSubmatch(celBody)
+	if len(match) > 0 {
+		c.Logger().Debugf("For ogImage: %#v", match)
+		return match[1]
+	}
+	return ""
 }
