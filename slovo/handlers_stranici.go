@@ -14,6 +14,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const (
+	wrongRendererMsg = `slovo2 works only with the "gledki" template engine. This is %T`
+)
+
 func straniciExecute(c echo.Context) error {
 	args := new(model.StraniciArgs)
 	if err := c.Bind(args); err != nil {
@@ -24,10 +28,11 @@ func straniciExecute(c echo.Context) error {
 		c.Logger().Errorf("page: %#v; error:%w; ErrType: %T; args: %#v", page, err, err, args)
 		return handleNotFound(c, args, err)
 	}
-	return c.Render(http.StatusOK, page.TemplatePath("stranici/execute"), buildStash(c, page, args))
+	return c.Render(http.StatusOK, page.TemplatePath("stranici/execute"), buildStraniciStash(c, page, args))
 }
 
 func handleNotFound(c echo.Context, args *model.StraniciArgs, err error) error {
+	// TODO: I18N & L10N
 	stash := Stash{"lang": args.Lang, "title": "Няма такава страница!"}
 	if strings.Contains(err.Error(), `no rows`) {
 		stash["mainMenu"] = mainMenu(c, args, stash)
@@ -36,9 +41,9 @@ func handleNotFound(c echo.Context, args *model.StraniciArgs, err error) error {
 	return err
 }
 
-// buildStash adds all the needed tags to be replaced in template wit their
+// buildStraniciStash adds all the needed tags to be replaced in template wit their
 // values. Returns the prepared stash - a map["string"]any.
-func buildStash(c echo.Context, page *model.Stranici, args *model.StraniciArgs) Stash {
+func buildStraniciStash(c echo.Context, page *model.Stranici, args *model.StraniciArgs) Stash {
 	stash := Stash{
 		"lang":       page.Language,
 		"title":      page.Title,
@@ -48,12 +53,13 @@ func buildStash(c echo.Context, page *model.Stranici, args *model.StraniciArgs) 
 	stash["mainMenu"] = mainMenu(c, args, stash)
 	stash["pageBody"] = page.Body
 	/*
-	   TODO: Implement custom logic depending on the page.Template which has to be filled in.
-	   It has to work somehow automatically. We should not have to write new
-	   code if new template is added in the site, or maybe have a limited set
-	   of templates which can be chosen from a select<options> dropdown in the
-	   control panel and have some mechanism to bind code to templates. We
-	   actually already have it with the TagFunc concept from fasttemplate.
+	   TODO: when needed, implement custom logic depending on the page.Template
+	   which has to be filled in.  It has to work somehow automatically. We
+	   should not have to write new code if new template is added in the site,
+	   or maybe have a limited set of templates which can be chosen from a
+	   select<options> dropdown in the control panel and have some mechanism to
+	   bind code to templates. We actually already have it with the TagFunc
+	   concept from fasttemplate.
 	*/
 	switch page.Template.String {
 	case `stranici/templates/dom`:
@@ -63,7 +69,6 @@ func buildStash(c echo.Context, page *model.Stranici, args *model.StraniciArgs) 
 	default:
 		stash["categoryCelini"] = categoryCelini(c, *args, stash)
 	}
-
 	return stash
 }
 
@@ -94,7 +99,7 @@ func mainMenu(c echo.Context, args *model.StraniciArgs, stash Stash) gledki.TagF
 func categoryPages(c echo.Context, args model.StraniciArgs, stash Stash) string {
 	t, ok := c.Echo().Renderer.(*EchoRenderer)
 	if !ok {
-		err := errors.New(spf("slovo2 works only with the `gledki` template engine. This is %T", c.Echo().Renderer))
+		err := errors.New(spf(wrongRendererMsg, c.Echo().Renderer))
 		c.Logger().Error(err)
 		return ""
 	}
@@ -131,7 +136,7 @@ func categoryCelini(c echo.Context, args model.StraniciArgs, stash Stash) string
 
 	t, ok := c.Echo().Renderer.(*EchoRenderer)
 	if !ok {
-		err := errors.New(spf("slovo2 works only with the `gledki` template engine. This is %T", c.Echo().Renderer))
+		err := errors.New(spf(wrongRendererMsg, c.Echo().Renderer))
 		c.Logger().Error(err)
 		return ""
 	}
@@ -147,13 +152,20 @@ func categoryCelini(c echo.Context, args model.StraniciArgs, stash Stash) string
 	}
 	var view strings.Builder
 	for _, cel := range celini {
+		title := ""
+		if utf8.RuneCountInString(cel.Title) > 26 {
+			title = substring(cel.Title, 0, 26) + "…"
+		} else {
+			title = cel.Title
+		}
 		hash := Stash{
-			"id":       spf("%d", cel.ID),
-			"title":    substring(cel.Title, 0, 20) + "…",
-			"body":     substring(stripHTML(cel.Body), 0, 200),
-			"alias":    cel.Alias,
-			"strAlias": args.Alias,
-			"lang":     cel.Language,
+			"id":        spf("%d", cel.ID),
+			"title":     title,
+			"fullTitle": cel.Title,
+			"body":      substring(stripHTML(cel.Body), 0, 200) + "…",
+			"alias":     cel.Alias,
+			"strAlias":  args.Alias,
+			"lang":      cel.Language,
 		}
 		view.WriteString(t.FtExecStringStd(partialT, hash))
 	}

@@ -3,6 +3,7 @@ package slovo
 import (
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/kberov/gledki"
 	"github.com/kberov/slovo2/model"
@@ -21,16 +22,27 @@ func celiniExecute(c echo.Context) error {
 		log.Errorf("celina: %#v; error:%w; ErrType: %T; args: %#v", cel, err, err, args)
 		return handleNotFound(c, args, err)
 	}
+	return c.Render(http.StatusOK, cel.TemplatePath("celini/note"), buildCeliniStash(c, cel, args))
+}
+
+func buildCeliniStash(c echo.Context, cel *model.Celini, args *model.StraniciArgs) Stash {
+	user := new(model.Users)
+	model.GetByID(user, cel.UserID)
+	created := time.Unix(int64(cel.CreatedAt), 0)
+	tstmp := time.Unix(int64(cel.Tstamp), 0)
 	stash := Stash{
 		"lang":       cel.Language,
 		"title":      cel.Title,
 		"page.Alias": cel.Alias,
 		"cel.ID":     spf("%d", cel.ID),
+		"UserNames":  user.FirstName + ` ` + user.LastName,
+		"CreatedAt":  created.Format(time.DateOnly),
+		"Tstamp":     tstmp.Format(time.DateOnly),
 	}
-	stash["celBody"] = celBody(c, cel, stash)
 	stash["mainMenu"] = mainMenu(c, args, stash)
+	stash["celBody"] = celBody(c, cel, stash)
 
-	return c.Render(http.StatusOK, cel.TemplatePath("celini/note"), stash)
+	return stash
 }
 
 /*
