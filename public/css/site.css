@@ -1,3 +1,4 @@
+@import "fonts.css";
 /*This is the CSS from chota site https://jenil.github.io/chota/. Our custom styles are at the bottom. */
 /* stylelint-disable color-function-notation */
 /* stylelint-disable length-zero-no-unit */
@@ -97,19 +98,34 @@ code {
 
 /* ==================================== */
 /* Custom styles for slovo2 start here. */
-body>header, body>footer {
+:root
+{
+  --border-radius: 10px;
+  --color-success: #23FF04;
+  --grid-maxWidth: 86rem;
+}
+
+* {
+  scrollbar-width: auto;
+  scrollbar-color: var(--color-lightGrey) var(--color-darkGrey);
+}
+
+body > header, body > footer {
   --box-shadow: 0 0.1em 0.5em var(--color-darkGrey);
   z-index: 1;
   margin: 0;
   /* offset-x | offset-y | blur-radius | color */
   box-shadow: var(--box-shadow);
 }
-body>header {
+
+body > header {
   top: 0
 }
-body>footer {
+
+body > footer {
   bottom: 0
 }
+
 body > header.nav,
 body > footer.nav {
   background-color: #fafafa;
@@ -118,7 +134,7 @@ body > footer.nav {
 
 body.dark > header,
 body.dark > footer {
-  background-color: #262626;
+  background-color: #111;
 }
 
 .nav > .tabs > a.active {
@@ -126,6 +142,7 @@ body.dark > footer {
   color: var(--color-default);
   /* text-shadow: 1px 1px 2px var(--color-success);  */
 }
+
 .nav .tabs > a {
   padding: 0rem 1rem;
   white-space: nowrap;
@@ -136,6 +153,7 @@ body.dark > footer {
     padding-top: 20rem;
   }
 }
+
 @media (max-width: 480px) {
   section.stranici, section.celini {
     padding-top: 15rem;
@@ -147,11 +165,14 @@ body.dark > footer {
     padding-top: 19rem;
   }
 }
+
 @media (max-width: 700px) {
  /* TODO */
 }
 
+/*
 .блъгарьскъ {
   font-family: Roboto;
   font-weight: bold;
 }
+*/

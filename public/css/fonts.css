@@ -1,0 +1,59 @@
+@charset "utf-8";
+
+/* Veleka2 (Serif) */
+@font-face {
+	font-family: 'Veleka';
+	src: url('/fonts/veleka2-regular-01.woff2') format('woff2');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+    font-family: 'FreeSerif';
+    src: url('/fonts/freeserif-webfont.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Sans */
+@font-face {
+	font-family: 'FreeSans';
+	src: url('/fonts/freesans-webfont.woff2') format('woff2');
+	font-weight: normal;
+	font-style: normal;
+}
+
+/* Mono */
+@font-face {
+	font-family: 'FreeMono';
+	src: url('/fonts/freemono-webfont.woff2') format('woff2');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+    font-family: 'BukyvedeRegular';
+    src: url('/fonts/bukyvede-regular-webfont.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Generic font styles 
+body {
+ font-family: BukyvedeRegular, FreeSans, sans-serif;
+}
+
+header {
+    font-family: BukyvedeRegular;
+    font-weight: bolder;
+}
+*/
+
+body section{
+    font-family: Veleka, FreeSerif, serif;
+}
+
+.блъгарьскъ {
+    font-family: BukyvedeRegular;
+    font-weight: bold;
+}
