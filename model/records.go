@@ -3,6 +3,8 @@ package model
 import (
 	"database/sql"
 	"strings"
+
+	"github.com/jmoiron/sqlx"
 )
 
 // Domove is a records from table domove.
@@ -99,16 +101,15 @@ must have the given alias, readable by the given user, be in the given
 domain  and published(=2). `args` is a struct containing the arguments for
 stmt.Get. It is put together in slovo.Binder.Bind().
 */
-func (s *Stranici) FindForDisplay(args StraniciArgs) error {
+func (s *Stranici) FindForDisplay(args StraniciArgs) (err error) {
 	table := Record2Table(s)
 	SQL := SQLFor("GET_PAGE_FOR_DISPLAY", table)
-	// Logger.Debugf("FindForDisplay(GET_PAGE_FOR_DISPLAY) SQL:\n%s", SQL)
-
-	if stmt, err := DB().PrepareNamed(SQL); err != nil {
+	// Logger.Debugf("args: %#v FindForDisplay(GET_PAGE_FOR_DISPLAY) SQL:\n%s", args, SQL)
+	var stmt *sqlx.NamedStmt
+	if stmt, err = DB().PrepareNamed(SQL); err != nil {
 		return err
-	} else {
-		return stmt.Get(s, args)
 	}
+	return stmt.Get(s, args)
 }
 
 // IsDir returns true if the permissions field starts with `d`.
@@ -127,20 +128,17 @@ func (s *Stranici) TemplatePath(defaultTemplate string) string {
 
 // ListStranici returns a slice of pages which are children of the page with
 // StraniciArgs.Alias.
-func ListStranici(args StraniciArgs) (items []Stranici, err error) {
+func ListStranici(args StraniciArgs) (items []Stranici) {
 
 	SQL := SQLFor("SELECT_CHILD_PAGES", "stranici")
 	//Logger.Debugf("ListStranici(%#v) SQL:\n%s", args, SQL)
-	stmt, err := DB().PrepareNamed(SQL)
-	if err != nil {
-		return nil, err
-	}
 
-	err = stmt.Select(&items, args)
-	if err != nil {
-		return nil, err
+	if stmt, err := DB().PrepareNamed(SQL); err != nil {
+		Logger.Panicf(`error from ListStranici/PrepareNamed(SQL):%v; args: %#v`, err, args)
+	} else if err = stmt.Select(&items, args); err != nil {
+		Logger.Panicf(`error from ListStranici/Select(&items, args):%v; args: %#v`, err, args)
 	}
-	return items, nil
+	return
 }
 
 type Box string
@@ -171,18 +169,15 @@ type StrMenuItem struct {
 SelectMenuItems populates a []StrMenuItem slice and returns it or an
 error from DB().
 */
-func SelectMenuItems(args StraniciArgs) (items []StrMenuItem, err error) {
+func SelectMenuItems(args StraniciArgs) (items []StrMenuItem) {
 	SQL := SQLFor("SELECT_PAGES_FOR_MAIN_MENU", "stranici")
 	// Logger.Debugf("SelectMenuItems(%#v) SQL:\n%s", args, SQL)
-	stmt, err := DB().PrepareNamed(SQL)
-	if err != nil {
-		return nil, err
+	if stmt, err := DB().PrepareNamed(SQL); err != nil {
+		Logger.Panicf(`error from SelectMenuItems/PrepareNamed(SQL):%v; args: %#v`, err, args)
+	} else if err = stmt.Select(&items, args); err != nil {
+		Logger.Panicf(`error from SelectMenuItems/Select(&items, args):%v; args: %#v`, err, args)
 	}
-	err = stmt.Select(&items, args)
-	if err != nil {
-		return nil, err
-	}
-	return items, nil
+	return items
 }
 
 // IsDir returns true if the permissions field starts with `d`.
@@ -267,20 +262,16 @@ func (cel *Celini) TemplatePath(defaultTemplate string) string {
 // ListCelini returns a slice of celini which are children of the page with
 // StraniciArgs.Alias. The celina used for title of the page in the respective
 // language is `pid` for these celini.
-func ListCelini(args StraniciArgs) (items []Celini, err error) {
-
+func ListCelini(args StraniciArgs) (items []Celini) {
 	SQL := SQLFor("CELINI_FOR_LIST_IN_PAGE", "celini")
 	// Logger.Debugf("ListCelini(%#v) SQL:\n%s", args, SQL)
-	stmt, err := DB().PrepareNamed(SQL)
-	if err != nil {
-		return nil, err
-	}
 
-	err = stmt.Select(&items, args)
-	if err != nil {
-		return nil, err
+	if stmt, err := DB().PrepareNamed(SQL); err != nil {
+		Logger.Panicf("error from model.ListStranici/PrepareNamed(SQL): %v", err)
+	} else if err = stmt.Select(&items, args); err != nil {
+		Logger.Panicf("error from model.ListStranici/Select(&items, args): %v", err)
 	}
-	return items, nil
+	return items
 }
 
 type Aliases struct {

@@ -61,19 +61,32 @@ func TestSQLFor(t *testing.T) {
 }
 
 func TestSelectMenuItems(t *testing.T) {
-	if _, err := SelectMenuItems(*args); err != nil {
-		t.Fatalf("SelectMenuItems failed: %v", err)
-	} // else {//t.Logf("Rows: %#v", items)}
+	_ = SelectMenuItems(*args)
+	errargs := *args
+	errargs.Pub = 1
+	if items := SelectMenuItems(errargs); len(items) == 0 {
+		t.Logf("expected no menuitems")
+	} else {
+		t.Fatalf("something terribly wrong (Unexpected items): %#v", items)
+	}
 }
 
 func TestListStranici(t *testing.T) {
 	myArgs := *args
 	myArgs.Alias = "коренъ"
-	stranici, err := ListStranici(myArgs)
-	if err != nil {
-		t.Fatalf("ListStranici failed: %v", err)
-	} // else {//t.Logf("Rows: %#v", items)}
+	stranici := ListStranici(myArgs)
 	if stranici[0].ID != 21 {
 		t.Fatalf("ListStranici failed: %v", "Unexpected page at index 0")
 	}
+}
+
+func expectPanic(t *testing.T, f func()) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatalf("MISSING PANIC")
+		} else {
+			t.Log(r)
+		}
+	}()
+	f()
 }

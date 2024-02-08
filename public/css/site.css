@@ -130,6 +130,7 @@ body > header.nav,
 body > footer.nav {
   background-color: #fafafa;
   min-height: 3rem;
+  overflow-x: auto;
 }
 
 body.dark > header,
@@ -150,22 +151,21 @@ body.dark > footer {
 
 @media (max-width: 412px) {
   section.stranici, section.celini {
-    padding-top: 20rem;
-  }
-}
-
-@media (max-width: 480px) {
-  section.stranici, section.celini {
-    padding-top: 15rem;
+    padding-top: 11rem;
   }
 }
 
 @media (max-width: 459px) {
   section.stranici, section.celini {
-    padding-top: 19rem;
+    padding-top: 10rem;
   }
 }
 
+@media (max-width: 480px) {
+  section.stranici, section.celini {
+    padding-top: 12rem;
+  }
+}
 @media (max-width: 700px) {
  /* TODO */
 }

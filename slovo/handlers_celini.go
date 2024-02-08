@@ -14,6 +14,7 @@ func celiniExecute(c echo.Context) error {
 	log := c.Logger()
 	args := new(model.StraniciArgs)
 	if err := c.Bind(args); err != nil {
+		log.Errorf("bad request: %v; args: args", err)
 		return c.String(http.StatusBadRequest, "Грешна заявка!")
 	}
 	cel := new(model.Celini)

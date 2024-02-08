@@ -13,23 +13,6 @@ import (
 	"github.com/valyala/fasttemplate"
 )
 
-// import "github.com/jmoiron/sqlx"
-
-/*
-ModelI is an interface - a table. It must be implemented by all table representations. We will
-generate them from the existing database.
-type ModelI interface {
-	Migrate() error
-	Create(data Record) (*Record, error)
-	All(where string, limit int, offset int) (Record, error)
-	GetBy(where string) (*Record, error)
-	GetById(id int64) (*Record, error)
-	Update(id int64, updated Record) (*Record, error)
-	Delete(id int64) error
-	Data() *Record
-}
-*/
-
 const defaultLogHeader = `${prefix}:${time_rfc3339}:${level}:${short_file}:${line}`
 
 // Logger must be instantiated before using any function from this package.

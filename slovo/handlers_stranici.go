@@ -1,15 +1,11 @@
 package slovo
 
 import (
-	"bytes"
-	"errors"
-	"io"
 	"net/http"
 	"regexp"
 	"strings"
 	"unicode/utf8"
 
-	"github.com/kberov/gledki"
 	"github.com/kberov/slovo2/model"
 	"github.com/labstack/echo/v4"
 )
@@ -25,7 +21,7 @@ func straniciExecute(c echo.Context) error {
 	}
 	page := new(model.Stranici)
 	if err := page.FindForDisplay(*args); err != nil {
-		c.Logger().Errorf("page: %#v; error:%w; ErrType: %T; args: %#v", page, err, err, args)
+		c.Logger().Errorf("%v; ErrType: %T; args: %#v", err, err, args)
 		return handleNotFound(c, args, err)
 	}
 	return c.Render(http.StatusOK, page.TemplatePath("stranici/execute"), buildStraniciStash(c, page, args))
@@ -41,7 +37,7 @@ func handleNotFound(c echo.Context, args *model.StraniciArgs, err error) error {
 	return err
 }
 
-// buildStraniciStash adds all the needed tags to be replaced in template wit their
+// buildStraniciStash adds all the needed tags to be replaced in template with their
 // values. Returns the prepared stash - a map["string"]any.
 func buildStraniciStash(c echo.Context, page *model.Stranici, args *model.StraniciArgs) Stash {
 	stash := Stash{
@@ -77,93 +73,51 @@ func buildStraniciStash(c echo.Context, page *model.Stranici, args *model.Strani
 mainMenu returns a gledki.TagFunc which prepares and returns the HTML for
 the tag `mainMenu` in the template.
 */
-func mainMenu(c echo.Context, args *model.StraniciArgs, stash Stash) gledki.TagFunc {
-	return func(w io.Writer, tag string) (int, error) {
-		items, err := model.SelectMenuItems(*args)
-		if err != nil {
-			c.Logger().Errorf(`error from model.SelectMenuItems: %w`, err)
-			return w.Write([]byte("error retrieving items... see log for details"))
+func mainMenu(c echo.Context, args *model.StraniciArgs, stash Stash) string {
+	var html strings.Builder
+	for _, p := range model.SelectMenuItems(*args) {
+		class := ""
+		if p.Alias == stash["page.Alias"] {
+			class = `class="active" `
 		}
-		html := bytes.NewBuffer([]byte(""))
-		for _, p := range items {
-			class := ""
-			if p.Alias == stash["page.Alias"] {
-				class = `class="active" `
-			}
-			html.WriteString(spf(`<a %shref="/%s.%s.html">%s</a>`, class, p.Alias, p.Language, p.Title))
-		}
-		return w.Write(html.Bytes())
+		html.WriteString(spf(`<a %shref="/%s.%s.html">%s</a>`, class, p.Alias, p.Language, p.Title))
 	}
+	return html.String()
 }
 
 // categoryPages displays the list of pages in the home page.
 func categoryPages(c echo.Context, args model.StraniciArgs, stash Stash) string {
-	t, ok := c.Echo().Renderer.(*EchoRenderer)
-	if !ok {
-		err := errors.New(spf(wrongRendererMsg, c.Echo().Renderer))
-		c.Logger().Error(err)
-		return ""
-	}
+	t, _ := c.Echo().Renderer.(*EchoRenderer)
 
 	// File does not have directives in it self, so only LoadFile() is
 	// enough. No need to Compile().
-	templatePath := `stranici/_dom_item`
-	partialTemplate, err := t.LoadFile(templatePath)
-	if err != nil {
-		c.Logger().Error(err)
-		return ""
-	}
-	childrenPages, err := model.ListStranici(args)
-	if err != nil {
-		c.Logger().Error(err)
-		return ""
-	}
+	partial := t.MustLoadFile(`stranici/_dom_item`)
 	var view strings.Builder
-	for _, page := range childrenPages {
+	for _, page := range model.ListStranici(args) {
 		stash := Stash{
 			"id":    spf("%d", page.ID),
 			"title": page.Title,
 			"lang":  page.Language,
 			"alias": page.Alias,
-			"body":  substring(stripHTML(page.Body), 0, 220),
+			"body":  substringWithTail(stripHTML(page.Body), 0, 220, ` …`),
 		}
-		view.WriteString(t.FtExecStringStd(partialTemplate, stash))
+		view.WriteString(t.FtExecStringStd(partial, stash))
 	}
 	return view.String()
 }
 
 // categoryCelini displays the list of celini in the respective category page.
 func categoryCelini(c echo.Context, args model.StraniciArgs, stash Stash) string {
+	t, _ := c.Echo().Renderer.(*EchoRenderer)
 
-	t, ok := c.Echo().Renderer.(*EchoRenderer)
-	if !ok {
-		err := errors.New(spf(wrongRendererMsg, c.Echo().Renderer))
-		c.Logger().Error(err)
-		return ""
-	}
-	partialT, err := t.LoadFile("stranici/_cel_item")
-	if err != nil {
-		c.Logger().Error(err)
-		return ""
-	}
-	celini, err := model.ListCelini(args)
-	if err != nil {
-		c.Logger().Error(err)
-		return ""
-	}
+	partialT := t.MustLoadFile("stranici/_cel_item")
 	var view strings.Builder
-	for _, cel := range celini {
-		title := ""
-		if utf8.RuneCountInString(cel.Title) > 26 {
-			title = substring(cel.Title, 0, 26) + "…"
-		} else {
-			title = cel.Title
-		}
+	for _, cel := range model.ListCelini(args) {
 		hash := Stash{
 			"id":        spf("%d", cel.ID),
-			"title":     title,
+			"title":     substringWithTail(cel.Title, 0, 24, `…`),
 			"fullTitle": cel.Title,
-			"body":      substring(stripHTML(cel.Body), 0, 200) + "…",
+			"body":      substring(stripHTML(cel.Body), 0, 200) + " …",
 			"alias":     cel.Alias,
 			"strAlias":  args.Alias,
 			"lang":      cel.Language,
@@ -194,4 +148,15 @@ func substring(expr string, offset uint, length uint) string {
 		return expr
 	}
 	return string([]rune(expr)[offset:length])
+}
+
+/*
+substringWithTail does the same as substring, but adds a tail string in case
+the input string was longer than the output string.
+*/
+func substringWithTail(expr string, offset uint, length uint, tail string) string {
+	if utf8.RuneCountInString(expr) > int(length) {
+		return substring(expr, offset, length) + tail
+	}
+	return expr
 }

@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-const VERSION = "2024.02.08"
+const VERSION = "2024.02.09"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 
 func initEcho(logger *log.Logger) *echo.Echo {
@@ -35,7 +35,9 @@ func initEcho(logger *log.Logger) *echo.Echo {
 	e.Pre(middleware.RewriteWithConfig(Cfg.RewriteConfig))
 	// Request ID middleware generates a unique id for a request.
 	e.Use(middleware.RequestID())
-	e.Static(Cfg.EchoStatic.Prefix, Cfg.EchoStatic.Root)
+	e.Static(Cfg.EchoStatic.Prefix+`css`, Cfg.EchoStatic.Root+`/css`)
+	e.Static(Cfg.EchoStatic.Prefix+`fonts`, Cfg.EchoStatic.Root+`/fonts`)
+	e.Static(Cfg.EchoStatic.Prefix+`img`, Cfg.EchoStatic.Root+`/img`)
 	// TODO add Validator  and other needed stugff. See
 	// https://echo.labstack.com/docs/customization
 	// e.GET("/", hello)...
