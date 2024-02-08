@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-const VERSION = "2024.01.30"
+const VERSION = "2024.02.08"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 
 func initEcho(logger *log.Logger) *echo.Echo {
@@ -75,7 +75,7 @@ func loadRoutes(e *echo.Echo) {
 }
 
 func ServeCGI(logger *log.Logger) {
-	logger.Debug("in slovo.ServeCGI()")
+	// logger.Debug("in slovo.ServeCGI()")
 	e := initEcho(logger)
 	if err := cgi.Serve(e); err != nil {
 		e.Logger.Fatal(err)
@@ -83,7 +83,7 @@ func ServeCGI(logger *log.Logger) {
 }
 
 func Serve(logger *log.Logger) {
-	logger.Debugf("in slovo.Serve() We will Serve(%s)", Cfg.Serve.Location)
+	// logger.Debugf("in slovo.Serve() We will Serve(%s)", Cfg.Serve.Location)
 	e := initEcho(logger)
 	logger.Fatal(e.Start(Cfg.Serve.Location))
 }

@@ -73,9 +73,9 @@ var rootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	Logger.Debug("in cmd.Execute")
+	// Logger.Debug("in cmd.Execute")
 	if os.Getenv("GATEWAY_INTERFACE") == "CGI/1.1" {
-		Logger.Debug("in cmd.Execute GATEWAY_INTERFACE")
+		// Logger.Debug("in cmd.Execute GATEWAY_INTERFACE")
 		os.Args = []string{os.Args[0], "cgi"}
 		if cgiCmd.Execute() != nil {
 			os.Exit(1)
@@ -122,5 +122,5 @@ func rootInitConfig() {
 			Logger.Warnf("error loading config file: %v. Using slovo.DefaultConfig.", err)
 		}
 	}
-	Logger.Debug("in root.go/rootInitConfig()")
+	// Logger.Debug("in root.go/rootInitConfig()")
 }

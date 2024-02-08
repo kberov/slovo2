@@ -6,7 +6,9 @@ Copyright © 2024 Красимир Беров
 package cmd
 
 import (
+	"net/url"
 	"os"
+	"strings"
 
 	"github.com/kberov/slovo2/slovo"
 	"github.com/spf13/cobra"
@@ -17,12 +19,15 @@ var cgiCmd = &cobra.Command{
 	Use:   "cgi",
 	Short: "Run Slovo as a CGI script.",
 	Long: `This command will be executed automatically if the GATEWAY_INTERFACE
-environment variable is set.`,
+environment variable is set. In other words Slovo2 autodetects from the
+environment if it is invoked by a web server like Apache or as a commandline
+application. Of cource this is how we cheat Slovo2 to test it on the command
+line.`,
 	// I had to move init* functions here to make sure that only the parent and
 	// respective command's init* are run.
 	PreRun: func(cmd *cobra.Command, args []string) {
 		cgiInitConfig()
-		Logger.Debugf("cgiCmd.PreRun(cgiCmd): args: %v", args)
+		// Logger.Debugf("cgiCmd.PreRun(cgiCmd): args: %v", args)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		slovo.ServeCGI(Logger)
@@ -62,8 +67,9 @@ func init() {
 }
 
 func cgiInitConfig() {
-	// TODO
-	Logger.Debugf("in cgiCmd.cgiInitConfig()")
+	if os.Getenv("GATEWAY_INTERFACE") == "CGI/1.1" {
+		return
+	}
 
 	// minimum ENV values for emulating a CGI request on the command line
 	var env = map[string]string{
@@ -74,7 +80,7 @@ func cgiInitConfig() {
 		//"HTTP_USER_AGENT":     "slovo2client",
 		"HTTP_ACCEPT_CHARSET": slovo.Cfg.ServeCGI.HTTP_ACCEPT_CHARSET,
 		// "HTTP_FOO_BAR":    "baz",
-		"REQUEST_URI": slovo.Cfg.ServeCGI.REQUEST_URI,
+		"REQUEST_URI": escapeRequestURI(slovo.Cfg.ServeCGI.REQUEST_URI),
 		// "CONTENT_LENGTH":  "123",
 		"CONTENT_TYPE": slovo.Cfg.ServeCGI.CONTENT_TYPE,
 		// "REMOTE_ADDR":     "5.6.7.8",
@@ -82,8 +88,20 @@ func cgiInitConfig() {
 	}
 	for k, v := range env {
 		if os.Getenv(k) == "" {
-			Logger.Debugf("Setting %s: %s", k, v)
+			// Logger.Debugf("Setting %s: %s", k, v)
 			os.Setenv(k, v)
 		}
 	}
+}
+
+// escapeRequestURI escapes the passed on the commandline address as if a user
+// agent did it.
+func escapeRequestURI(uri string) string {
+	uri, _ = strings.CutPrefix(uri, `/`)
+	parts := strings.Split(uri, `/`)
+	uri = ""
+	for _, p := range parts {
+		uri += `/` + url.PathEscape(p)
+	}
+	return uri
 }

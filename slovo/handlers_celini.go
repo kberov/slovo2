@@ -10,7 +10,7 @@ import (
 )
 
 func celiniExecute(c echo.Context) error {
-	c.Logger().Debugf("in celiniExecute")
+	// c.Logger().Debugf("in celiniExecute")
 	log := c.Logger()
 	args := new(model.StraniciArgs)
 	if err := c.Bind(args); err != nil {
@@ -69,7 +69,6 @@ of its src attribute. If not found, returns an empty string
 func ogImage(c echo.Context, celBody string) string {
 	match := reOgImage.FindStringSubmatch(celBody)
 	if len(match) > 0 {
-		c.Logger().Debugf("For ogImage: %#v", match)
 		return match[1]
 	}
 	return ""

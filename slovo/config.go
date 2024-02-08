@@ -2,7 +2,6 @@ package slovo
 
 import (
 	"net/http"
-	"net/url"
 	"regexp"
 
 	"github.com/labstack/echo/v4"
@@ -18,7 +17,7 @@ const ANY = "ANY"
 // letter, dash or underscore.
 // Note! REQUEST_URI is url-escaped at this time. We currently use Skipper to
 // unnescape the raw RequestURI.
-const SLOG = `([\pL\-_]+)`
+const SLOG = `([\pL\-_\d]+)`
 
 // LNG is a regular expression for language notation.
 const LNG = `((?:[a-z]{2}-[a-z]{2})|[a-z]{2})`
@@ -91,8 +90,10 @@ type ServeConfig struct {
 // ServeCGIConfig contains minimum ENV values for emulating a CGI request on
 // the command line. See https://www.rfc-editor.org/rfc/rfc3875
 type ServeCGIConfig struct {
-	HTTP_HOST           string
-	REQUEST_METHOD      string
+	HTTP_HOST      string
+	REQUEST_METHOD string
+	// SERVER_PROTOCOL used in CGI environment - HTTP/1.1. Recuired variable by
+	// the cgi Go module.
 	SERVER_PROTOCOL     string
 	REQUEST_URI         string
 	HTTP_ACCEPT_CHARSET string
@@ -149,13 +150,12 @@ func init() {
 			// TODO: think how to assign this function when parsing yaml. We
 			// need some custom unmarshaller.
 			Skipper: func(c echo.Context) bool {
-				req := c.Request()
-				escapedURI, err := url.PathUnescape(req.RequestURI)
-				if err != nil {
-					c.Logger().Warnf("error unescaping path: %w", err)
-					return false
-				}
-				req.RequestURI = escapedURI
+				// req.RequestURI is used by middleware#rewriteURL, but in CGI
+				// environment it seems to be empty. So here we populate it
+				// from URL.Path. And we do it unconditionally because
+				// RequestURI is still escaped and cannot mach any of our
+				// regexes.
+				c.Request().RequestURI = c.Request().URL.Path
 				return false
 			},
 			RegexRules: map[*regexp.Regexp]string{

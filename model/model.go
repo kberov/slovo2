@@ -87,7 +87,7 @@ func DB() *sqlx.DB {
 	if global != nil {
 		return global
 	}
-	Logger.Debug("database:", DSN)
+	// Logger.Debug("database:", DSN)
 
 	global = sqlx.MustConnect("sqlite3", DSN)
 	global.MapperFunc(util.CamelToSnakeCase)
