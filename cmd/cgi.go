@@ -20,9 +20,8 @@ var cgiCmd = &cobra.Command{
 	Short: "Run Slovo as a CGI script.",
 	Long: `This command will be executed automatically if the GATEWAY_INTERFACE
 environment variable is set. In other words Slovo2 autodetects from the
-environment if it is invoked by a web server like Apache or as a commandline
-application. Of cource this is how we cheat Slovo2 to test it on the command
-line.`,
+environment, if it is invoked by a web server like Apache or as a commandline
+application. Also this is how we cheat Slovo2 to test it on the command line.`,
 	// I had to move init* functions here to make sure that only the parent and
 	// respective command's init* are run.
 	PreRun: func(cmd *cobra.Command, args []string) {

@@ -42,8 +42,10 @@ type Config struct {
 	Routes []Route
 	// Arguments for GledkiRenderer
 	Renderer RendererConfig
-	// Directory for static content. For example e.Static("/","public").
-	EchoStatic    EchoStaticConfig
+	// Directories for static content. For example request to /css/site.css
+	// will be served from public/css/site.css.
+	// `e.Static("/css","public/css").`
+	StaticRoutes  []StaticRoute
 	DB            DBConfig
 	RewriteConfig middleware.RewriteConfig
 }
@@ -53,7 +55,8 @@ type DBConfig struct {
 	Tables []string
 }
 
-type EchoStaticConfig struct {
+// StaticRoute describes a file path which will be served by echo.
+type StaticRoute struct {
 	Prefix string
 	Root   string
 }
@@ -170,6 +173,7 @@ func init() {
 				// Страница	            /:stranica/:lang/:ext
 				regexp.MustCompile(spf(`^/%s\.%s%s`, SLOG, EXT, QS)):          "/$1/bg/$2$3",
 				regexp.MustCompile(spf(`^/%s\.%s\.%s%s`, SLOG, LNG, EXT, QS)): "/$1/$2/$3$4",
+
 				// Целина      /:stranica/:celina/:lang/:ext
 				// for now we have content only in bulgarian
 				regexp.MustCompile(spf(`^/%s/%s\.%s%s`, SLOG, SLOG, EXT, QS)):          "/$1/$2/bg/$3$4",
@@ -185,9 +189,11 @@ func init() {
 			// Should the files be loaded at start?
 			LoadFiles: false,
 		},
-		EchoStatic: EchoStaticConfig{
-			Prefix: "/",
-			Root:   "public",
+		// Static files routes to be seved by echo.
+		StaticRoutes: []StaticRoute{
+			StaticRoute{Prefix: "/css", Root: "public/css"},
+			StaticRoute{Prefix: "/fonts", Root: "public/fonts"},
+			StaticRoute{Prefix: "/img", Root: "public/img"},
 		},
 		DB: DBConfig{
 			DSN: "data/slovo.dev.sqlite",

@@ -35,9 +35,10 @@ func initEcho(logger *log.Logger) *echo.Echo {
 	e.Pre(middleware.RewriteWithConfig(Cfg.RewriteConfig))
 	// Request ID middleware generates a unique id for a request.
 	e.Use(middleware.RequestID())
-	e.Static(Cfg.EchoStatic.Prefix+`css`, Cfg.EchoStatic.Root+`/css`)
-	e.Static(Cfg.EchoStatic.Prefix+`fonts`, Cfg.EchoStatic.Root+`/fonts`)
-	e.Static(Cfg.EchoStatic.Prefix+`img`, Cfg.EchoStatic.Root+`/img`)
+	// Add directories in which the files will be served as they are.
+	for _, path := range Cfg.StaticRoutes {
+		e.Static(path.Prefix, path.Root)
+	}
 	// TODO add Validator  and other needed stugff. See
 	// https://echo.labstack.com/docs/customization
 	// e.GET("/", hello)...
