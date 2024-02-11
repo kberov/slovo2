@@ -29,9 +29,6 @@ import (
 	"os"
 
 	"github.com/kberov/slovo2/slovo"
-	"github.com/knadh/koanf/parsers/yaml"
-	"github.com/knadh/koanf/providers/file"
-	"github.com/knadh/koanf/v2"
 	"github.com/labstack/gommon/log"
 	"github.com/spf13/cobra"
 )
@@ -40,12 +37,6 @@ import (
 // See possible placeholders in  github.com/labstack/gommon@v0.4.2/log/log.go function log()
 // See https://echo.labstack.com/docs/customization
 const defaultLogHeader = `${prefix}:${level}:${short_file}:${line}`
-
-// Global koanf instance. Use . as the key path delimiter. This can be / or anything.
-var (
-	k      = koanf.New(".")
-	parser = yaml.Parser()
-)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -117,10 +108,8 @@ func rootInitConfig() {
 	}
 	// TODO: Try to Load YAML config if cfgFile != slovo.Cfg.ConfigFile - default value
 	// if slovo.Cfg.ConfigFile....
-	if cfgFile != slovo.Cfg.ConfigFile {
-		if err := k.Load(file.Provider(cfgFile), parser); err != nil {
-			Logger.Warnf("error loading config file: %v. Using slovo.DefaultConfig.", err)
-		}
-	}
+	// if cfgFile != slovo.Cfg.ConfigFile {
+	// TODO:
+	// }
 	// Logger.Debug("in root.go/rootInitConfig()")
 }
