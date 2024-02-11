@@ -32,7 +32,7 @@ func initEcho(logger *log.Logger) *echo.Echo {
 	// Use our binder which embeds echo.DefaultBinder
 	e.Binder = &Binder{}
 	// Add middleware to the Echo instance
-	e.Pre(middleware.RewriteWithConfig(Cfg.RewriteConfig))
+	e.Pre(middleware.RewriteWithConfig(Cfg.RewriteConfig.ToRewriteRules()))
 	// Request ID middleware generates a unique id for a request.
 	e.Use(middleware.RequestID())
 	// Add directories in which the files will be served as they are.

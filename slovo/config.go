@@ -47,12 +47,12 @@ type Config struct {
 	// `e.Static("/css","public/css").`
 	StaticRoutes  []StaticRoute
 	DB            DBConfig
-	RewriteConfig middleware.RewriteConfig
+	RewriteConfig RewriteConfig
 }
 
 type DBConfig struct {
 	DSN    string
-	Tables []string
+	Tables []string `yaml:"-"`
 }
 
 // StaticRoute describes a file path which will be served by echo.
@@ -86,6 +86,8 @@ type Route struct {
 	Name string
 }
 
+type Routes []Route
+
 type ServeConfig struct {
 	Location string
 }
@@ -101,6 +103,42 @@ type ServeCGIConfig struct {
 	REQUEST_URI         string
 	HTTP_ACCEPT_CHARSET string
 	CONTENT_TYPE        string
+}
+
+type RewriteConfig struct {
+	SkipperFuncName string
+	Rules           map[string]string
+}
+
+/*
+ToRewriteRules converts slovo.RewriteConfig to middleware.RewriteConfig
+structure, suitable for passing to middleware.RewriteWithConfig() and returns
+it. Particularly SkipperFuncName is converted to
+middleware.RewriteConfig.Skipper and Rules are converted to
+middleware.RewriteConfig.RegexRules. This is somehow easier than implementing
+MarshalYAML and UnmarshalYAML.
+*/
+func (rc RewriteConfig) ToRewriteRules() (rewriteConfig middleware.RewriteConfig) {
+	rewriteConfig = middleware.RewriteConfig{
+		Skipper:    rewriteConfigSkippers[rc.SkipperFuncName],
+		RegexRules: make(map[*regexp.Regexp]string),
+	}
+	for k, v := range rc.Rules {
+		rewriteConfig.RegexRules[regexp.MustCompile(k)] = v
+	}
+	return
+}
+
+var rewriteConfigSkippers = map[string]middleware.Skipper{
+	`URI2PathAndDontSkip`: func(c echo.Context) bool {
+		// req.RequestURI is used by middleware#rewriteURL, but in CGI
+		// environment it seems to be empty. So here we populate it
+		// from URL.Path. And we do it unconditionally because
+		// RequestURI is still escaped and cannot match any of our
+		// regexes.
+		c.Request().RequestURI = c.Request().URL.Path
+		return false
+	},
 }
 
 var Cfg Config
@@ -140,7 +178,7 @@ func init() {
 			CONTENT_TYPE:        "text/html",
 		},
 		// Store methods by names in YAML!
-		Routes: []Route{
+		Routes: Routes{
 			// Routes are not as pawerful as in Mojolicious. We need the RegexRules below
 			Route{Method: echo.GET, Path: "/", Handler: "straniciExecute", Name: "/"},
 			Route{Method: ANY, Path: "/:stranica/:lang/:format", Handler: "straniciExecute"},
@@ -149,35 +187,25 @@ func init() {
 			Route{Method: echo.GET, Path: "/v2/ppdfcpu", Handler: "ppdfcpuForm", Name: "ppdfcpu"},
 			Route{Method: echo.POST, Path: "/v2/ppdfcpu", Handler: "ppdfcpu", Name: "ppdfcpuForm"},
 		},
-		RewriteConfig: middleware.RewriteConfig{
-			// TODO: think how to assign this function when parsing yaml. We
-			// need some custom unmarshaller.
-			Skipper: func(c echo.Context) bool {
-				// req.RequestURI is used by middleware#rewriteURL, but in CGI
-				// environment it seems to be empty. So here we populate it
-				// from URL.Path. And we do it unconditionally because
-				// RequestURI is still escaped and cannot mach any of our
-				// regexes.
-				c.Request().RequestURI = c.Request().URL.Path
-				return false
-			},
-			RegexRules: map[*regexp.Regexp]string{
+		RewriteConfig: RewriteConfig{
+			SkipperFuncName: `URI2PathAndDontSkip`,
+			Rules: map[string]string{
 				// Root page in all domains has by default alias 'коренъ' and language
 				// 'bg-bg'. Change the value of page_alias and the alias value of the page's
 				// row in table 'stranici' for example to 'index' if you want your root page
 				// to have alias 'index'. Also change the 'lang' here as desired.
 				// Defaults:
-				regexp.MustCompile("^$"):                    spf("/%s/bg/html", rootPageAlias),
-				regexp.MustCompile("^/$"):                   spf("/%s/bg/html", rootPageAlias),
-				regexp.MustCompile(spf("^/index.%s$", EXT)): spf("/%s/bg/html", rootPageAlias),
-				// Страница	            /:stranica/:lang/:ext
-				regexp.MustCompile(spf(`^/%s\.%s%s`, SLOG, EXT, QS)):          "/$1/bg/$2$3",
-				regexp.MustCompile(spf(`^/%s\.%s\.%s%s`, SLOG, LNG, EXT, QS)): "/$1/$2/$3$4",
+				`^$`:                   spf("/%s/bg/html", rootPageAlias),
+				`^/$`:                  spf("/%s/bg/html", rootPageAlias),
+				spf(`^/index.%s`, EXT): spf("/%s/bg/html", rootPageAlias),
+				// Станица	            /:stranica/:lang/:ext
+				spf(`^/%s\.%s%s`, SLOG, EXT, QS):          "/$1/bg/$2$3",
+				spf(`^/%s\.%s\.%s%s`, SLOG, LNG, EXT, QS): "/$1/$2/$3$4",
 
 				// Целина      /:stranica/:celina/:lang/:ext
 				// for now we have content only in bulgarian
-				regexp.MustCompile(spf(`^/%s/%s\.%s%s`, SLOG, SLOG, EXT, QS)):          "/$1/$2/bg/$3$4",
-				regexp.MustCompile(spf(`^/%s/%s\.%s\.%s%s`, SLOG, SLOG, LNG, EXT, QS)): "/$1/$2/$3/$4$5",
+				spf(`^/%s/%s\.%s%s`, SLOG, SLOG, EXT, QS):          "/$1/$2/bg/$3$4",
+				spf(`^/%s/%s\.%s\.%s%s`, SLOG, SLOG, LNG, EXT, QS): "/$1/$2/$3/$4$5",
 			},
 		},
 		Renderer: RendererConfig{
