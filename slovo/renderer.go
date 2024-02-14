@@ -28,7 +28,7 @@ func (g *EchoRenderer) Render(w io.Writer, name string, data any, c echo.Context
 	if stash, isStash := data.(gledki.Stash); isStash {
 		g.MergeStash(stash)
 	} else {
-		c.Logger().Error("'data' parameter must be of type gledki.Stash for the GledkiRenderer() to interpolate values in templates.")
+		c.Logger().Fatal("'data' parameter must be of type gledki.Stash for the GledkiRenderer() to interpolate values in templates.")
 	}
 	_, err := g.Execute(w, name)
 	return err

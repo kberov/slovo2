@@ -10,10 +10,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-const (
-	wrongRendererMsg = `slovo2 works only with the "gledki" template engine. This is %T`
-)
-
 func straniciExecute(c echo.Context) error {
 	args := new(model.StraniciArgs)
 	if err := c.Bind(args); err != nil {

@@ -30,84 +30,93 @@ const QS = `(.*)?`
 
 const rootPageAlias = `коренъ`
 
+// Config is the root structure of the configuration for slovo. We preserve the
+// case and style of each node and scalar item for best recognition between YAML
+// file and Go source code.
+//
 //lint:file-ignore ST1003 ALL_CAPS match the ENV variable names
 type Config struct {
 	// Languages is a list of supported languages. the last is the default.
-	Languages  []string
-	Debug      bool
-	ConfigFile string
-	Serve      ServeConfig
-	ServeCGI   ServeCGIConfig
+	Languages  []string       `yaml:"Languages"`
+	Debug      bool           `yaml:"Debug"`
+	ConfigFile string         `yaml:"ConfigFile"`
+	Serve      ServeConfig    `yaml:"Serve"`
+	ServeCGI   ServeCGIConfig `yaml:"ServeCGI"`
 	// List of routes to be created by Echo
-	Routes []Route
+	Routes Routes `yaml:"Routes"`
 	// Arguments for GledkiRenderer
-	Renderer RendererConfig
+	Renderer RendererConfig `yaml:"Renderer"`
 	// Directories for static content. For example request to /css/site.css
 	// will be served from public/css/site.css.
 	// `e.Static("/css","public/css").`
-	StaticRoutes  []StaticRoute
-	DB            DBConfig
-	RewriteConfig RewriteConfig
+	StaticRoutes  []StaticRoute `yaml:"StaticRoutes"`
+	DB            DBConfig      `yaml:"DB"`
+	RewriteConfig RewriteConfig `yaml:"RewriteConfig"`
 }
 
 type DBConfig struct {
-	DSN    string
+	DSN    string   `yaml:"DSN"`
 	Tables []string `yaml:"-"`
 }
 
+type StaticRoutes []StaticRoute
+
 // StaticRoute describes a file path which will be served by echo.
 type StaticRoute struct {
-	Prefix string
-	Root   string
+	Prefix string `yaml:"Prefix"`
+	Root   string `yaml:"Root"`
 }
 
 type RendererConfig struct {
-	TemplatesRoot string
-	Ext           string
-	Tags          [2]string
-	LoadFiles     bool
+	TemplatesRoot string    `yaml:"TemplatesRoot"`
+	Ext           string    `yaml:"Ext"`
+	Tags          [2]string `yaml:"Tags"`
+	LoadFiles     bool      `yaml:"LoadFiles"`
 }
 
 type Route struct {
 	// Method is a method name from echo.Echo.
-	Method string
-	// Handler stores a HTTP handler name as string.
+	Method string `yaml:"Method"`
+	// Handler stores a HTTP handler function name as string.
 	// It is not possible to lookup a function by its name (as a string) in Go,
 	// but we need to store the function names in the configuration file to
 	// easily enable/disable a route. So we use a map in slovo/handlers.go `var
 	// handlers = map[string]func(c echo.Context) error`
-	Handler string
+	Handler string `yaml:"Handler"`
 	// Path is the REQUEST_PATH
-	Path string
+	Path string `yaml:"Path"`
 	// MiddlewareFuncs is optional
-	MiddlewareFuncs []string
+	MiddlewareFuncs []string `yaml:"MiddlewareFunc"`
 	// Name is the name of the route. Used to generate URIs. See
 	// https://echo.labstack.com/docs/routing#route-naming
-	Name string
+	Name string `yaml:"Name"`
 }
 
 type Routes []Route
 
 type ServeConfig struct {
-	Location string
+	// Location is descrived as f.q.d.n:port
+	Location string `yaml:"Location"`
 }
 
 // ServeCGIConfig contains minimum ENV values for emulating a CGI request on
 // the command line. See https://www.rfc-editor.org/rfc/rfc3875
 type ServeCGIConfig struct {
-	HTTP_HOST      string
-	REQUEST_METHOD string
+	HTTP_HOST      string `yaml:"HTTP_HOST"`
+	REQUEST_METHOD string `yaml:"REQUEST_METHOD"`
 	// SERVER_PROTOCOL used in CGI environment - HTTP/1.1. Recuired variable by
 	// the cgi Go module.
-	SERVER_PROTOCOL     string
-	REQUEST_URI         string
-	HTTP_ACCEPT_CHARSET string
-	CONTENT_TYPE        string
+	SERVER_PROTOCOL     string `yaml:"SERVER_PROTOCOL"`
+	REQUEST_URI         string `yaml:"REQUEST_URI"`
+	HTTP_ACCEPT_CHARSET string `yaml:"HTTP_ACCEPT_CHARSET"`
+	CONTENT_TYPE        string `yaml:"CONTENT_TYPE"`
 }
 
 type RewriteConfig struct {
-	SkipperFuncName string
-	Rules           map[string]string
+	SkipperFuncName string `yaml:"SkipperFuncName"`
+	// Rules is a map of string to string in which the key is a regular
+	// expression and the value is the resulting route mapping description
+	Rules map[string]string `yaml:"Rules"`
 }
 
 /*

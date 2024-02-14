@@ -52,11 +52,10 @@ func loadRoutes(e *echo.Echo) {
 	for _, route := range Cfg.Routes {
 		// find middleware and attach to the route if specified in configuration
 		var definedMFuncs []echo.MiddlewareFunc
-		if mfuncs := route.MiddlewareFuncs; mfuncs != nil && mfuncs[0] != "" {
-			for _, funcName := range mfuncs {
-				if f, ok := middlewareFuncs[funcName]; ok {
-					definedMFuncs = append(definedMFuncs, f)
-				}
+		mfuncs := route.MiddlewareFuncs
+		for _, funcName := range mfuncs {
+			if f, ok := middlewareFuncs[funcName]; ok {
+				definedMFuncs = append(definedMFuncs, f)
 			}
 		}
 

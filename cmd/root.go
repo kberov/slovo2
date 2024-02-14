@@ -1,12 +1,38 @@
+/*
+Package cmd contains code for different actions (subcommands). Each file in
+this package is an action of the application. We use `cobra` for managing
+subcommands.
+
+# Copyright © 2024 Красимир Беров
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
 package cmd
 
 import (
-	"fmt"
+	"errors"
 	"os"
 
 	"github.com/kberov/slovo2/slovo"
 	"github.com/labstack/gommon/log"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 )
 
 // const defaultLogHeader = `${prefix}:${time_rfc3339}:${level}:${short_file}:${line}`
@@ -59,6 +85,7 @@ var cfgFile = slovo.Cfg.ConfigFile
 var Logger = log.New("slovo2")
 
 func init() {
+	//TODO: Add configuration for log file output.
 	Logger.SetOutput(os.Stderr)
 	Logger.SetHeader(defaultLogHeader)
 
@@ -67,9 +94,12 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config_file", "c", slovo.Cfg.ConfigFile, "config file")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config_file", "c", "",
+		`Config file to use or you can set SLOVO_CONFIG.
+Alternatively we fall to sane defaults.
+See also command 'config'.`)
 	rootCmd.PersistentFlags().BoolVarP(&slovo.Cfg.Debug, "debug", "d", slovo.Cfg.Debug,
-		"Display more verbose output in console output. default: "+fmt.Sprintf("%v", slovo.Cfg.Debug))
+		"Display more verbose output in console.")
 	// https://cobra.dev/#create-rootcmd
 	// You will additionally define flags and handle configuration in your init() function.
 	// Cobra also supports local flags, which will only run
@@ -79,13 +109,28 @@ func init() {
 }
 
 func rootInitConfig() {
-	if slovo.Cfg.Debug {
-		Logger.SetLevel(log.DEBUG)
+	if len(cfgFile) == 0 {
+		cfgFile = os.Getenv("SLOVO_CONFIG")
 	}
-	// TODO: Try to Load YAML config if cfgFile != slovo.Cfg.ConfigFile - default value
-	// if slovo.Cfg.ConfigFile....
-	// if cfgFile != slovo.Cfg.ConfigFile {
-	// TODO:
-	// }
-	// Logger.Debug("in root.go/rootInitConfig()")
+	if len(cfgFile) == 0 {
+		if slovo.Cfg.Debug {
+			Logger.SetLevel(log.DEBUG)
+		}
+		return
+	}
+	// Try to Load YAML config if cfgFile exists. Otherwise
+	// fallback to default configuration in slovo/config.go.
+	finfo, err := os.Stat(cfgFile)
+	if err != nil && errors.Is(err, os.ErrNotExist) {
+		Logger.Warnf("File %s does not exist. Falling back to internal configuration.", cfgFile)
+	} else if finfo.Mode().IsRegular() && finfo.Mode().Perm()&0400 == 0400 {
+		cfg, _ := os.ReadFile(cfgFile)
+		if err := yaml.Unmarshal(cfg, &slovo.Cfg); err != nil {
+			Logger.Fatal(err)
+		} else {
+			if !slovo.Cfg.Debug {
+				Logger.SetLevel(log.INFO)
+			}
+		}
+	}
 }

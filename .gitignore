@@ -2,5 +2,6 @@
 **/tags
 slovo2
 data/**
+etc/**
 *.out
 templates/**/*.htmc
