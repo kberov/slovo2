@@ -11,10 +11,10 @@ type EchoRenderer struct {
 	*gledki.Gledki
 }
 
-func GledkiMust(root string, ext string, tags [2]string, loadFiles bool, logger gledki.Logger) *EchoRenderer {
+func GledkiMust(roots []string, ext string, tags [2]string, loadFiles bool, logger gledki.Logger) *EchoRenderer {
 	gledki.CacheTemplates = !Cfg.Debug
 	logger.Debugf("CacheTemplates: %v", gledki.CacheTemplates)
-	tpls, err := gledki.New(root, ext, tags, false)
+	tpls, err := gledki.New(roots, ext, tags, false)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}

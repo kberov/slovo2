@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/jmoiron/sqlx v1.3.5
-	github.com/kberov/gledki v0.5.0
+	github.com/kberov/gledki v0.6.0
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/labstack/gommon v0.4.2
 	github.com/mattn/go-sqlite3 v1.14.22
@@ -27,4 +27,4 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 )
 
-replace github.com/kberov/gledki v0.5.0 => ../gledki
+// replace github.com/kberov/gledki v0.6.0 => ../gledki

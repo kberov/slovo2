@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-const VERSION = "2024.02.09"
+const VERSION = "2024.02.17"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 
 func initEcho(logger *log.Logger) *echo.Echo {
@@ -23,7 +23,7 @@ func initEcho(logger *log.Logger) *echo.Echo {
 	model.DSN = Cfg.DB.DSN
 	CfgR := Cfg.Renderer
 	e.Renderer = GledkiMust(
-		CfgR.TemplatesRoot,
+		CfgR.TemplateRoots,
 		CfgR.Ext,
 		CfgR.Tags,
 		CfgR.LoadFiles,

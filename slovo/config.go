@@ -55,8 +55,7 @@ type Config struct {
 }
 
 type DBConfig struct {
-	DSN    string   `yaml:"DSN"`
-	Tables []string `yaml:"-"`
+	DSN string `yaml:"DSN"`
 }
 
 type StaticRoutes []StaticRoute
@@ -68,7 +67,7 @@ type StaticRoute struct {
 }
 
 type RendererConfig struct {
-	TemplatesRoot string    `yaml:"TemplatesRoot"`
+	TemplateRoots []string  `yaml:"TemplateRoots"`
 	Ext           string    `yaml:"Ext"`
 	Tags          [2]string `yaml:"Tags"`
 	LoadFiles     bool      `yaml:"LoadFiles"`
@@ -188,10 +187,9 @@ func init() {
 		},
 		// Store methods by names in YAML!
 		Routes: Routes{
-			// Routes are not as pawerful as in Mojolicious. We need the RegexRules below
+			// Routes are not as pawerful as in Mojolicious. We need the RewriteConfig.Rules below
 			Route{Method: echo.GET, Path: "/", Handler: "straniciExecute", Name: "/"},
 			Route{Method: ANY, Path: "/:stranica/:lang/:format", Handler: "straniciExecute"},
-			// any  => '/<page_alias:str>/<paragraph_alias:cel>.<lang:lng>.html',
 			Route{Method: ANY, Path: "/:stranica/:celina/:lang/:format", Handler: "celiniExecute"},
 			Route{Method: echo.GET, Path: "/v2/ppdfcpu", Handler: "ppdfcpuForm", Name: "ppdfcpu"},
 			Route{Method: echo.POST, Path: "/v2/ppdfcpu", Handler: "ppdfcpu", Name: "ppdfcpuForm"},
@@ -219,7 +217,7 @@ func init() {
 		},
 		Renderer: RendererConfig{
 			// Templates root folder. Must exist
-			TemplatesRoot: "templates",
+			TemplateRoots: []string{"templates"},
 			Ext:           ".htm",
 			// Delimiters for template tags
 			Tags: [2]string{"${", "}"},
@@ -234,9 +232,6 @@ func init() {
 		},
 		DB: DBConfig{
 			DSN: "data/slovo.dev.sqlite",
-			// This may not be needed in the Go implementation - not used for
-			// now, as here the implementation is more static.
-			Tables: []string{"domove", "stranici", "celini", "products"},
 		},
 	}
 }
