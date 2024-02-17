@@ -23,7 +23,7 @@ database file or add it to the configuration section Cfg.Db.DSN
 	Run: func(cmd *cobra.Command, args []string) {
 		// logger.Warnf("%#v", slovo.Cfg.DB.Tables)
 		Logger.Print("generate/model called")
-		generateRecordTypes(slovo.Cfg.DB.Tables)
+		// generateRecordTypes(slovo.Cfg.DB.Tables)
 
 	},
 }
@@ -33,7 +33,7 @@ func init() {
 
 	// Here you will define your flags and configuration settings.
 	modelCmd.Flags().StringVarP(&slovo.Cfg.DB.DSN, "DSN", "D", slovo.Cfg.DB.DSN, "DSN for the database")
-	modelCmd.Flags().StringSliceVarP(&slovo.Cfg.DB.Tables, "tables", "t", slovo.Cfg.DB.Tables, "Tables for which to generate model types")
+	// modelCmd.Flags().StringSliceVarP(&slovo.Cfg.DB.Tables, "tables", "t", slovo.Cfg.DB.Tables, "Tables for which to generate model types")
 }
 
 // get table names

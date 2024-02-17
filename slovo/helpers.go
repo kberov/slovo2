@@ -2,6 +2,8 @@ package slovo
 
 import (
 	"net"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -41,4 +43,20 @@ func publishedStatus(c echo.Context) uint8 {
 		return uint8(1)
 	}
 	return uint8(2)
+}
+
+var binDir string
+
+// BinDir returns the directory where the binary resides. We assume that this
+// is the root of the project.
+func BinDir() string {
+	if len(binDir) > 0 {
+		return binDir
+	}
+	exe, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	binDir = filepath.Dir(exe)
+	return binDir
 }

@@ -9,12 +9,13 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func celiniExecute(c echo.Context) error {
+func celiniExecute(ec echo.Context) error {
+	c := ec.(*Context)
 	// c.Logger().Debugf("in celiniExecute")
 	log := c.Logger()
-	args := new(model.StraniciArgs)
-	if err := c.Bind(args); err != nil {
-		log.Errorf("bad request: %v; args: args", err)
+	args, err := c.BindArgs()
+	if err != nil {
+		log.Errorf("bad request: %v;", err)
 		return c.String(http.StatusBadRequest, "Грешна заявка!")
 	}
 	cel := new(model.Celini)
@@ -25,7 +26,7 @@ func celiniExecute(c echo.Context) error {
 	return c.Render(http.StatusOK, cel.TemplatePath("celini/note"), buildCeliniStash(c, cel, args))
 }
 
-func buildCeliniStash(c echo.Context, cel *model.Celini, args *model.StraniciArgs) Stash {
+func buildCeliniStash(c *Context, cel *model.Celini, args *model.StraniciArgs) Stash {
 	user := new(model.Users)
 	model.GetByID(user, cel.UserID)
 	created := time.Unix(int64(cel.CreatedAt), 0)
@@ -33,7 +34,7 @@ func buildCeliniStash(c echo.Context, cel *model.Celini, args *model.StraniciArg
 	stash := Stash{
 		"lang":       cel.Language,
 		"title":      cel.Title,
-		"page.Alias": cel.Alias,
+		"page.Alias": args.Alias,
 		"ogType":     "article",
 		"cel.ID":     spf("%d", cel.ID),
 		"UserNames":  user.FirstName + ` ` + user.LastName,
@@ -50,7 +51,7 @@ func buildCeliniStash(c echo.Context, cel *model.Celini, args *model.StraniciArg
 celBody returns a gledki.TagFunc which prepares and returns the HTML for
 the tag `celBody` in the template.
 */
-func celBody(c echo.Context, cel *model.Celini, stash Stash) string {
+func celBody(c *Context, cel *model.Celini, stash Stash) string {
 	// prepare different values for the stash depnding on the DataType
 	switch cel.DataType {
 	case model.Book:
@@ -67,7 +68,7 @@ var reOgImage = regexp.MustCompile(`(?i:<img.+?src="([^"]+\.(?:png|jpe?g|webp)))
 ogImage finds the first image tag in the celBody string and returns the value
 of its src attribute. If not found, returns an empty string
 */
-func ogImage(c echo.Context, celBody string) string {
+func ogImage(c *Context, celBody string) string {
 	match := reOgImage.FindStringSubmatch(celBody)
 	if len(match) > 0 {
 		return match[1]

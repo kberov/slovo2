@@ -4,4 +4,8 @@ slovo2
 data/**
 etc/**
 *.out
-templates/**/*.htmc
+/templates/**/*.htmc
+/log
+domove/**
+/*.conf
+/*.yaml

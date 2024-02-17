@@ -6,16 +6,19 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/kberov/slovo2/model"
+	m "github.com/kberov/slovo2/model"
 	"github.com/labstack/echo/v4"
 )
 
-func straniciExecute(c echo.Context) error {
-	args := new(model.StraniciArgs)
-	if err := c.Bind(args); err != nil {
+func straniciExecute(ec echo.Context) error {
+	c := ec.(*Context)
+	log := c.Logger()
+	args, err := c.BindArgs()
+	if err != nil {
+		log.Errorf("bad request: %v;", err)
 		return c.String(http.StatusBadRequest, "Грешна заявка!")
 	}
-	page := new(model.Stranici)
+	page := new(m.Stranici)
 	if err := page.FindForDisplay(*args); err != nil {
 		c.Logger().Errorf("%v; ErrType: %T; args: %#v", err, err, args)
 		return handleNotFound(c, args, err)
@@ -23,7 +26,7 @@ func straniciExecute(c echo.Context) error {
 	return c.Render(http.StatusOK, page.TemplatePath("stranici/execute"), buildStraniciStash(c, page, args))
 }
 
-func handleNotFound(c echo.Context, args *model.StraniciArgs, err error) error {
+func handleNotFound(c *Context, args *m.StraniciArgs, err error) error {
 	// TODO: I18N & L10N
 	stash := Stash{"lang": args.Lang, "title": "Няма такава страница!"}
 	if strings.Contains(err.Error(), `no rows`) {
@@ -35,7 +38,7 @@ func handleNotFound(c echo.Context, args *model.StraniciArgs, err error) error {
 
 // buildStraniciStash adds all the needed tags to be replaced in template with their
 // values. Returns the prepared stash - a map["string"]any.
-func buildStraniciStash(c echo.Context, page *model.Stranici, args *model.StraniciArgs) Stash {
+func buildStraniciStash(c *Context, page *m.Stranici, args *m.StraniciArgs) Stash {
 	stash := Stash{
 		"lang":       page.Language,
 		"title":      page.Title,
@@ -69,9 +72,9 @@ func buildStraniciStash(c echo.Context, page *model.Stranici, args *model.Strani
 mainMenu returns a gledki.TagFunc which prepares and returns the HTML for
 the tag `mainMenu` in the template.
 */
-func mainMenu(c echo.Context, args *model.StraniciArgs, stash Stash) string {
+func mainMenu(c echo.Context, args *m.StraniciArgs, stash Stash) string {
 	var html strings.Builder
-	for _, p := range model.SelectMenuItems(*args) {
+	for _, p := range m.SelectMenuItems(*args) {
 		class := ""
 		if p.Alias == stash["page.Alias"] {
 			class = `class="active" `
@@ -82,14 +85,14 @@ func mainMenu(c echo.Context, args *model.StraniciArgs, stash Stash) string {
 }
 
 // categoryPages displays the list of pages in the home page.
-func categoryPages(c echo.Context, args model.StraniciArgs, stash Stash) string {
+func categoryPages(c echo.Context, args m.StraniciArgs, stash Stash) string {
 	t, _ := c.Echo().Renderer.(*EchoRenderer)
 
 	// File does not have directives in it self, so only LoadFile() is
 	// enough. No need to Compile().
 	partial := t.MustLoadFile(`stranici/_dom_item`)
 	var view strings.Builder
-	for _, page := range model.ListStranici(args) {
+	for _, page := range m.ListStranici(args) {
 		stash := Stash{
 			"id":    spf("%d", page.ID),
 			"title": page.Title,
@@ -103,12 +106,12 @@ func categoryPages(c echo.Context, args model.StraniciArgs, stash Stash) string 
 }
 
 // categoryCelini displays the list of celini in the respective category page.
-func categoryCelini(c echo.Context, args model.StraniciArgs, stash Stash) string {
+func categoryCelini(c echo.Context, args m.StraniciArgs, stash Stash) string {
 	t, _ := c.Echo().Renderer.(*EchoRenderer)
 
 	partialT := t.MustLoadFile("stranici/_cel_item")
 	var view strings.Builder
-	for _, cel := range model.ListCelini(args) {
+	for _, cel := range m.ListCelini(args) {
 		hash := Stash{
 			"id":        spf("%d", cel.ID),
 			"title":     substringWithTail(cel.Title, 0, 24, `…`),

@@ -95,7 +95,7 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config_file", "c", "",
-		`Config file to use or you can set SLOVO_CONFIG.
+		`Config file to use or you can set SLOVO_CONFIG to the file to be read.
 Alternatively we fall to sane defaults.
 See also command 'config'.`)
 	rootCmd.PersistentFlags().BoolVarP(&slovo.Cfg.Debug, "debug", "d", slovo.Cfg.Debug,

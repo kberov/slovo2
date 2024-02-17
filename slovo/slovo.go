@@ -14,6 +14,8 @@ import (
 
 const VERSION = "2024.02.17"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
+const GuestID = 2
+const StraniciFormat = `html`
 
 func initEcho(logger *log.Logger) *echo.Echo {
 	e := echo.New()
@@ -31,10 +33,14 @@ func initEcho(logger *log.Logger) *echo.Echo {
 	)
 	// Use our binder which embeds echo.DefaultBinder
 	e.Binder = &Binder{}
+	// Use slovoContext
+	e.Use(slovoContext)
 	// Add middleware to the Echo instance
 	e.Pre(middleware.RewriteWithConfig(Cfg.RewriteConfig.ToRewriteRules()))
 	// Request ID middleware generates a unique id for a request.
 	e.Use(middleware.RequestID())
+	// Cache pages on disk if Cfg.CachePages == true
+	e.Use(middleware.BodyDump(cachePages))
 	// Add directories in which the files will be served as they are.
 	for _, path := range Cfg.StaticRoutes {
 		e.Static(path.Prefix, path.Root)

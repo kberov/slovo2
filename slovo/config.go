@@ -52,6 +52,7 @@ type Config struct {
 	StaticRoutes  []StaticRoute `yaml:"StaticRoutes"`
 	DB            DBConfig      `yaml:"DB"`
 	RewriteConfig RewriteConfig `yaml:"RewriteConfig"`
+	CachePages    bool          `yaml:"CachePages"`
 }
 
 type DBConfig struct {
@@ -149,8 +150,6 @@ var rewriteConfigSkippers = map[string]middleware.Skipper{
 	},
 }
 
-var Cfg Config
-
 // We need this map because the function names are stored in yaml config as
 // strings. This map is used in loadRoutes() to match HTTP handlerFuncs by name.
 var handlerFuncs = map[string]echo.HandlerFunc{
@@ -165,6 +164,12 @@ var handlerFuncs = map[string]echo.HandlerFunc{
 // functions for the corresponding HandlerFunc.
 var middlewareFuncs = map[string]echo.MiddlewareFunc{}
 var defaultHost = "dev.xn--b1arjbl.xn--90ae"
+
+// Cfg is the global configuration structure for slovo. The default is
+// hardcodded and it can be dumped to YAML by using the command `slovo2 config
+// dump`. To read automatically the YAML file on startup, the SLOVO_CONFIG
+// environment variable must be set to the config file path.
+var Cfg Config
 
 func init() {
 	// Default configuration
@@ -233,5 +238,8 @@ func init() {
 		DB: DBConfig{
 			DSN: "data/slovo.dev.sqlite",
 		},
+		CachePages: true,
 	}
-}
+
+	Cfg.CachePages = false
+} // end init()
