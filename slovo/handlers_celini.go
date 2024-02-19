@@ -11,22 +11,18 @@ import (
 
 func celiniExecute(ec echo.Context) error {
 	c := ec.(*Context)
-	// c.Logger().Debugf("in celiniExecute")
 	log := c.Logger()
-	args, err := c.BindArgs()
-	if err != nil {
-		log.Errorf("bad request: %v;", err)
-		return c.String(http.StatusBadRequest, "Грешна заявка!")
-	}
+	log.Debugf("in celiniExecute")
 	cel := new(model.Celini)
-	if err := cel.FindForDisplay(*args); err != nil {
-		log.Errorf("celina: %#v; error:%w; ErrType: %T; args: %#v", cel, err, err, args)
-		return handleNotFound(c, args, err)
+	if err := cel.FindForDisplay(*c.StraniciArgs); err != nil {
+		log.Errorf("celina: %#v; error:%w; ErrType: %T; args: %#v", cel, err, err, c.StraniciArgs)
+		return handleNotFound(c, err)
 	}
-	return c.Render(http.StatusOK, cel.TemplatePath("celini/note"), buildCeliniStash(c, cel, args))
+	return c.Render(http.StatusOK, cel.TemplatePath("celini/note"), buildCeliniStash(c, cel))
 }
 
-func buildCeliniStash(c *Context, cel *model.Celini, args *model.StraniciArgs) Stash {
+func buildCeliniStash(c *Context, cel *model.Celini) Stash {
+	args := c.StraniciArgs
 	user := new(model.Users)
 	model.GetByID(user, cel.UserID)
 	created := time.Unix(int64(cel.CreatedAt), 0)

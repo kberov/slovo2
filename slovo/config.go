@@ -160,9 +160,14 @@ var handlerFuncs = map[string]echo.HandlerFunc{
 	"celiniExecute":   celiniExecute,
 }
 
-// This map is for the same purpose as above but for one or more middleware
-// functions for the corresponding HandlerFunc.
-var middlewareFuncs = map[string]echo.MiddlewareFunc{}
+// We need this map because the function names are stored in yaml config as
+// strings. These are functions only for the corresponding HandlerFunc where
+// their key-names are mentioned.
+var middlewareFuncs = map[string]echo.MiddlewareFunc{
+	"SlovoContext": SlovoContext,
+	"CachePages":   middleware.BodyDump(cachePages),
+}
+
 var defaultHost = "dev.xn--b1arjbl.xn--90ae"
 
 // Cfg is the global configuration structure for slovo. The default is
@@ -194,8 +199,10 @@ func init() {
 		Routes: Routes{
 			// Routes are not as pawerful as in Mojolicious. We need the RewriteConfig.Rules below
 			Route{Method: echo.GET, Path: "/", Handler: "straniciExecute", Name: "/"},
-			Route{Method: ANY, Path: "/:stranica/:lang/:format", Handler: "straniciExecute"},
-			Route{Method: ANY, Path: "/:stranica/:celina/:lang/:format", Handler: "celiniExecute"},
+			Route{Method: ANY, Path: "/:stranica/:lang/:format", Handler: "straniciExecute",
+				MiddlewareFuncs: []string{"SlovoContext", "CachePages"}},
+			Route{Method: ANY, Path: "/:stranica/:celina/:lang/:format", Handler: "celiniExecute",
+				MiddlewareFuncs: []string{"SlovoContext", "CachePages"}},
 			Route{Method: echo.GET, Path: "/v2/ppdfcpu", Handler: "ppdfcpuForm", Name: "ppdfcpu"},
 			Route{Method: echo.POST, Path: "/v2/ppdfcpu", Handler: "ppdfcpu", Name: "ppdfcpuForm"},
 		},
@@ -241,5 +248,5 @@ func init() {
 		CachePages: true,
 	}
 
-	Cfg.CachePages = false
+	// Cfg.CachePages = false
 } // end init()

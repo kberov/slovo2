@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-const VERSION = "2024.02.17"
+const VERSION = "2024.02.19"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 const GuestID = 2
 const StraniciFormat = `html`
@@ -33,14 +33,10 @@ func initEcho(logger *log.Logger) *echo.Echo {
 	)
 	// Use our binder which embeds echo.DefaultBinder
 	e.Binder = &Binder{}
-	// Use slovoContext
-	e.Use(slovoContext)
 	// Add middleware to the Echo instance
 	e.Pre(middleware.RewriteWithConfig(Cfg.RewriteConfig.ToRewriteRules()))
 	// Request ID middleware generates a unique id for a request.
 	e.Use(middleware.RequestID())
-	// Cache pages on disk if Cfg.CachePages == true
-	e.Use(middleware.BodyDump(cachePages))
 	// Add directories in which the files will be served as they are.
 	for _, path := range Cfg.StaticRoutes {
 		e.Static(path.Prefix, path.Root)
@@ -58,27 +54,17 @@ func loadRoutes(e *echo.Echo) {
 	for _, route := range Cfg.Routes {
 		// find middleware and attach to the route if specified in configuration
 		var definedMFuncs []echo.MiddlewareFunc
-		mfuncs := route.MiddlewareFuncs
-		for _, funcName := range mfuncs {
+		for _, funcName := range route.MiddlewareFuncs {
+			e.Logger.Debugf("route:%s;MiddlewareFunc: %s", route.Path, funcName)
 			if f, ok := middlewareFuncs[funcName]; ok {
 				definedMFuncs = append(definedMFuncs, f)
 			}
 		}
-
 		if route.Method == ANY {
-			if definedMFuncs != nil {
-				e.Any(route.Path, handlerFuncs[route.Handler], definedMFuncs...)
-			} else {
-				e.Any(route.Path, handlerFuncs[route.Handler])
-			}
+			e.Any(route.Path, handlerFuncs[route.Handler], definedMFuncs...)
 			continue
 		}
-		if definedMFuncs != nil {
-			e.Add(route.Method, route.Path, handlerFuncs[route.Handler], definedMFuncs...).Name = route.Name
-			continue
-		}
-		// otherwise simply add the route without []echo.MiddlewareFunc
-		e.Add(route.Method, route.Path, handlerFuncs[route.Handler]).Name = route.Name
+		e.Add(route.Method, route.Path, handlerFuncs[route.Handler], definedMFuncs...).Name = route.Name
 	}
 }
 

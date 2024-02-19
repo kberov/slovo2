@@ -1,6 +1,7 @@
 package slovo
 
 import (
+	"strings"
 	"time"
 
 	"github.com/kberov/slovo2/model"
@@ -32,7 +33,8 @@ func (b *Binder) Bind(args any, c echo.Context) (err error) {
 		// a.UserID = user.ID
 		a.UserID = 2
 		a.Pub = publishedStatus(c)
-		a.Domain = hostName(c)
+		a.Domain, _ = strings.CutPrefix(hostName(c), `dev.`)
+		a.Domain, _ = strings.CutPrefix(a.Domain, `www.`)
 		a.Now = time.Now().Unix()
 		// By default the main box is displayed as the main content on the
 		// rendered page.

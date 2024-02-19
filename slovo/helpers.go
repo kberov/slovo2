@@ -1,6 +1,7 @@
 package slovo
 
 import (
+	"errors"
 	"net"
 	"os"
 	"path/filepath"
@@ -59,4 +60,15 @@ func BinDir() string {
 	}
 	binDir = filepath.Dir(exe)
 	return binDir
+}
+
+func FileIsReadable(path string) bool {
+	finfo, err := os.Stat(path)
+	if err != nil && errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+	if finfo.Mode().IsRegular() && finfo.Mode().Perm()&0400 == 0400 {
+		return true
+	}
+	return false
 }

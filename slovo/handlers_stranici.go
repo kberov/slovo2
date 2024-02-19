@@ -13,32 +13,19 @@ import (
 func straniciExecute(ec echo.Context) error {
 	c := ec.(*Context)
 	log := c.Logger()
-	args, err := c.BindArgs()
-	if err != nil {
-		log.Errorf("bad request: %v;", err)
-		return c.String(http.StatusBadRequest, "Грешна заявка!")
-	}
+	log.Debugf("in straniciExecute")
 	page := new(m.Stranici)
-	if err := page.FindForDisplay(*args); err != nil {
-		c.Logger().Errorf("%v; ErrType: %T; args: %#v", err, err, args)
-		return handleNotFound(c, args, err)
+	if err := page.FindForDisplay(*c.StraniciArgs); err != nil {
+		log.Errorf("%v; ErrType: %T; args: %#v", err, err, c.StraniciArgs)
+		return handleNotFound(c, err)
 	}
-	return c.Render(http.StatusOK, page.TemplatePath("stranici/execute"), buildStraniciStash(c, page, args))
-}
-
-func handleNotFound(c *Context, args *m.StraniciArgs, err error) error {
-	// TODO: I18N & L10N
-	stash := Stash{"lang": args.Lang, "title": "Няма такава страница!"}
-	if strings.Contains(err.Error(), `no rows`) {
-		stash["mainMenu"] = mainMenu(c, args, stash)
-		return c.Render(http.StatusNotFound, `not_found`, stash)
-	}
-	return err
+	return c.Render(http.StatusOK, page.TemplatePath("stranici/execute"), buildStraniciStash(c, page))
 }
 
 // buildStraniciStash adds all the needed tags to be replaced in template with their
 // values. Returns the prepared stash - a map["string"]any.
-func buildStraniciStash(c *Context, page *m.Stranici, args *m.StraniciArgs) Stash {
+func buildStraniciStash(c *Context, page *m.Stranici) Stash {
+	args := c.StraniciArgs
 	stash := Stash{
 		"lang":       page.Language,
 		"title":      page.Title,
