@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-const VERSION = "2024.02.19"
+const VERSION = "2024.02.23"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 const GuestID = 2
 const StraniciFormat = `html`
@@ -55,7 +55,7 @@ func loadRoutes(e *echo.Echo) {
 		// find middleware and attach to the route if specified in configuration
 		var definedMFuncs []echo.MiddlewareFunc
 		for _, funcName := range route.MiddlewareFuncs {
-			e.Logger.Debugf("route:%s;MiddlewareFunc: %s", route.Path, funcName)
+			// e.Logger.Debugf("route:%s;MiddlewareFunc: %s", route.Path, funcName)
 			if f, ok := middlewareFuncs[funcName]; ok {
 				definedMFuncs = append(definedMFuncs, f)
 			}
@@ -69,15 +69,11 @@ func loadRoutes(e *echo.Echo) {
 }
 
 func ServeCGI(logger *log.Logger) {
-	// logger.Debug("in slovo.ServeCGI()")
-	e := initEcho(logger)
-	if err := cgi.Serve(e); err != nil {
-		e.Logger.Fatal(err)
+	if err := cgi.Serve(initEcho(logger)); err != nil {
+		logger.Fatal(err)
 	}
 }
 
 func Serve(logger *log.Logger) {
-	// logger.Debugf("in slovo.Serve() We will Serve(%s)", Cfg.Serve.Location)
-	e := initEcho(logger)
-	logger.Fatal(e.Start(Cfg.Serve.Location))
+	logger.Fatal(initEcho(logger).Start(Cfg.Serve.Location))
 }

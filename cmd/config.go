@@ -53,6 +53,9 @@ func displayDefaultConfig() {
 }
 
 func dumpConfig() {
+	if cfgFile == "" {
+		cfgFile = defaultCfg.ConfigFile
+	}
 	fmt.Printf("Will dump configuration to %s.\n\n\tNote! The directory must exist.\n\n", cfgFile)
 	fmt.Printf("Default configuration file is %s.\n", defaultCfg.ConfigFile)
 	finfo, err := os.Stat(cfgFile)
@@ -68,7 +71,9 @@ func dumpConfig() {
 	if err != nil {
 		Logger.Fatalf("error: %v", err)
 	}
-	if err := os.WriteFile(cfgFile, cfg, 0666); err != nil {
-		Logger.Fatal(err)
+	if err := os.WriteFile(cfgFile, cfg, 0600); err != nil {
+		Logger.Fatalf(`%s: %s`, cfgFile, err.Error())
+	} else {
+		fmt.Printf("Configuration dumped to %s\n", cfgFile)
 	}
 }

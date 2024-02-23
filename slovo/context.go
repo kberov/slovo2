@@ -63,9 +63,9 @@ func (c *Context) prepareDefaultStash() {
 
 /*
 SlovoContext is a middleware function which instantiates slovo's custom context
-and executes some tascs common to all pages in the site. These are:
+and executes some tasks common to all pages in the site. These are:
   - [Context.BindArgs]
-  - renders cached pages
+  - renders (spits out) cached pages
   - prepares some default items in [gledki.Stash]
 */
 func SlovoContext(next echo.HandlerFunc) echo.HandlerFunc {

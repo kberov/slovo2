@@ -96,7 +96,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config_file", "c", "",
 		`Config file to use or you can set SLOVO_CONFIG to the file to be read.
-Alternatively we fall to sane defaults.
+Alternatively we fall to sane internal defaults.
 See also command 'config'.`)
 	rootCmd.PersistentFlags().BoolVarP(&slovo.Cfg.Debug, "debug", "d", slovo.Cfg.Debug,
 		"Display more verbose output in console.")
@@ -109,6 +109,8 @@ See also command 'config'.`)
 }
 
 func rootInitConfig() {
+	// If cfgFile is not passed on the command line and SLOVO_CONFIG is set,
+	// use the path to config file in it.
 	if len(cfgFile) == 0 {
 		cfgFile = os.Getenv("SLOVO_CONFIG")
 	}

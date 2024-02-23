@@ -200,9 +200,9 @@ func init() {
 			// Routes are not as pawerful as in Mojolicious. We need the RewriteConfig.Rules below
 			Route{Method: echo.GET, Path: "/", Handler: "straniciExecute", Name: "/"},
 			Route{Method: ANY, Path: "/:stranica/:lang/:format", Handler: "straniciExecute",
-				MiddlewareFuncs: []string{"SlovoContext", "CachePages"}},
+				MiddlewareFuncs: []string{"SlovoContext", "CachePages"}, Name: "stranica"},
 			Route{Method: ANY, Path: "/:stranica/:celina/:lang/:format", Handler: "celiniExecute",
-				MiddlewareFuncs: []string{"SlovoContext", "CachePages"}},
+				MiddlewareFuncs: []string{"SlovoContext", "CachePages"}, Name: "celina"},
 			Route{Method: echo.GET, Path: "/v2/ppdfcpu", Handler: "ppdfcpuForm", Name: "ppdfcpu"},
 			Route{Method: echo.POST, Path: "/v2/ppdfcpu", Handler: "ppdfcpu", Name: "ppdfcpuForm"},
 		},

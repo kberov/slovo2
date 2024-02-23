@@ -28,10 +28,10 @@ func cachePages(ec echo.Context, reqBody, resBody []byte) {
 	}
 	c.Logger().Debugf("in cachePages filePath:%s", path)
 	// c.Logger().Debugf("fullPath: %s", fullPath)
-	if err := os.MkdirAll(filepath.Dir(fullPath), 0700); err != nil {
+	if err := os.MkdirAll(filepath.Dir(fullPath), 0755); err != nil {
 		c.Logger().Panic(err)
 	}
-	if err := os.WriteFile(fullPath, resBody, 0600); err != nil {
+	if err := os.WriteFile(fullPath, resBody, 0644); err != nil {
 		c.Logger().Panic(err)
 	}
 }

@@ -14,7 +14,9 @@ body.dark {
   --color-default: #fff;
 }
 body {
-  --color-default: #000;
+ --color-default: #000;
+ --color-success:#aaa;
+ --color-primary: #333;
 }
 
 body > .container {
