@@ -13,7 +13,6 @@ import (
 func straniciExecute(ec echo.Context) error {
 	c := ec.(*Context)
 	log := c.Logger()
-	log.Debugf("in straniciExecute")
 	page := new(m.Stranici)
 	if err := page.FindForDisplay(*c.StraniciArgs); err != nil {
 		log.Errorf("%v; ErrType: %T; args: %#v", err, err, c.StraniciArgs)
@@ -46,11 +45,11 @@ func buildStraniciStash(c *Context, page *m.Stranici) Stash {
 	*/
 	switch page.Template.String {
 	case `stranici/templates/dom`:
-		stash["categoryPages"] = categoryPages(c, *args, stash)
+		stash["categoryPages"] = categoryPages(c, stash)
 	// other cases maybe
 	// case`stranici/other/special/view`
 	default:
-		stash["categoryCelini"] = categoryCelini(c, *args, stash)
+		stash["categoryCelini"] = categoryCelini(c, stash)
 	}
 	return stash
 }
@@ -72,14 +71,14 @@ func mainMenu(c echo.Context, args *m.StraniciArgs, stash Stash) string {
 }
 
 // categoryPages displays the list of pages in the home page.
-func categoryPages(c echo.Context, args m.StraniciArgs, stash Stash) string {
+func categoryPages(c *Context, stash Stash) string {
 	t, _ := c.Echo().Renderer.(*EchoRenderer)
 
 	// File does not have directives in it self, so only LoadFile() is
 	// enough. No need to Compile().
 	partial := t.MustLoadFile(`stranici/_dom_item`)
 	var view strings.Builder
-	for _, page := range m.ListStranici(args) {
+	for _, page := range m.ListStranici(*c.StraniciArgs) {
 		stash := Stash{
 			"id":    spf("%d", page.ID),
 			"title": page.Title,
@@ -93,24 +92,58 @@ func categoryPages(c echo.Context, args m.StraniciArgs, stash Stash) string {
 }
 
 // categoryCelini displays the list of celini in the respective category page.
-func categoryCelini(c echo.Context, args m.StraniciArgs, stash Stash) string {
+func categoryCelini(c *Context, stash Stash) string {
 	t, _ := c.Echo().Renderer.(*EchoRenderer)
 
 	partialT := t.MustLoadFile("stranici/_cel_item")
 	var view strings.Builder
-	for _, cel := range m.ListCelini(args) {
+	celini := m.ListCelini(*c.StraniciArgs)
+	for _, cel := range celini {
 		hash := Stash{
 			"id":        spf("%d", cel.ID),
 			"title":     substringWithTail(cel.Title, 0, 24, `…`),
 			"fullTitle": cel.Title,
 			"body":      substring(stripHTML(cel.Body), 0, 200) + " …",
 			"alias":     cel.Alias,
-			"strAlias":  args.Alias,
+			"strAlias":  c.StraniciArgs.Alias,
 			"lang":      cel.Language,
 		}
 		view.WriteString(t.FtExecStringStd(partialT, hash))
 	}
+	stash[`categoryCeliniPager`] = categoryCeliniPager(c, len(celini))
 	return view.String()
+}
+
+// categoryCeliniPager displays `<`:previous and `>`:next links under the list
+// of celini.
+func categoryCeliniPager(c *Context, celiniNum int) string {
+	args := c.StraniciArgs
+	if celiniNum < args.Limit && args.Offset == 0 {
+		return ``
+	}
+	// TODO: move the HTML to a partial template and use
+	// t.FtExecStringStd(partial, stash)! See categoryPages.
+	pagertmpl := `<div class="card col-12 pager">`
+	// link to previous
+	if args.Offset > 0 {
+		offset := args.Offset - args.Limit
+		if offset <= 0 {
+			pagertmpl += spf(`<a title="първи %[4]d" href="/%[1]s.%s.%s">⮈</a>`,
+				args.Alias, args.Lang, args.Format, args.Limit)
+		} else {
+			pagertmpl += spf(`<a title="предишни %[4]d" href="/%[1]s.%s.%s?limit=%d&offset=%d">⮈</a>`,
+				args.Alias, args.Lang, args.Format, args.Limit, offset)
+		}
+		if celiniNum == args.Limit {
+			pagertmpl += `&nbsp;&nbsp;`
+		}
+	}
+	// link to next
+	if celiniNum == args.Limit {
+		pagertmpl += spf(`<a title="следващи %[4]d" href="/%[1]s.%s.%s?limit=%d&offset=%d">⮊</a>`,
+			args.Alias, args.Lang, args.Format, args.Limit, (args.Offset + args.Limit))
+	}
+	return pagertmpl + `</div>`
 }
 
 var reHTML = regexp.MustCompile(`<[^>]+>`)

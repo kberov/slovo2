@@ -27,4 +27,6 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 )
 
-// replace github.com/kberov/gledki v0.6.0 => ../gledki
+replace github.com/labstack/echo/v4 v4.11.4 => ../echo
+
+replace github.com/kberov/gledki v0.6.0 => ../gledki

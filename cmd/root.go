@@ -67,7 +67,8 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	// Logger.Debug("in cmd.Execute")
-	if os.Getenv("GATEWAY_INTERFACE") == "CGI/1.1" {
+	// Detect that we should execute the cgi command.
+	if os.Getenv("GATEWAY_INTERFACE") != "" {
 		// Logger.Debug("in cmd.Execute GATEWAY_INTERFACE")
 		os.Args = []string{os.Args[0], "cgi"}
 		if cgiCmd.Execute() != nil {

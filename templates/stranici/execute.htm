@@ -2,8 +2,10 @@ ${wrapper layouts/default}
 <section id="page_${page.ID}" class="stranici">
     <h1 class="is-marginless">${title}</h1>
     ${pageBody}
-    <div class="row">
+    <section class="row">
+    ${categoryCeliniPager}
     ${categoryCelini}
-    </div>
+    ${categoryCeliniPager}
+    </section>
 </section>
 

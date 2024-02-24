@@ -38,12 +38,12 @@ func iHostName(c echo.Context) (host string) {
 }
 
 // Allow only valid values 0,1,2
-func publishedStatus(c echo.Context) uint8 {
+func publishedStatus(c echo.Context) int {
 	preview := c.QueryParam("preview")
 	if preview != "" {
-		return uint8(1)
+		return 1
 	}
-	return uint8(2)
+	return 2
 }
 
 var binDir string

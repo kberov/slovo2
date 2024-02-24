@@ -40,22 +40,22 @@ type StraniciArgs struct {
 	Alias string `param:"stranica"`
 	// Alias for an article/paragraph/book/product/content. Example: "чуждият-hôtel"
 	Celina string `param:"celina"`
-	// Box on the page where to be put  the body of aa celina
+	// Box on the page where to be put  the body of a celina
 	Box Box
 	// Language for the content (for now only "bg")
 	Lang string `param:"lang"`
 	// Format of the content (for now only "html")
 	Format string `param:"format"`
 	// Required Published status (0:no|1:preview|2:yes) Default: 2
-	Pub uint8
+	Pub int
 	// UserID - current user_id. Default 2(guest)
 	// TODO: Implement authentication via some custom header or JWT - not Cookies
 	UserID int32
 	// Slovo is a multidomain CMS. Get it from c.Request().Host
 	Domain string
 	Now    int64
-	Limit  int "query:limit"
-	Offset int "query:offset"
+	Limit  int `query:"limit" form:"limit"`
+	Offset int `query:"offset" form:"offset"`
 }
 
 // Stranici represents a Record in table stranici.

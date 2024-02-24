@@ -15,7 +15,6 @@ import (
 const VERSION = "2024.02.23"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 const GuestID = 2
-const StraniciFormat = `html`
 
 func initEcho(logger *log.Logger) *echo.Echo {
 	e := echo.New()

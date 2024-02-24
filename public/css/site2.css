@@ -155,6 +155,10 @@ body.dark > footer {
 summary {
     cursor: pointer
 }
+
+.pager {
+  text-align: center;
+}
 /* small screens */
 @media (max-width: 412px) {
   section.stranici, section.celini {

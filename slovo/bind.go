@@ -39,17 +39,22 @@ func (b *Binder) Bind(args any, c echo.Context) (err error) {
 		// By default the main box is displayed as the main content on the
 		// rendered page.
 		a.Box = model.MainBox
-		a.Limit = 100
+		// Default values for paging. They are overridden by QueryParams.
+		a.Limit = 10
 		a.Offset = 0
-	//case *model.SomeOtherArgs:
+	// case *model.SomeOtherArgs:
 	//	a := t
-	// etc
+	// case: etc
 	default:
 		c.Logger().Warnf("Unknown type: %T", args)
 	}
 
-	/* Using default binder */
+	/*
+		Using default binder to eventually fill in and override (rebind)
+		default and calculated in the switch statement values.
+	*/
 	if err = b.DefaultBinder.Bind(args, c); err != echo.ErrUnsupportedMediaType {
+		// c.Logger().Debugf("Bound args: %#v: error: %v", args, err)
 		return err
 	}
 

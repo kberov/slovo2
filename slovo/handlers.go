@@ -65,13 +65,16 @@ func handleNotFound(c *Context, err error) error {
 }
 
 func tryHandleCachedPage(c *Context) error {
+	err := errors.New(`page is not cached.`)
+	if !canCachePage(c) {
+		return err
+	}
 	fullPath := filepath.Join(BinDir(), `domove`, c.StraniciArgs.Domain, `public`, cached, c.CanonicalPath())
 	if FileIsReadable(fullPath) {
 		data, _ := os.ReadFile(fullPath)
 		c.Logger().Debugf("tryHandleCachedPage: %s", c.CanonicalPath())
 		return c.HTMLBlob(http.StatusOK, data)
 	}
-	err := errors.New(`page is not cached.`)
 	c.Logger().Debugf("tryHandleCachedPage: %s: %s", fullPath, err.Error())
 	return err
 }

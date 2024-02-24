@@ -10,6 +10,21 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+/*
+Context is our custom context. To use it in our handlers we have to cast
+echo.Context to slovo.Context. Here is a full example.
+
+	func celiniExecute(ec echo.Context) error {
+		c := ec.(*Context)
+		log := c.Logger()
+		cel := new(model.Celini)
+		if err := cel.FindForDisplay(*c.StraniciArgs); err != nil {
+			log.Errorf("celina: %#v; error:%w; ErrType: %T; args: %#v", cel, err, err, c.StraniciArgs)
+			return handleNotFound(c, err)
+		}
+		return c.Render(http.StatusOK, cel.TemplatePath("celini/note"), buildCeliniStash(c, cel))
+	}
+*/
 type Context struct {
 	echo.Context
 	StraniciArgs  *model.StraniciArgs
@@ -75,10 +90,8 @@ func SlovoContext(next echo.HandlerFunc) echo.HandlerFunc {
 		if _, err := sc.BindArgs(); err != nil {
 			return err
 		}
-		if canCachePage(sc) {
-			if err := tryHandleCachedPage(sc); err == nil {
-				return nil
-			}
+		if err := tryHandleCachedPage(sc); err == nil {
+			return nil
 		}
 		sc.prepareDefaultStash()
 		return next(sc)

@@ -12,7 +12,6 @@ import (
 func celiniExecute(ec echo.Context) error {
 	c := ec.(*Context)
 	log := c.Logger()
-	log.Debugf("in celiniExecute")
 	cel := new(model.Celini)
 	if err := cel.FindForDisplay(*c.StraniciArgs); err != nil {
 		log.Errorf("celina: %#v; error:%w; ErrType: %T; args: %#v", cel, err, err, c.StraniciArgs)

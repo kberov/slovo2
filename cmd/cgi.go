@@ -61,20 +61,29 @@ func init() {
 		&slovo.Cfg.ServeCGI.SERVER_PROTOCOL,
 		"SERVER_PROTOCOL", "P",
 		slovo.Cfg.ServeCGI.SERVER_PROTOCOL, "Server protocol")
+	cgiCmd.Flags().StringVarP(
+		&slovo.Cfg.ServeCGI.HTTP_ACCEPT_CHARSET,
+		"HTTP_ACCEPT_CHARSET", "C",
+		slovo.Cfg.ServeCGI.HTTP_ACCEPT_CHARSET, "Accept-Charset")
+	cgiCmd.Flags().StringVarP(
+		&slovo.Cfg.ServeCGI.CONTENT_TYPE,
+		"CONTENT_TYPE", "T",
+		slovo.Cfg.ServeCGI.CONTENT_TYPE, "Content-Type")
 	//cobra.OnInitialize(rootInitConfig)
 	//cobra.OnInitialize(cgiInitConfig)
 }
 
 func cgiInitConfig() {
-	if os.Getenv("GATEWAY_INTERFACE") == "CGI/1.1" {
+	if os.Getenv("GATEWAY_INTERFACE") != "" {
 		return
 	}
 
 	// minimum ENV values for emulating a CGI request on the command line
 	var env = map[string]string{
-		"SERVER_PROTOCOL": slovo.Cfg.ServeCGI.SERVER_PROTOCOL,
-		"REQUEST_METHOD":  slovo.Cfg.ServeCGI.REQUEST_METHOD,
-		"HTTP_HOST":       slovo.Cfg.ServeCGI.HTTP_HOST,
+		"GATEWAY_INTERFACE": "CGI/1.1",
+		"SERVER_PROTOCOL":   slovo.Cfg.ServeCGI.SERVER_PROTOCOL,
+		"REQUEST_METHOD":    slovo.Cfg.ServeCGI.REQUEST_METHOD,
+		"HTTP_HOST":         slovo.Cfg.ServeCGI.HTTP_HOST,
 		//"HTTP_REFERER":        "elsewhere",
 		//"HTTP_USER_AGENT":     "slovo2client",
 		"HTTP_ACCEPT_CHARSET": slovo.Cfg.ServeCGI.HTTP_ACCEPT_CHARSET,

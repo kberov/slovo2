@@ -3,6 +3,7 @@ package slovo
 import (
 	"net/http"
 	"regexp"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -13,16 +14,18 @@ const ANY = "ANY"
 
 // SLOG is a regular expression capturing group to match what is possible to
 // have between two slashes in an URL path. Used in RegexRules for rewriting
-// urls for the Routes parser. At least two and up to ten any unicode
-// letter, dash or underscore.
+// urls for the Routes parser. At least three any unicode letter, dash or
+// underscore.
 // Note! REQUEST_URI is url-escaped at this time. We currently use Skipper to
 // unnescape the raw RequestURI.
-const SLOG = `([\pL\-_\d]+)`
+const SLOG = `([\pL\-_\d]{3,})`
 
 // LNG is a regular expression for language notation.
 const LNG = `((?:[a-z]{2}-[a-z]{2})|[a-z]{2})`
 
-// EXT is a regular expression for the requested format.
+const defaultFormat = `html`
+
+// EXT is a regular expression for the requested default format.
 const EXT = `(html?)`
 
 // QS stands for QUERY_STRING - this is the rest of the URL. We match anything.
@@ -100,14 +103,15 @@ type ServeConfig struct {
 }
 
 // ServeCGIConfig contains minimum ENV values for emulating a CGI request on
-// the command line. See https://www.rfc-editor.org/rfc/rfc3875
+// the command line. All of these can be overridden via flags.
+// See https://www.rfc-editor.org/rfc/rfc3875
 type ServeCGIConfig struct {
 	HTTP_HOST      string `yaml:"HTTP_HOST"`
+	REQUEST_URI    string `yaml:"REQUEST_URI"`
 	REQUEST_METHOD string `yaml:"REQUEST_METHOD"`
 	// SERVER_PROTOCOL used in CGI environment - HTTP/1.1. Recuired variable by
 	// the cgi Go module.
 	SERVER_PROTOCOL     string `yaml:"SERVER_PROTOCOL"`
-	REQUEST_URI         string `yaml:"REQUEST_URI"`
 	HTTP_ACCEPT_CHARSET string `yaml:"HTTP_ACCEPT_CHARSET"`
 	CONTENT_TYPE        string `yaml:"CONTENT_TYPE"`
 }
@@ -140,12 +144,24 @@ func (rc RewriteConfig) ToRewriteRules() (rewriteConfig middleware.RewriteConfig
 
 var rewriteConfigSkippers = map[string]middleware.Skipper{
 	`URI2PathAndDontSkip`: func(c echo.Context) bool {
-		// req.RequestURI is used by middleware#rewriteURL, but in CGI
-		// environment it seems to be empty. So here we populate it
-		// from URL.Path. And we do it unconditionally because
-		// RequestURI is still escaped and cannot match any of our
-		// regexes.
-		c.Request().RequestURI = c.Request().URL.Path
+		/*
+			  	 req.RequestURI is used by middleware#rewriteURL, but in CGI
+				 environment it seems to be empty. So here we populate it
+				 from URL.Path. And we do it also in server mode because
+				 RequestURI is still escaped and cannot match any of our
+				 regexes. We add also the RawQuery as it is needed for
+				 paging of stranici and celini, and probably other items from
+				 the database in the future.
+				 c.Logger().Debugf("os.Getenv(REQUEST_URI): %#v", os.Getenv(`REQUEST_URI`))
+				 c.Logger().Debugf("c.Request().RequestURI: %#v", c.Request().RequestURI)
+				 c.Logger().Debugf(" c.Request().URL.RawQuery: %#v", c.Request().URL.RawQuery)
+		*/
+		var uri strings.Builder
+		uri.WriteString(c.Request().URL.Path)
+		if c.Request().URL.RawQuery != "" {
+			uri.WriteString(`?` + c.Request().URL.RawQuery)
+		}
+		c.Request().RequestURI = uri.String()
 		return false
 	},
 }
@@ -178,8 +194,8 @@ var Cfg Config
 
 func init() {
 	// Default configuration
+	Cfg.Languages = []string{"bg"}
 	Cfg = Config{
-		Languages:  []string{"bg"},
 		Debug:      true,
 		ConfigFile: "etc/config.yaml",
 		Serve:      ServeConfig{Location: spf("%s:3000", defaultHost)},
@@ -214,16 +230,16 @@ func init() {
 				// row in table 'stranici' for example to 'index' if you want your root page
 				// to have alias 'index'. Also change the 'lang' here as desired.
 				// Defaults:
-				`^$`:                   spf("/%s/bg/html", rootPageAlias),
-				`^/$`:                  spf("/%s/bg/html", rootPageAlias),
-				spf(`^/index.%s`, EXT): spf("/%s/bg/html", rootPageAlias),
+				`^$`:                   spf("/%s/%s/%s", rootPageAlias, Cfg.Languages[0], defaultFormat),
+				`^/$`:                  spf("/%s/%s/%s", rootPageAlias, Cfg.Languages[0], defaultFormat),
+				spf(`^/index.%s`, EXT): spf("/%s/%s/%s", rootPageAlias, Cfg.Languages[0], defaultFormat),
 				// Станица	            /:stranica/:lang/:ext
 				spf(`^/%s\.%s%s`, SLOG, EXT, QS):          "/$1/bg/$2$3",
 				spf(`^/%s\.%s\.%s%s`, SLOG, LNG, EXT, QS): "/$1/$2/$3$4",
 
 				// Целина      /:stranica/:celina/:lang/:ext
 				// for now we have content only in bulgarian
-				spf(`^/%s/%s\.%s%s`, SLOG, SLOG, EXT, QS):          "/$1/$2/bg/$3$4",
+				spf(`^/%s/%s\.%s%s`, SLOG, SLOG, EXT, QS):          spf("/$1/$2/%s/$3$4", Cfg.Languages[0]),
 				spf(`^/%s/%s\.%s\.%s%s`, SLOG, SLOG, LNG, EXT, QS): "/$1/$2/$3/$4$5",
 			},
 		},
