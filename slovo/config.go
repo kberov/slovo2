@@ -32,6 +32,7 @@ const EXT = `(html?)`
 const QS = `(.*)?`
 
 const rootPageAlias = `коренъ`
+const guestID = 2
 
 // Config is the root structure of the configuration for slovo. We preserve the
 // case and style of each node and scalar item for best recognition between YAML
@@ -40,11 +41,12 @@ const rootPageAlias = `коренъ`
 //lint:file-ignore ST1003 ALL_CAPS match the ENV variable names
 type Config struct {
 	// Languages is a list of supported languages. the last is the default.
-	Languages  []string       `yaml:"Languages"`
-	Debug      bool           `yaml:"Debug"`
-	ConfigFile string         `yaml:"ConfigFile"`
-	Serve      ServeConfig    `yaml:"Serve"`
-	ServeCGI   ServeCGIConfig `yaml:"ServeCGI"`
+	Languages   []string `yaml:"Languages"`
+	Debug       bool     `yaml:"Debug"`
+	GuestUserId int32
+	ConfigFile  string         `yaml:"ConfigFile"`
+	Serve       ServeConfig    `yaml:"Serve"`
+	ServeCGI    ServeCGIConfig `yaml:"ServeCGI"`
 	// List of routes to be created by Echo
 	Routes Routes `yaml:"Routes"`
 	// Arguments for GledkiRenderer
@@ -196,9 +198,10 @@ func init() {
 	// Default configuration
 	Cfg.Languages = []string{"bg"}
 	Cfg = Config{
-		Debug:      true,
-		ConfigFile: "etc/config.yaml",
-		Serve:      ServeConfig{Location: spf("%s:3000", defaultHost)},
+		Debug:       true,
+		GuestUserId: guestID,
+		ConfigFile:  "etc/config.yaml",
+		Serve:       ServeConfig{Location: spf("%s:3000", defaultHost)},
 		ServeCGI: ServeCGIConfig{
 			// These are set as environment variables when the command `cgi` is
 			// executed on the command line and if they are not passed as flags
@@ -234,7 +237,7 @@ func init() {
 				`^/$`:                  spf("/%s/%s/%s", rootPageAlias, Cfg.Languages[0], defaultFormat),
 				spf(`^/index.%s`, EXT): spf("/%s/%s/%s", rootPageAlias, Cfg.Languages[0], defaultFormat),
 				// Станица	            /:stranica/:lang/:ext
-				spf(`^/%s\.%s%s`, SLOG, EXT, QS):          "/$1/bg/$2$3",
+				spf(`^/%s\.%s%s`, SLOG, EXT, QS):          "/$1/" + Cfg.Languages[0] + "/$2$3",
 				spf(`^/%s\.%s\.%s%s`, SLOG, LNG, EXT, QS): "/$1/$2/$3$4",
 
 				// Целина      /:stranica/:celina/:lang/:ext

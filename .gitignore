@@ -1,6 +1,8 @@
 /tags
 **/tags
+*.test
 slovo2
+*.cgi
 data/**
 etc/**
 *.out

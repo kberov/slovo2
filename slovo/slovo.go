@@ -12,9 +12,8 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-const VERSION = "2024.02.23"
+const VERSION = "2024.02.26"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
-const GuestID = 2
 
 func initEcho(logger *log.Logger) *echo.Echo {
 	e := echo.New()

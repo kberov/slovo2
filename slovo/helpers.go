@@ -5,7 +5,9 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/labstack/echo/v4"
 	"golang.org/x/net/idna"
@@ -71,4 +73,38 @@ func FileIsReadable(path string) bool {
 		return true
 	}
 	return false
+}
+
+var reHTML = regexp.MustCompile(`<[^>]+>`)
+
+func stripHTML(text string) string {
+	return reHTML.ReplaceAllString(text, "")
+}
+
+/*
+substring extracts a substring out of `expr` and returns it. First character
+is at offset zero. If LENGTH is 0, returns everything through the end of the
+string. String is a string of runes.
+*/
+
+func substring(expr string, offset uint, length uint) string {
+	characters := utf8.RuneCountInString(expr)
+	if length == 0 {
+		return expr
+	}
+	if uint(characters) < offset+length {
+		return expr
+	}
+	return string([]rune(expr)[offset:length])
+}
+
+/*
+substringWithTail does the same as substring, but adds a tail string in case
+the input string was longer than the output string.
+*/
+func substringWithTail(expr string, offset uint, length uint, tail string) string {
+	if utf8.RuneCountInString(expr) > int(length) {
+		return substring(expr, offset, length) + tail
+	}
+	return expr
 }

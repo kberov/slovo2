@@ -158,7 +158,19 @@ summary {
 
 .pager {
   text-align: center;
+  padding: .5rem;
 }
+
+.pager > a:first-child{
+  float: left;
+  font-size: 2rem;
+}
+
+.pager > a:nth-child(2){
+  float: right;
+  font-size: 2rem;
+}
+
 /* small screens */
 @media (max-width: 412px) {
   section.stranici, section.celini {

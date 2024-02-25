@@ -2,9 +2,7 @@ package slovo
 
 import (
 	"net/http"
-	"regexp"
 	"strings"
-	"unicode/utf8"
 
 	m "github.com/kberov/slovo2/model"
 	"github.com/labstack/echo/v4"
@@ -121,61 +119,26 @@ func categoryCeliniPager(c *Context, celiniNum int) string {
 	if celiniNum < args.Limit && args.Offset == 0 {
 		return ``
 	}
-	// TODO: move the HTML to a partial template and use
-	// t.FtExecStringStd(partial, stash)! See categoryPages.
-	pagertmpl := `<div class="card col-12 pager">`
-	// link to previous
+	t, _ := c.Echo().Renderer.(*EchoRenderer)
+	partial := t.MustLoadFile(`stranici/_pager`)
+	stash := Stash{}
 	if args.Offset > 0 {
 		offset := args.Offset - args.Limit
 		if offset <= 0 {
-			pagertmpl += spf(`<a title="първи %[4]d" href="/%[1]s.%s.%s">⮈</a>`,
+			stash["prev"] = spf(`<a title="първи %[4]d" href="/%[1]s.%s.%s">⮈</a>`,
 				args.Alias, args.Lang, args.Format, args.Limit)
 		} else {
-			pagertmpl += spf(`<a title="предишни %[4]d" href="/%[1]s.%s.%s?limit=%d&offset=%d">⮈</a>`,
+			stash["prev"] = spf(`<a title="предишни %[4]d" href="/%[1]s.%s.%s?limit=%d&offset=%d">⮈</a>`,
 				args.Alias, args.Lang, args.Format, args.Limit, offset)
 		}
 		if celiniNum == args.Limit {
-			pagertmpl += `&nbsp;&nbsp;`
+			stash["nbsp"] = `&nbsp;&nbsp;`
 		}
 	}
 	// link to next
 	if celiniNum == args.Limit {
-		pagertmpl += spf(`<a title="следващи %[4]d" href="/%[1]s.%s.%s?limit=%d&offset=%d">⮊</a>`,
+		stash["next"] = spf(`<a title="следващи %[4]d" href="/%[1]s.%s.%s?limit=%d&offset=%d">⮊</a>`,
 			args.Alias, args.Lang, args.Format, args.Limit, (args.Offset + args.Limit))
 	}
-	return pagertmpl + `</div>`
-}
-
-var reHTML = regexp.MustCompile(`<[^>]+>`)
-
-func stripHTML(text string) string {
-	return reHTML.ReplaceAllString(text, "")
-}
-
-/*
-substring extracts a substring out of `expr` and returns it. First character
-is at offset zero. If LENGTH is 0, returns everything through the end of the
-string. String is a string of runes.
-*/
-
-func substring(expr string, offset uint, length uint) string {
-	characters := utf8.RuneCountInString(expr)
-	if length == 0 {
-		return expr
-	}
-	if uint(characters) < offset+length {
-		return expr
-	}
-	return string([]rune(expr)[offset:length])
-}
-
-/*
-substringWithTail does the same as substring, but adds a tail string in case
-the input string was longer than the output string.
-*/
-func substringWithTail(expr string, offset uint, length uint, tail string) string {
-	if utf8.RuneCountInString(expr) > int(length) {
-		return substring(expr, offset, length) + tail
-	}
-	return expr
+	return t.FtExecString(partial, stash)
 }
