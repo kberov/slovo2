@@ -29,7 +29,7 @@ application. Also this is how we cheat Slovo2 to test it on the command line.`,
 		// Logger.Debugf("cgiCmd.PreRun(cgiCmd): args: %v", args)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		slovo.ServeCGI(Logger)
+		slovo.StartCGI(Logger)
 	},
 }
 
@@ -46,31 +46,29 @@ func init() {
 	// is called directly, e.g.:
 	// cgiCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	cgiCmd.Flags().StringVarP(
-		&slovo.Cfg.ServeCGI.HTTP_HOST,
+		&slovo.Cfg.StartCGI.HTTP_HOST,
 		"HTTP_HOST", "H",
-		slovo.Cfg.ServeCGI.HTTP_HOST, "The server host to which the client request is directed.")
+		slovo.Cfg.StartCGI.HTTP_HOST, "The server host to which the client request is directed.")
 	cgiCmd.Flags().StringVarP(
-		&slovo.Cfg.ServeCGI.REQUEST_URI,
+		&slovo.Cfg.StartCGI.REQUEST_URI,
 		"REQUEST_URI", "U",
-		slovo.Cfg.ServeCGI.REQUEST_URI, "Request URI")
+		slovo.Cfg.StartCGI.REQUEST_URI, "Request URI")
 	cgiCmd.Flags().StringVarP(
-		&slovo.Cfg.ServeCGI.REQUEST_METHOD,
+		&slovo.Cfg.StartCGI.REQUEST_METHOD,
 		"REQUEST_METHOD", "M",
-		slovo.Cfg.ServeCGI.REQUEST_METHOD, "Request method")
+		slovo.Cfg.StartCGI.REQUEST_METHOD, "Request method")
 	cgiCmd.Flags().StringVarP(
-		&slovo.Cfg.ServeCGI.SERVER_PROTOCOL,
+		&slovo.Cfg.StartCGI.SERVER_PROTOCOL,
 		"SERVER_PROTOCOL", "P",
-		slovo.Cfg.ServeCGI.SERVER_PROTOCOL, "Server protocol")
+		slovo.Cfg.StartCGI.SERVER_PROTOCOL, "Server protocol")
 	cgiCmd.Flags().StringVarP(
-		&slovo.Cfg.ServeCGI.HTTP_ACCEPT_CHARSET,
+		&slovo.Cfg.StartCGI.HTTP_ACCEPT_CHARSET,
 		"HTTP_ACCEPT_CHARSET", "C",
-		slovo.Cfg.ServeCGI.HTTP_ACCEPT_CHARSET, "Accept-Charset")
+		slovo.Cfg.StartCGI.HTTP_ACCEPT_CHARSET, "Accept-Charset")
 	cgiCmd.Flags().StringVarP(
-		&slovo.Cfg.ServeCGI.CONTENT_TYPE,
+		&slovo.Cfg.StartCGI.CONTENT_TYPE,
 		"CONTENT_TYPE", "T",
-		slovo.Cfg.ServeCGI.CONTENT_TYPE, "Content-Type")
-	//cobra.OnInitialize(rootInitConfig)
-	//cobra.OnInitialize(cgiInitConfig)
+		slovo.Cfg.StartCGI.CONTENT_TYPE, "Content-Type")
 }
 
 func cgiInitConfig() {
@@ -81,16 +79,16 @@ func cgiInitConfig() {
 	// minimum ENV values for emulating a CGI request on the command line
 	var env = map[string]string{
 		"GATEWAY_INTERFACE": "CGI/1.1",
-		"SERVER_PROTOCOL":   slovo.Cfg.ServeCGI.SERVER_PROTOCOL,
-		"REQUEST_METHOD":    slovo.Cfg.ServeCGI.REQUEST_METHOD,
-		"HTTP_HOST":         slovo.Cfg.ServeCGI.HTTP_HOST,
+		"SERVER_PROTOCOL":   slovo.Cfg.StartCGI.SERVER_PROTOCOL,
+		"REQUEST_METHOD":    slovo.Cfg.StartCGI.REQUEST_METHOD,
+		"HTTP_HOST":         slovo.Cfg.StartCGI.HTTP_HOST,
 		//"HTTP_REFERER":        "elsewhere",
 		//"HTTP_USER_AGENT":     "slovo2client",
-		"HTTP_ACCEPT_CHARSET": slovo.Cfg.ServeCGI.HTTP_ACCEPT_CHARSET,
+		"HTTP_ACCEPT_CHARSET": slovo.Cfg.StartCGI.HTTP_ACCEPT_CHARSET,
 		// "HTTP_FOO_BAR":    "baz",
-		"REQUEST_URI": escapeRequestURI(slovo.Cfg.ServeCGI.REQUEST_URI),
+		"REQUEST_URI": escapeRequestURI(slovo.Cfg.StartCGI.REQUEST_URI),
 		// "CONTENT_LENGTH":  "123",
-		"CONTENT_TYPE": slovo.Cfg.ServeCGI.CONTENT_TYPE,
+		"CONTENT_TYPE": slovo.Cfg.StartCGI.CONTENT_TYPE,
 		// "REMOTE_ADDR":     "5.6.7.8",
 		// "REMOTE_PORT":     "54321",
 	}

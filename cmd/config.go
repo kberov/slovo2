@@ -22,7 +22,7 @@ Available actions are:
   defaults - Displays the default configuration.
   dump     - Dumps the configuration to specified file with --config_file.
              Defults to %s. 
-`, defaultCfg.ConfigFile),
+`, defaultCfg.File),
 	Args: cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -54,10 +54,10 @@ func displayDefaultConfig() {
 
 func dumpConfig() {
 	if cfgFile == "" {
-		cfgFile = defaultCfg.ConfigFile
+		cfgFile = defaultCfg.File
 	}
 	fmt.Printf("Will dump configuration to %s.\n\n\tNote! The directory must exist.\n\n", cfgFile)
-	fmt.Printf("Default configuration file is %s.\n", defaultCfg.ConfigFile)
+	fmt.Printf("Default configuration file is %s.\n", defaultCfg.File)
 	finfo, err := os.Stat(cfgFile)
 	if err != nil && errors.Is(err, os.ErrNotExist) {
 		// fine

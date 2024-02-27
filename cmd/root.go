@@ -82,7 +82,7 @@ func Execute() {
 	}
 }
 
-var cfgFile = slovo.Cfg.ConfigFile
+var cfgFile = slovo.Cfg.File
 var Logger = log.New("slovo2")
 
 func init() {

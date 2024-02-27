@@ -14,7 +14,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-var cfgFile = Cfg.ConfigFile
+var cfgFile = Cfg.File
 var Logger = log.New("slovo2")
 
 const defaultLogHeader = `${prefix}:${level}:${short_file}:${line}`

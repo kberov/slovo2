@@ -49,7 +49,7 @@ func canCachePage(c *Context) bool {
 		return false
 	}
 	// If the user is not Guest or the file is not html, do not cache!
-	if c.StraniciArgs.Format != defaultFormat || c.StraniciArgs.UserID != Cfg.GuestUserId {
+	if c.StraniciArgs.Format != format || c.StraniciArgs.UserID != Cfg.GuestID {
 		return false
 	}
 	return true

@@ -22,7 +22,7 @@ var serveCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		Logger.Debug("serveCmd.Command().Run() called.")
-		slovo.Serve(Logger)
+		slovo.Start(Logger)
 	},
 }
 

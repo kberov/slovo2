@@ -23,7 +23,7 @@ const SLOG = `([\pL\-_\d]{3,})`
 // LNG is a regular expression for language notation.
 const LNG = `((?:[a-z]{2}-[a-z]{2})|[a-z]{2})`
 
-const defaultFormat = `html`
+const format = `html`
 
 // EXT is a regular expression for the requested default format.
 const EXT = `(html?)`
@@ -31,7 +31,7 @@ const EXT = `(html?)`
 // QS stands for QUERY_STRING - this is the rest of the URL. We match anything.
 const QS = `(.*)?`
 
-const rootPageAlias = `коренъ`
+const rootAlias = `коренъ`
 const guestID = 2
 
 // Config is the root structure of the configuration for slovo. We preserve the
@@ -40,24 +40,28 @@ const guestID = 2
 //
 //lint:file-ignore ST1003 ALL_CAPS match the ENV variable names
 type Config struct {
-	// Languages is a list of supported languages. the last is the default.
-	Languages   []string `yaml:"Languages"`
-	Debug       bool     `yaml:"Debug"`
-	GuestUserId int32
-	ConfigFile  string         `yaml:"ConfigFile"`
-	Serve       ServeConfig    `yaml:"Serve"`
-	ServeCGI    ServeCGIConfig `yaml:"ServeCGI"`
+	// Langs is a list of supported languages. the last is the default.
+	Langs []string `yaml:"Langs"`
+	Debug bool     `yaml:"Debug"`
+	// GuestID is the id of the user when a guest (unauthenticated) visits the
+	// site.
+	GuestID int32 `yaml:"GuestID"`
+	// File is the path to the configuration file in which this structure will
+	// be dumped in YAML format.
+	File     string   `yaml:"File"`
+	Serve    Serve    `yaml:"Serve"`
+	StartCGI ServeCGI `yaml:"ServeCGI"`
 	// List of routes to be created by Echo
 	Routes Routes `yaml:"Routes"`
 	// Arguments for GledkiRenderer
-	Renderer RendererConfig `yaml:"Renderer"`
+	Renderer Renderer `yaml:"Renderer"`
 	// Directories for static content. For example request to /css/site.css
 	// will be served from public/css/site.css.
 	// `e.Static("/css","public/css").`
-	StaticRoutes  []StaticRoute `yaml:"StaticRoutes"`
-	DB            DBConfig      `yaml:"DB"`
-	RewriteConfig RewriteConfig `yaml:"RewriteConfig"`
-	CachePages    bool          `yaml:"CachePages"`
+	StaticRoutes []StaticRoute `yaml:"StaticRoutes"`
+	DB           DBConfig      `yaml:"DB"`
+	Rewrite      Rewrite       `yaml:"Rewrite"`
+	CachePages   bool          `yaml:"CachePages"`
 }
 
 type DBConfig struct {
@@ -72,7 +76,8 @@ type StaticRoute struct {
 	Root   string `yaml:"Root"`
 }
 
-type RendererConfig struct {
+// Renderer contains arguments, passed to GledkiMust.
+type Renderer struct {
 	TemplateRoots []string  `yaml:"TemplateRoots"`
 	Ext           string    `yaml:"Ext"`
 	Tags          [2]string `yaml:"Tags"`
@@ -99,15 +104,16 @@ type Route struct {
 
 type Routes []Route
 
-type ServeConfig struct {
+// Serve has configuration properties, passed to [slovo.Start].
+type Serve struct {
 	// Location is descrived as f.q.d.n:port
 	Location string `yaml:"Location"`
 }
 
-// ServeCGIConfig contains minimum ENV values for emulating a CGI request on
+// ServeCGI contains minimum ENV values for emulating a CGI request on
 // the command line. All of these can be overridden via flags.
 // See https://www.rfc-editor.org/rfc/rfc3875
-type ServeCGIConfig struct {
+type ServeCGI struct {
 	HTTP_HOST      string `yaml:"HTTP_HOST"`
 	REQUEST_URI    string `yaml:"REQUEST_URI"`
 	REQUEST_METHOD string `yaml:"REQUEST_METHOD"`
@@ -118,7 +124,9 @@ type ServeCGIConfig struct {
 	CONTENT_TYPE        string `yaml:"CONTENT_TYPE"`
 }
 
-type RewriteConfig struct {
+// Rewrite is used to pass configuration values to
+// [middleware.RewriteWithConfig].
+type Rewrite struct {
 	SkipperFuncName string `yaml:"SkipperFuncName"`
 	// Rules is a map of string to string in which the key is a regular
 	// expression and the value is the resulting route mapping description
@@ -126,14 +134,14 @@ type RewriteConfig struct {
 }
 
 /*
-ToRewriteRules converts slovo.RewriteConfig to middleware.RewriteConfig
-structure, suitable for passing to middleware.RewriteWithConfig() and returns
+ToRewriteRules converts [slovo.Rewrite] to [middleware.RewriteConfig]
+structure, suitable for passing to [middleware.RewriteWithConfig] and returns
 it. Particularly SkipperFuncName is converted to
-middleware.RewriteConfig.Skipper and Rules are converted to
-middleware.RewriteConfig.RegexRules. This is somehow easier than implementing
+[middleware.RewriteConfig.Skipper] and Rules are converted to
+[middleware.RewriteConfig.RegexRules]. This is somehow easier than implementing
 MarshalYAML and UnmarshalYAML.
 */
-func (rc RewriteConfig) ToRewriteRules() (rewriteConfig middleware.RewriteConfig) {
+func (rc Rewrite) ToRewriteRules() (rewriteConfig middleware.RewriteConfig) {
 	rewriteConfig = middleware.RewriteConfig{
 		Skipper:    rewriteConfigSkippers[rc.SkipperFuncName],
 		RegexRules: make(map[*regexp.Regexp]string),
@@ -196,13 +204,13 @@ var Cfg Config
 
 func init() {
 	// Default configuration
-	Cfg.Languages = []string{"bg"}
+	Cfg.Langs = []string{"bg"}
 	Cfg = Config{
-		Debug:       true,
-		GuestUserId: guestID,
-		ConfigFile:  "etc/config.yaml",
-		Serve:       ServeConfig{Location: spf("%s:3000", defaultHost)},
-		ServeCGI: ServeCGIConfig{
+		Debug:   true,
+		GuestID: guestID,
+		File:    "etc/config.yaml",
+		Serve:   Serve{Location: spf("%s:3000", defaultHost)},
+		StartCGI: ServeCGI{
 			// These are set as environment variables when the command `cgi` is
 			// executed on the command line and if they are not passed as flags
 			// or not set by the environment. These are the default values for
@@ -216,7 +224,7 @@ func init() {
 		},
 		// Store methods by names in YAML!
 		Routes: Routes{
-			// Routes are not as pawerful as in Mojolicious. We need the RewriteConfig.Rules below
+			// Routes are not as powerful as in Mojolicious. We need the RewriteConfig.Rules below
 			Route{Method: echo.GET, Path: "/", Handler: "straniciExecute", Name: "/"},
 			Route{Method: ANY, Path: "/:stranica/:lang/:format", Handler: "straniciExecute",
 				MiddlewareFuncs: []string{"SlovoContext", "CachePages"}, Name: "stranica"},
@@ -225,7 +233,7 @@ func init() {
 			Route{Method: echo.GET, Path: "/v2/ppdfcpu", Handler: "ppdfcpuForm", Name: "ppdfcpu"},
 			Route{Method: echo.POST, Path: "/v2/ppdfcpu", Handler: "ppdfcpu", Name: "ppdfcpuForm"},
 		},
-		RewriteConfig: RewriteConfig{
+		Rewrite: Rewrite{
 			SkipperFuncName: `URI2PathAndDontSkip`,
 			Rules: map[string]string{
 				// Root page in all domains has by default alias 'коренъ' and language
@@ -233,26 +241,26 @@ func init() {
 				// row in table 'stranici' for example to 'index' if you want your root page
 				// to have alias 'index'. Also change the 'lang' here as desired.
 				// Defaults:
-				`^$`:                   spf("/%s/%s/%s", rootPageAlias, Cfg.Languages[0], defaultFormat),
-				`^/$`:                  spf("/%s/%s/%s", rootPageAlias, Cfg.Languages[0], defaultFormat),
-				spf(`^/index.%s`, EXT): spf("/%s/%s/%s", rootPageAlias, Cfg.Languages[0], defaultFormat),
+				`^$`:                   spf("/%s/%s/%s", rootAlias, Cfg.Langs[0], format),
+				`^/$`:                  spf("/%s/%s/%s", rootAlias, Cfg.Langs[0], format),
+				spf(`^/index.%s`, EXT): spf("/%s/%s/%s", rootAlias, Cfg.Langs[0], format),
 				// Станица	            /:stranica/:lang/:ext
-				spf(`^/%s\.%s%s`, SLOG, EXT, QS):          "/$1/" + Cfg.Languages[0] + "/$2$3",
+				spf(`^/%s\.%s%s`, SLOG, EXT, QS):          "/$1/" + Cfg.Langs[0] + "/$2$3",
 				spf(`^/%s\.%s\.%s%s`, SLOG, LNG, EXT, QS): "/$1/$2/$3$4",
 
 				// Целина      /:stranica/:celina/:lang/:ext
 				// for now we have content only in bulgarian
-				spf(`^/%s/%s\.%s%s`, SLOG, SLOG, EXT, QS):          spf("/$1/$2/%s/$3$4", Cfg.Languages[0]),
+				spf(`^/%s/%s\.%s%s`, SLOG, SLOG, EXT, QS):          spf("/$1/$2/%s/$3$4", Cfg.Langs[0]),
 				spf(`^/%s/%s\.%s\.%s%s`, SLOG, SLOG, LNG, EXT, QS): "/$1/$2/$3/$4$5",
 			},
 		},
-		Renderer: RendererConfig{
-			// Templates root folder. Must exist
+		Renderer: Renderer{
+			// Templates root folder. Must exist.
 			TemplateRoots: []string{"templates"},
 			Ext:           ".htm",
 			// Delimiters for template tags
 			Tags: [2]string{"${", "}"},
-			// Should the files be loaded at start?
+			// Should the template files be loaded at start?
 			LoadFiles: false,
 		},
 		// Static files routes to be seved by echo.
@@ -267,5 +275,5 @@ func init() {
 		CachePages: true,
 	}
 
-	// Cfg.CachePages = false
+	Cfg.CachePages = false
 } // end init()

@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-const VERSION = "2024.02.26"
+const VERSION = "2024.02.28"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 
 func initEcho(logger *log.Logger) *echo.Echo {
@@ -32,7 +32,7 @@ func initEcho(logger *log.Logger) *echo.Echo {
 	// Use our binder which embeds echo.DefaultBinder
 	e.Binder = &Binder{}
 	// Add middleware to the Echo instance
-	e.Pre(middleware.RewriteWithConfig(Cfg.RewriteConfig.ToRewriteRules()))
+	e.Pre(middleware.RewriteWithConfig(Cfg.Rewrite.ToRewriteRules()))
 	// Request ID middleware generates a unique id for a request.
 	e.Use(middleware.RequestID())
 	// Add directories in which the files will be served as they are.
@@ -66,12 +66,14 @@ func loadRoutes(e *echo.Echo) {
 	}
 }
 
-func ServeCGI(logger *log.Logger) {
+// StartCGI starts Echo in CGI mode.
+func StartCGI(logger *log.Logger) {
 	if err := cgi.Serve(initEcho(logger)); err != nil {
 		logger.Fatal(err)
 	}
 }
 
-func Serve(logger *log.Logger) {
+// Start starts Echo in server mode.
+func Start(logger *log.Logger) {
 	logger.Fatal(initEcho(logger).Start(Cfg.Serve.Location))
 }
