@@ -22,7 +22,8 @@ var queryTemplates = SQLMap{
     	WHERE alias_table='celini' AND (old_alias=:celina OR new_alias=:celina) ORDER BY ID DESC LIMIT 1)`,
 	// To be embedded in other queries
 	"PUBLISHED_DOMAIN_ID_BY_NAME_IS": `(SELECT id FROM domove
-		WHERE (:domain LIKE '%' || domain OR aliases LIKE :domain OR ips LIKE :domain) AND published = 2 LIMIT 1)`,
+		WHERE (:domain LIKE '%'||domain OR aliases LIKE :domain OR ips LIKE '%'||:domain||'%') AND published = 2 LIMIT 1)`,
+	"GET_DOMAIN": `SELECT * from ${table} WHERE id=${PUBLISHED_DOMAIN_ID_BY_NAME_IS}`,
 	// To be embedded in other queries
 	"PERMISSIONS_ARE": `(
 	-- others can read and execute AND stranica/celina is published

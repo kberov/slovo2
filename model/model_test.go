@@ -20,7 +20,7 @@ func init() {
 	args = &StraniciArgs{
 		Alias:  "вѣра",
 		UserID: 2,
-		Domain: "dev.xn--b1arjbl.xn--90ae",
+		Domain: "xn--b1arjbl.xn--90ae",
 		Box:    MainBox,
 		Pub:    2,
 		Lang:   "bg",
@@ -77,6 +77,29 @@ func TestListStranici(t *testing.T) {
 	stranici := ListStranici(myArgs)
 	if stranici[0].ID != 21 {
 		t.Fatalf("ListStranici failed: %v", "Unexpected page at index 0")
+	}
+}
+
+func TestGetDomain(t *testing.T) {
+	domains := map[string]string{
+		`xn--b1arjbl.xn--90ae`:     `xn--b1arjbl.xn--90ae`,
+		`dev.xn--b1arjbl.xn--90ae`: `xn--b1arjbl.xn--90ae`,
+		`www.xn--b1arjbl.xn--90ae`: `xn--b1arjbl.xn--90ae`,
+		`localhost`:                `localhost`,
+		`qa.localhost`:             `localhost`,
+		`dev.i-can.eu`:             `i-can.eu`,
+		`127.0.0.1`:                `localhost`,
+	}
+
+	for k, v := range domains {
+		t.Run(k, func(t *testing.T) {
+			dom := new(Domove)
+			dom.GetByName(k)
+			if dom.Domain != v {
+				t.Fatalf("Unexpectedly got domain %s. Expected: %s", dom.Domain, v)
+			}
+			// t.Logf("%s => %#v", k, dom)
+		})
 	}
 }
 

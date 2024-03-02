@@ -7,9 +7,10 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// Domove is a records from table domove.
-// In this file we strore records by table name. Each type represents a row in
+// In this file we store records by table name. Each type represents a row in
 // the respective table after which it is named.
+
+// Domove is a record from table domove.
 type Domove struct {
 	ID          int32
 	Domain      string
@@ -22,6 +23,18 @@ type Domove struct {
 	Ips         string
 	Aliases     string
 	Templates   string
+}
+
+func (d *Domove) GetByName(domain string) error {
+	table := Record2Table(d)
+	SQL := SQLFor("GET_DOMAIN", table)
+	// Logger.Debugf("domain: %#v GetByName(GET_DOMAIN) SQL:\n%s", domain, SQL)
+	if stmt, err := DB().PrepareNamed(SQL); err != nil {
+		return err
+	} else {
+		args := struct{ Domain string }{Domain: domain}
+		return stmt.Get(d, args)
+	}
 }
 
 type PageType string
