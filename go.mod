@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/jmoiron/sqlx v1.3.5
-	github.com/kberov/gledki v0.7.0
+	github.com/kberov/gledki v0.7.1
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/labstack/gommon v0.4.2
 	github.com/mattn/go-sqlite3 v1.14.22
@@ -32,4 +32,4 @@ require (
 
 replace github.com/labstack/echo/v4 v4.11.4 => ../echo
 
-replace github.com/kberov/gledki v0.7.0 => ../gledki
+replace github.com/kberov/gledki v0.7.1 => ../gledki
