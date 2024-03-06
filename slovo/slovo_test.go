@@ -14,7 +14,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-var cfgFile = Cfg.File
 var Logger = log.New("slovo2")
 
 const defaultLogHeader = `${prefix}:${level}:${short_file}:${line}`
@@ -73,19 +72,7 @@ func Test_publishedStatus(t *testing.T) {
 }
 
 func TestRoutes(t *testing.T) {
-	/*
-		Cfg.Renderer.TemplateRoots = []string{`../templates`}
-		e := initEcho(Logger)
-		rec := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodGet, "/коренъ.bg.html", nil)
-		c := e.NewContext(req, rec)
-		e.ServeHTTP(rec, req)
-		if assert.NoError(t, err) {
-			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.Equal(t, echo.MIMETextHTMLCharsetUTF8, rec.Header().Get(echo.HeaderContentType))
-			assert.Equal(t, "Hello, <strong>World!</strong>", rec.Body.String())
-		}
-	*/
+
 	var testCases = []struct {
 		name         string
 		whenURL      string
@@ -184,4 +171,64 @@ func TestRoutes(t *testing.T) {
 		})
 	}
 
+}
+
+func Test_PreferDomainStaticFiles_and_switchToDomainTemplates(t *testing.T) {
+	var testCases = []struct {
+		dom          string
+		whenURL      string
+		expectStatus int
+		bodyContains string
+	}{
+		{
+			dom:          `dev.studio-berov.eu:3000`,
+			whenURL:      `/css/site2.css`,
+			expectStatus: http.StatusOK,
+			// common static file
+			bodyContains: `Our custom styles are at the bottom.`,
+		}, {
+			dom:          `dev.studio-berov.eu:3000`,
+			whenURL:      `/коренъ.bg.html`,
+			expectStatus: http.StatusOK,
+			// common domain wrapper
+			bodyContains: `<meta property="og:type" content="website" />
+</head>`,
+		},
+
+		{
+			dom:          dom,
+			whenURL:      `/ѩꙁыкъ/о-писменьхъ.bg.html`,
+			expectStatus: http.StatusOK,
+			//domain specific static file
+			bodyContains: `src="/js/o-pismeneh.js"`,
+		}, {
+			dom:          dom,
+			whenURL:      `/коренъ.bg.html`,
+			expectStatus: http.StatusOK,
+			//domain specific wrapper
+			bodyContains: `<meta property="og:type" content="website" />
+  <script src="/js/jquery-3.7.1.min.js"></script>
+</head>`,
+		},
+	}
+
+	Cfg.Renderer.TemplateRoots = []string{`../` + Cfg.Renderer.TemplateRoots[0]}
+	Cfg.DomoveRoot = `../domove`
+	Cfg.DB.DSN = "../" + Cfg.DB.DSN
+
+	e := initEcho(Logger)
+	for _, tc := range testCases {
+		url := `http://` + tc.dom + tc.whenURL
+		t.Run(url, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, url, nil)
+			rec := httptest.NewRecorder()
+
+			e.ServeHTTP(rec, req)
+
+			assert.Equal(t, tc.expectStatus, rec.Code)
+			assert.True(t, strings.Contains(rec.Body.String(), tc.bodyContains))
+			//t.Logf("tc.bodyContains: %s", tc.bodyContains)
+			//t.Logf("rec.Body.String(): %s", rec.Body.String())
+		})
+	}
 }

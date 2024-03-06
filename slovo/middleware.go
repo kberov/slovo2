@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/labstack/echo/v4"
 )
@@ -20,7 +21,7 @@ func cachePages(ec echo.Context, reqBody, resBody []byte) {
 	// If page is already cached, do not overwrite the file with the just
 	// extracted from it content.
 	path := c.CanonicalPath()
-	fullPath := filepath.Join(BinDir(), `domove`, c.StraniciArgs.Domain, `public`, cached, path)
+	fullPath := filepath.Join(Cfg.DomoveRoot, c.StraniciArgs.Domain, `public`, cached, path)
 	if FileIsReadable(fullPath) {
 		return
 	}
@@ -53,4 +54,23 @@ func canCachePage(c *Context) bool {
 		return false
 	}
 	return true
+}
+
+// PreferDomainStaticFiles serves static files from domain specific
+// directories if these files exist.
+func PreferDomainStaticFiles(next echo.HandlerFunc) echo.HandlerFunc {
+	reStaticFile := regexp.MustCompile(Cfg.DomoveStaticFiles)
+	return func(c echo.Context) error {
+		path := c.Request().URL.Path
+		c.Logger().Debugf("request file: %s", path)
+		if reStaticFile.MatchString(path) {
+			domain := domainName(c)
+			file := filepath.Join(Cfg.DomoveRoot, domain, `public`, path)
+			c.Logger().Debugf("filepath:%s", file)
+			if FileIsReadable(file) {
+				return c.File(file)
+			}
+		}
+		return next(c)
+	}
 }

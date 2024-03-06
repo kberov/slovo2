@@ -1,10 +1,9 @@
 package slovo
 
 import (
-	"strings"
 	"time"
 
-	"github.com/kberov/slovo2/model"
+	m "github.com/kberov/slovo2/model"
 	"github.com/labstack/echo/v4"
 )
 
@@ -19,12 +18,12 @@ Bind binds some variables into a structure to be passed to queries for
 Stranici and Celini.
 */
 func (b *Binder) Bind(args any, c echo.Context) (err error) {
-	// Here we handle untagged fields - those which values cannot be simply got
-	// from any of the supported by [echo] tags. But we need them to make
-	// proper SQL queries. We also set default values for some potentially
-	// tagget fiedls like Limit and Offset.
+	// Here in this `switch` we handle untaggable fields - those which values
+	// cannot be simply got from any of the supported by [echo] tags. But we
+	// need them to make proper SQL queries. We also set default values for
+	// some potentially tagget fiedls like Limit and Offset.
 	switch t := args.(type) {
-	case *model.StraniciArgs:
+	case *m.StraniciArgs:
 		a := t
 		// TODO implement authentication and see if we need the whole user somewhere.
 		// user := new(model.Users)
@@ -33,12 +32,11 @@ func (b *Binder) Bind(args any, c echo.Context) (err error) {
 		// a.UserID = user.ID
 		a.UserID = 2
 		a.Pub = publishedStatus(c)
-		a.Domain, _ = strings.CutPrefix(hostName(c), `dev.`)
-		a.Domain, _ = strings.CutPrefix(a.Domain, `www.`)
+		a.Domain = domainName(c)
 		a.Now = time.Now().Unix()
 		// By default the main box is displayed as the main content on the
 		// rendered page.
-		a.Box = model.MainBox
+		a.Box = m.MainBox
 		// Default values for paging. They are overridden by QueryParams.
 		a.Limit = 10
 		a.Offset = 0

@@ -53,7 +53,7 @@ var binDir string
 // BinDir returns the directory where the binary resides. We assume that this
 // is the root of the project.
 func BinDir() string {
-	if len(binDir) > 0 {
+	if binDir != "" {
 		return binDir
 	}
 	exe, err := os.Executable()
@@ -107,4 +107,21 @@ func substringWithTail(expr string, offset uint, length uint, tail string) strin
 		return substring(expr, offset, length) + tail
 	}
 	return expr
+}
+
+// domainName return the current domain name without common prefixes like
+// dev,www,qa etc, as listed in Cfg.DomovePrefixes.
+func domainName(c echo.Context) string {
+	domainName, ok := c.Get(`domainName`).(string)
+	if ok {
+		return domainName
+	}
+	for _, prefix := range Cfg.DomovePrefixes {
+		domainName, isCut := strings.CutPrefix(hostName(c), prefix)
+		if isCut {
+			c.Set(`domainName`, domainName)
+			return domainName
+		}
+	}
+	return domainName
 }

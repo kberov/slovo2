@@ -1,5 +1,6 @@
 /*
-Package slovo contains code for preparing web pages for the site -- the front-end.
+Package slovo contains code for preparing and serving web pages for the site --
+the front-end.
 */
 package slovo
 
@@ -12,7 +13,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-const VERSION = "2024.02.28"
+const VERSION = "2024.03.04-alpha-011"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 
 func initEcho(logger *log.Logger) *echo.Echo {
@@ -34,6 +35,7 @@ func initEcho(logger *log.Logger) *echo.Echo {
 	// Add middleware to the Echo instance
 	e.Pre(middleware.RewriteWithConfig(Cfg.Rewrite.ToRewriteRules()))
 	// Request ID middleware generates a unique id for a request.
+	e.Use(PreferDomainStaticFiles)
 	e.Use(middleware.RequestID())
 	// Add directories in which the files will be served as they are.
 	for _, path := range Cfg.StaticRoutes {

@@ -2,6 +2,7 @@ package slovo
 
 import (
 	"net/http"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -35,14 +36,21 @@ const rootAlias = `коренъ`
 const guestID = 2
 
 // Config is the root structure of the configuration for slovo. We preserve the
-// case and style of each node and scalar item for best recognition between YAML
-// file and Go source code.
+// case and style of each node and scalar item between YAML file and Go source
+// code for best recognition.
 //
 //lint:file-ignore ST1003 ALL_CAPS match the ENV variable names
 type Config struct {
-	// Langs is a list of supported languages. the last is the default.
+	// Langs is a list of supported languages. The last is the default.
 	Langs []string `yaml:"Langs"`
 	Debug bool     `yaml:"Debug"`
+	// DomoveRoot is the root folder for static content and templates of parked
+	// domains. Defaults to `BinDir()/domove`.
+	DomoveRoot string `yaml:"DomoveRoot"`
+	// DomovePrefixes is a common list of prefixes, used in parked domains to
+	// create subdomains for various purposes. These prefixes are cut and then
+	// the domain name is used for domain root.
+	DomovePrefixes []string `yaml:DomovePrefixes`
 	// GuestID is the id of the user when a guest (unauthenticated) visits the
 	// site.
 	GuestID int32 `yaml:"GuestID"`
@@ -53,15 +61,27 @@ type Config struct {
 	StartCGI ServeCGI `yaml:"ServeCGI"`
 	// List of routes to be created by Echo
 	Routes Routes `yaml:"Routes"`
-	// Arguments for GledkiRenderer
+	// Arguments for instantiating GledkiRenderer
 	Renderer Renderer `yaml:"Renderer"`
-	// Directories for static content. For example request to /css/site.css
+	// StaticRoutes - folders` routes to be served by `echo` from
+	// within the installation public folder. Common for all domains. If a
+	// file is not found in the domain public folder, it will fall back to
+	// be served from here if found. For example request to /css/site.css
 	// will be served from public/css/site.css.
 	// `e.Static("/css","public/css").`
 	StaticRoutes []StaticRoute `yaml:"StaticRoutes"`
-	DB           DBConfig      `yaml:"DB"`
-	Rewrite      Rewrite       `yaml:"Rewrite"`
-	CachePages   bool          `yaml:"CachePages"`
+	// DomoveStaticFiles is a regex of file extensions. If a file, matching the
+	// regex is requested, we will look into the domain specific public folder
+	// and serve it if found.
+	DomoveStaticFiles string `yaml:DomoveStaticFiles`
+	// DB is for database configuration. For now we use sqlite3.
+	DB DBConfig `yaml:"DB"`
+	// Rewrite is used to pass configuration values to
+	// [middleware.RewriteWithConfig].
+	Rewrite Rewrite `yaml:"Rewrite"`
+	// CachePages - should we cache pages or not. true means `yes` and false
+	// means `no`
+	CachePages bool `yaml:"CachePages"`
 }
 
 type DBConfig struct {
@@ -209,6 +229,7 @@ func init() {
 		Debug:   true,
 		GuestID: guestID,
 		File:    "etc/config.yaml",
+		Langs:   Cfg.Langs,
 		Serve:   Serve{Location: spf("%s:3000", defaultHost)},
 		StartCGI: ServeCGI{
 			// These are set as environment variables when the command `cgi` is
@@ -263,17 +284,20 @@ func init() {
 			// Should the template files be loaded at start?
 			LoadFiles: false,
 		},
-		// Static files routes to be seved by echo.
 		StaticRoutes: []StaticRoute{
 			StaticRoute{Prefix: "/css", Root: "public/css"},
 			StaticRoute{Prefix: "/fonts", Root: "public/fonts"},
 			StaticRoute{Prefix: "/img", Root: "public/img"},
+			StaticRoute{Prefix: "/js", Root: "public/js"},
 		},
+		DomoveStaticFiles: `(?i:\.(?:|png|webp|gif|jpe?g|js|css|html|pdf|woff2?))$`,
+		DomovePrefixes:    []string{`dev.`, `www.`, `qa.`, `bg.`, `en.`},
 		DB: DBConfig{
 			DSN: "data/slovo.dev.sqlite",
 		},
 		CachePages: true,
 	}
 
+	Cfg.DomoveRoot = filepath.Join(BinDir(), `domove`)
 	Cfg.CachePages = false
 } // end init()

@@ -69,7 +69,7 @@ func tryHandleCachedPage(c *Context) error {
 	if !canCachePage(c) {
 		return err
 	}
-	fullPath := filepath.Join(BinDir(), `domove`, c.StraniciArgs.Domain, `public`, cached, c.CanonicalPath())
+	fullPath := filepath.Join(c.DomainRoot, `public`, cached, c.CanonicalPath())
 	if FileIsReadable(fullPath) {
 		data, _ := os.ReadFile(fullPath)
 		c.Logger().Debugf("tryHandleCachedPage: %s", c.CanonicalPath())
