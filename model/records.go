@@ -116,6 +116,7 @@ stmt.Get. It is put together in slovo.Binder.Bind().
 */
 func (s *Stranici) FindForDisplay(args StraniciArgs) (err error) {
 	table := Record2Table(s)
+	args.Lang = args.Lang + `%`
 	SQL := SQLFor("GET_PAGE_FOR_DISPLAY", table)
 	// Logger.Debugf("args: %#v FindForDisplay(GET_PAGE_FOR_DISPLAY) SQL:\n%s", args, SQL)
 	var stmt *sqlx.NamedStmt
