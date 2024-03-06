@@ -145,7 +145,7 @@ func (s *Stranici) TemplatePath(defaultTemplate string) string {
 func ListStranici(args StraniciArgs) (items []Stranici) {
 
 	SQL := SQLFor("SELECT_CHILD_PAGES", "stranici")
-	//Logger.Debugf("ListStranici(%#v) SQL:\n%s", args, SQL)
+	Logger.Debugf("ListStranici(%#v) SQL:\n%s", args, SQL)
 
 	if stmt, err := DB().PrepareNamed(SQL); err != nil {
 		Logger.Panicf(`error from ListStranici/PrepareNamed(SQL):%v; args: %#v`, err, args)
@@ -278,7 +278,7 @@ func (cel *Celini) TemplatePath(defaultTemplate string) string {
 // language is `pid` for these celini.
 func ListCelini(args StraniciArgs) (items []Celini) {
 	SQL := SQLFor("CELINI_FOR_LIST_IN_PAGE", "celini")
-	// Logger.Debugf("ListCelini(%#v) SQL:\n%s", args, SQL)
+	Logger.Debugf("ListCelini(%#v) SQL:\n%s", args, SQL)
 
 	if stmt, err := DB().PrepareNamed(SQL); err != nil {
 		Logger.Panicf("error from model.ListStranici/PrepareNamed(SQL): %v", err)

@@ -34,7 +34,7 @@ func buildStraniciStash(c *Context, page *m.Stranici) Stash {
 	stash["pageBody"] = page.Body
 	/*
 	   TODO: when needed, implement custom logic depending on the page.Template
-	   which has to be filled in.  It has to work somehow automatically. We
+	   which has to be filled in. It has to work somehow automatically. We
 	   should not have to write new code if new template is added in the site,
 	   or maybe have a limited set of templates which can be chosen from a
 	   select<options> dropdown in the control panel and have some mechanism to

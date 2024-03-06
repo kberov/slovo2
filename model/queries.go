@@ -61,8 +61,9 @@ var queryTemplates = SQLMap{
 		`,
 	"CELINI_FOR_LIST_IN_PAGE": `
 	SELECT id, alias, title, body, language FROM ${table} WHERE (
-		page_id = (SELECT id FROM stranici WHERE alias=:alias)
-		AND pid = (SELECT id FROM celini WHERE alias=:alias) and box = :box
+		page_id = (SELECT id FROM stranici WHERE alias=:alias
+			AND page_type = 'regular' AND dom_id = ${PUBLISHED_DOMAIN_ID_BY_NAME_IS})
+		AND pid = (SELECT id FROM ${table} WHERE alias=:alias) AND box = :box
 		-- find exact language or at least first part, e.g. (bg-)
 		AND (language LIKE :lang)
 		AND ${PERMISSIONS_ARE}
@@ -117,6 +118,7 @@ var queryTemplates = SQLMap{
 			AND dom_id = ${PUBLISHED_DOMAIN_ID_BY_NAME_IS}
 			AND ( ${table}.alias = :alias OR ${table}.alias = ${ALIAS_IS})
 		)
+		AND ${table}.page_type = 'regular'
 		AND ${PERMISSIONS_ARE}
 		AND ${table}.hidden = 0 
 		${AND_FOR_DISPLAY}
