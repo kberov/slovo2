@@ -67,7 +67,7 @@ func TestSelectMenuItems(t *testing.T) {
 	if items := SelectMenuItems(errargs); len(items) == 0 {
 		t.Logf("expected no menuitems")
 	} else {
-		t.Fatalf("something terribly wrong (Unexpected items): %#v", items)
+		t.Fatalf("something went terribly wrong (Unexpected items): %#v", items)
 	}
 }
 

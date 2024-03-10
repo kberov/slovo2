@@ -48,22 +48,6 @@ func publishedStatus(c echo.Context) int {
 	return 2
 }
 
-var binDir string
-
-// BinDir returns the directory where the binary resides. We assume that this
-// is the root of the project.
-func BinDir() string {
-	if binDir != "" {
-		return binDir
-	}
-	exe, err := os.Executable()
-	if err != nil {
-		panic(err)
-	}
-	binDir = filepath.Dir(exe)
-	return binDir
-}
-
 func FileIsReadable(path string) bool {
 	finfo, err := os.Stat(path)
 	if err != nil && errors.Is(err, os.ErrNotExist) {
@@ -124,4 +108,49 @@ func domainName(c echo.Context) string {
 		}
 	}
 	return domainName
+}
+
+var binDir string
+
+// BinDir returns the directory where the binary resides. We assume that this
+// is the root of the project.
+func BinDir() string {
+	if binDir != "" {
+		return binDir
+	}
+	exe, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	binDir = filepath.Dir(exe)
+	return binDir
+}
+
+var homeDir string
+
+// HomeDir returns the slovo2 installation directory. This is the directory
+// where we have the `domove` directory.
+func HomeDir() string {
+	if homeDir != "" {
+		return homeDir
+	}
+	cwd, _ := os.Getwd()
+	dir := `domove`
+	path := filepath.Join(cwd, dir)
+	for {
+		_, err := os.Stat(path)
+		if err != nil && errors.Is(err, os.ErrNotExist) {
+			path = filepath.Dir(path)
+			println(path)
+			path = filepath.Join(filepath.Dir(path), dir)
+			continue
+		}
+
+		if path == "" {
+			panic("HomeDir could not be found")
+		}
+		homeDir = filepath.Dir(path)
+		break
+	}
+	return homeDir
 }

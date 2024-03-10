@@ -277,7 +277,7 @@ func init() {
 		},
 		Renderer: Renderer{
 			// Templates root folder. Must exist.
-			TemplateRoots: []string{"templates"},
+			TemplateRoots: []string{filepath.Join(HomeDir(), "templates")},
 			Ext:           ".htm",
 			// Delimiters for template tags
 			Tags: [2]string{"${", "}"},
@@ -293,11 +293,11 @@ func init() {
 		DomoveStaticFiles: `(?i:\.(?:|png|webp|gif|jpe?g|js|css|html|pdf|woff2?))$`,
 		DomovePrefixes:    []string{`dev.`, `www.`, `qa.`, `bg.`, `en.`},
 		DB: DBConfig{
-			DSN: "data/slovo.dev.sqlite",
+			DSN: filepath.Join(HomeDir(), "data/slovo.dev.sqlite"),
 		},
 		CachePages: true,
 	}
 
-	Cfg.DomoveRoot = filepath.Join(BinDir(), `domove`)
+	Cfg.DomoveRoot = filepath.Join(HomeDir(), `domove`)
 	Cfg.CachePages = false
 } // end init()
