@@ -41,7 +41,8 @@ var queryTemplates = SQLMap{
 		FROM ${table}
 		JOIN celini AS c ON (
     		stranici.id = c.page_id AND c.pid=0 AND c.permissions LIKE 'd%'
-    		AND c.language LIKE :lang AND c.data_type='title'
+    		AND (c.language LIKE :lang||'%' OR :lang LIKE c.language||'%' )
+			AND c.data_type='title'
     		AND c.published = stranici.published)
 		WHERE (
 		${PERMISSIONS_ARE}
@@ -52,7 +53,8 @@ var queryTemplates = SQLMap{
 		) LIMIT 1`,
 	"GET_CELINA_FOR_DISPLAY": `SELECT * from ${table} WHERE (
 		page_id=(SELECT id from stranici WHERE alias = :alias)
-		AND language LIKE :lang AND box = :box
+		AND (language LIKE :lang||'%' OR :lang LIKE language||'%' ) 
+		AND box = :box
 		AND ${PERMISSIONS_ARE}
 		AND ( ${table}.alias = :celina OR ${table}.alias  = ${CELINA_ALIAS_IS})
 		AND ${table}.bad = 0
@@ -64,8 +66,7 @@ var queryTemplates = SQLMap{
 		page_id = (SELECT id FROM stranici WHERE alias=:alias
 			AND page_type = 'regular' AND dom_id = ${PUBLISHED_DOMAIN_ID_BY_NAME_IS})
 		AND pid = (SELECT id FROM ${table} WHERE alias=:alias) AND box = :box
-		-- find exact language or at least first part, e.g. (bg-)
-		AND (language LIKE :lang)
+    	AND (language LIKE :lang||'%' OR :lang LIKE language||'%' )
 		AND ${PERMISSIONS_ARE}
 		${AND_FOR_DISPLAY}
 	) 
@@ -88,13 +89,16 @@ var queryTemplates = SQLMap{
 		FROM ${table}
 		JOIN celini AS c ON (
     		${table}.id = c.page_id AND c.pid=0 AND c.permissions LIKE 'd%'
-    		AND c.language=:lang AND c.data_type='title'
+			-- consider 'en' 'en-US', 'en-GB' as one language
+    		AND (c.language LIKE :lang||'%' OR :lang LIKE c.language||'%' )
+			AND c.data_type='title'
     		AND c.published = ${table}.published)
 		WHERE (
 		${table}.pid=(
 			SELECT id FROM ${table} WHERE page_type='root'
 			AND dom_id = ${PUBLISHED_DOMAIN_ID_BY_NAME_IS}
 		)
+		AND ${table}.page_type = 'regular'
 		AND ${PERMISSIONS_ARE}
 		AND ${table}.hidden = 0 
 		${AND_FOR_DISPLAY}
@@ -110,7 +114,8 @@ var queryTemplates = SQLMap{
 		FROM ${table}
 		JOIN celini AS c ON (
     		${table}.id = c.page_id AND c.pid=0 AND c.permissions LIKE 'd%'
-    		AND c.language=:lang AND c.data_type='title'
+    		AND (c.language LIKE :lang||'%' OR :lang LIKE c.language||'%' )
+			AND c.data_type='title'
     		AND c.published = ${table}.published)
 		WHERE (
 		${table}.pid=(

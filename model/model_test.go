@@ -61,13 +61,11 @@ func TestSQLFor(t *testing.T) {
 }
 
 func TestSelectMenuItems(t *testing.T) {
-	_ = SelectMenuItems(*args)
-	errargs := *args
-	errargs.Pub = 1
-	if items := SelectMenuItems(errargs); len(items) == 0 {
-		t.Logf("expected no menuitems")
+	// TODO: think of a more specific test.
+	if items := SelectMenuItems(*args); len(items) == 0 {
+		t.Fatal("something went terribly wrong...")
 	} else {
-		t.Fatalf("something went terribly wrong (Unexpected items): %#v", items)
+		t.Logf("expected menuitems")
 	}
 }
 
