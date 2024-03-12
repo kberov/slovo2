@@ -13,7 +13,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-const VERSION = "2024.03.11-alpha-013"
+const VERSION = "2024.03.12-alpha-014"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 
 func initEcho(logger *log.Logger) *echo.Echo {

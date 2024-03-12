@@ -37,11 +37,12 @@ var queryTemplates = SQLMap{
 			)
 		)
 	)`,
+	`LANG_LIKE`: `(c.language LIKE :lang||'%' OR :lang LIKE c.language||'%' )`,
 	"GET_PAGE_FOR_DISPLAY": `SELECT ${table}.*, c.title, c.body, c.language, c.data_type, c.data_format
 		FROM ${table}
 		JOIN celini AS c ON (
     		stranici.id = c.page_id AND c.pid=0 AND c.permissions LIKE 'd%'
-    		AND (c.language LIKE :lang||'%' OR :lang LIKE c.language||'%' )
+    		AND ${LANG_LIKE}
 			AND c.data_type='title'
     		AND c.published = stranici.published)
 		WHERE (
@@ -53,7 +54,7 @@ var queryTemplates = SQLMap{
 		) LIMIT 1`,
 	"GET_CELINA_FOR_DISPLAY": `SELECT * from ${table} WHERE (
 		page_id=(SELECT id from stranici WHERE alias = :alias)
-		AND (language LIKE :lang||'%' OR :lang LIKE language||'%' ) 
+		AND (language LIKE :lang||'%' OR :lang LIKE language||'%')
 		AND box = :box
 		AND ${PERMISSIONS_ARE}
 		AND ( ${table}.alias = :celina OR ${table}.alias  = ${CELINA_ALIAS_IS})
@@ -66,7 +67,7 @@ var queryTemplates = SQLMap{
 		page_id = (SELECT id FROM stranici WHERE alias=:alias
 			AND page_type = 'regular' AND dom_id = ${PUBLISHED_DOMAIN_ID_BY_NAME_IS})
 		AND pid = (SELECT id FROM ${table} WHERE alias=:alias) AND box = :box
-    	AND (language LIKE :lang||'%' OR :lang LIKE language||'%' )
+    	AND (language LIKE :lang||'%' OR :lang LIKE language||'%')
 		AND ${PERMISSIONS_ARE}
 		${AND_FOR_DISPLAY}
 	) 
@@ -90,7 +91,7 @@ var queryTemplates = SQLMap{
 		JOIN celini AS c ON (
     		${table}.id = c.page_id AND c.pid=0 AND c.permissions LIKE 'd%'
 			-- consider 'en' 'en-US', 'en-GB' as one language
-    		AND (c.language LIKE :lang||'%' OR :lang LIKE c.language||'%' )
+    		AND ${LANG_LIKE}
 			AND c.data_type='title'
     		AND c.published = ${table}.published)
 		WHERE (
@@ -114,7 +115,7 @@ var queryTemplates = SQLMap{
 		FROM ${table}
 		JOIN celini AS c ON (
     		${table}.id = c.page_id AND c.pid=0 AND c.permissions LIKE 'd%'
-    		AND (c.language LIKE :lang||'%' OR :lang LIKE c.language||'%' )
+    		AND ${LANG_LIKE}
 			AND c.data_type='title'
     		AND c.published = ${table}.published)
 		WHERE (
