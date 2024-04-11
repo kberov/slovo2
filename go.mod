@@ -29,7 +29,3 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 )
-
-replace github.com/labstack/echo/v4 v4.11.4 => ../echo
-
-replace github.com/kberov/gledki v0.7.1 => ../gledki
