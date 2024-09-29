@@ -1,6 +1,6 @@
 module github.com/kberov/slovo2
 
-go 1.22
+go 1.23.1
 
 require (
 	github.com/jmoiron/sqlx v1.3.5
