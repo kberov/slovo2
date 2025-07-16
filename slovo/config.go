@@ -10,7 +10,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-// ANY is an aggregata for any http method.
+// ANY is an aggregate for any http method.
 const ANY = "ANY"
 
 // SLOG is a regular expression capturing group to match what is possible to
