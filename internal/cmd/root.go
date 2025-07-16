@@ -35,10 +35,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// const defaultLogHeader = `${prefix}:${time_rfc3339}:${level}:${short_file}:${line}`
-// See possible placeholders in  github.com/labstack/gommon@v0.4.2/log/log.go function log()
-// See https://echo.labstack.com/docs/customization
-const defaultLogHeader = `${prefix}:${level}:${short_file}:${line}`
+var Logger = slovo.Logger
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -71,35 +68,32 @@ func Execute() {
 	if os.Getenv("GATEWAY_INTERFACE") != "" {
 		// Logger.Debug("in cmd.Execute GATEWAY_INTERFACE")
 		os.Args = []string{os.Args[0], "cgi"}
-		if cgiCmd.Execute() != nil {
+		if err := cgiCmd.Execute(); err != nil {
+			Logger.Error(err)
 			os.Exit(1)
 		}
 		return
 	}
 	err := rootCmd.Execute()
 	if err != nil {
+		Logger.Error(err)
 		os.Exit(1)
 	}
 }
 
 var cfgFile = slovo.Cfg.File
-var Logger = log.New("slovo2")
 
 func init() {
-	//TODO: Add configuration for log file output.
-	Logger.SetOutput(os.Stderr)
-	Logger.SetHeader(defaultLogHeader)
-
 	cobra.EnableCommandSorting = false
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config_file", "c", "",
+	pflags := rootCmd.PersistentFlags()
+	pflags.StringVarP(&cfgFile, "config_file", "c", "",
 		`Config file to use or you can set SLOVO_CONFIG to the file to be read.
 Alternatively we fall to sane internal defaults.
 See also command 'config'.`)
-	rootCmd.PersistentFlags().BoolVarP(&slovo.Cfg.Debug, "debug", "d", slovo.Cfg.Debug,
+	pflags.BoolVarP(&slovo.Cfg.Debug, "debug", "d", slovo.Cfg.Debug,
 		"Display more verbose output in console.")
 	// https://cobra.dev/#create-rootcmd
 	// You will additionally define flags and handle configuration in your init() function.

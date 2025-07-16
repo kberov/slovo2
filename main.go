@@ -22,7 +22,7 @@ THE SOFTWARE.
 package main
 
 import (
-	"github.com/kberov/slovo2/cmd"
+	"github.com/kberov/slovo2/internal/cmd"
 )
 
 func main() {

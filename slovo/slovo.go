@@ -20,6 +20,18 @@ import (
 const VERSION = "2024.04.11-alpha-015"
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 
+// DefaultLogHeader = `${prefix}:${time_rfc3339}:${level}:${short_file}:${line}`
+// See possible placeholders in  github.com/labstack/gommon@v0.4.2/log/log.go function log()
+// See https://echo.labstack.com/docs/customization
+const DefaultLogHeader = `${prefix}:${level}:${short_file}:${line}`
+
+var Logger = log.New("slovo2")
+
+func init() {
+	//TODO: Add configuration for log file output.
+	Logger.SetOutput(os.Stderr)
+	Logger.SetHeader(DefaultLogHeader)
+}
 func initEcho(logger *log.Logger) *echo.Echo {
 	e := echo.New()
 	e.Debug = Cfg.Debug
