@@ -3,7 +3,7 @@ Package cmd contains code for different actions (subcommands). Each file in
 this package is an action of the application. We use `cobra` for managing
 subcommands.
 
-# Copyright © 2024 Красимир Беров
+# Copyright © 2024-2025 Красимир Беров
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -63,10 +63,10 @@ var rootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	// Logger.Debug("in cmd.Execute")
-	// Detect that we should execute the cgi command.
+	Logger.Debug("in cmd.Execute")
+	// Detect if we should execute the cgi command.
 	if os.Getenv("GATEWAY_INTERFACE") != "" {
-		// Logger.Debug("in cmd.Execute GATEWAY_INTERFACE")
+		Logger.Debug("in cmd.Execute GATEWAY_INTERFACE")
 		os.Args = []string{os.Args[0], "cgi"}
 		if err := cgiCmd.Execute(); err != nil {
 			Logger.Error(err)
@@ -90,9 +90,9 @@ func init() {
 	// will be global for your application.
 	pflags := rootCmd.PersistentFlags()
 	pflags.StringVarP(&cfgFile, "config_file", "c", "",
-		`Config file to use or you can set SLOVO_CONFIG to the file to be read.
-Alternatively we fall to sane internal defaults.
-See also command 'config'.`)
+		`Config file to use or you can set SLOVO_CONFIG environment variable to the
+file to be read.  Alternatively we fall to sane internal defaults. See also
+command 'config'.`)
 	pflags.BoolVarP(&slovo.Cfg.Debug, "debug", "d", slovo.Cfg.Debug,
 		"Display more verbose output in console.")
 	// https://cobra.dev/#create-rootcmd
