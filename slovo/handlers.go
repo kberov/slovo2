@@ -31,7 +31,7 @@ c.FormValue("name") - string  "First Last"
 c.FormValue("email") - string "em@site.com"
 c.FormValue("payed") - bool "yes|1"/"no|0"
 */
-func pepubcpu(c echo.Context) error {
+func p_epubcpu(c echo.Context) error {
 	return c.String(http.StatusOK, "TODO!")
 }
 

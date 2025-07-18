@@ -32,6 +32,7 @@ func init() {
 	Logger.SetOutput(os.Stderr)
 	Logger.SetHeader(DefaultLogHeader)
 }
+
 func initEcho(logger *log.Logger) *echo.Echo {
 	e := echo.New()
 	e.Debug = Cfg.Debug
