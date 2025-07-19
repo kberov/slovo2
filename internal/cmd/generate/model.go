@@ -22,7 +22,7 @@ database file or add it to the configuration section Cfg.Db.DSN
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		// logger.Warnf("%#v", slovo.Cfg.DB.Tables)
-		Logger.Print("generate/model called")
+		Logger.Print("generate/model called TODO")
 		// generateRecordTypes(slovo.Cfg.DB.Tables)
 
 	},
@@ -43,7 +43,7 @@ WHERE type ='table'AND  name NOT LIKE 'sqlite_%';
 `
 
 func generateRecordTypes(tables []string) {
-	Logger.Printf("tables from the command line: %#v", tables)
+	Logger.Printf("Tables, passed on the command line: %#v", tables)
 	dbh := model.DB()
 	rows, err := dbh.Query(selectTables)
 	if err != nil {
