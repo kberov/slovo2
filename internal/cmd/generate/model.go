@@ -1,4 +1,17 @@
-package cmd
+/*
+Package generate contains subcommands for the command `generate`. Such
+subcommands may be:
+
+  - model - for `slovo2 generate model` to generate a new type - struct
+    representing a record in the database.
+
+  - module - for `slovo2 generate module` - to create boilerplate code  for a new
+    module which later can be added as dependency (extension) for slovo2.
+
+  - service - for `slovo2 generate service` - to create boilerplate code for a
+    new microservice which can use slovo2 as dependency.
+*/
+package generate
 
 import (
 	"slices"
@@ -8,8 +21,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// generate/modelCmd represents the generate/model command
-var modelCmd = &cobra.Command{
+// ModelCmd represents the `slovo generate model` command
+var ModelCmd = &cobra.Command{
 	Use:   "model",
 	Short: "Generates Go code for sqlx",
 	Long: `
@@ -22,17 +35,16 @@ database file or add it to the configuration section Cfg.Db.DSN
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		// logger.Warnf("%#v", slovo.Cfg.DB.Tables)
-		Logger.Print("generate/model called TODO")
+		slovo.Logger.Print("generate model called... TODO")
 		// generateRecordTypes(slovo.Cfg.DB.Tables)
 
 	},
 }
 
 func init() {
-	generateCmd.AddCommand(modelCmd)
 
 	// Here you will define your flags and configuration settings.
-	modelCmd.Flags().StringVarP(&slovo.Cfg.DB.DSN, "DSN", "D", slovo.Cfg.DB.DSN, "DSN for the database")
+	ModelCmd.Flags().StringVarP(&slovo.Cfg.DB.DSN, "DSN", "D", slovo.Cfg.DB.DSN, "DSN for the database")
 	// modelCmd.Flags().StringSliceVarP(&slovo.Cfg.DB.Tables, "tables", "t", slovo.Cfg.DB.Tables, "Tables for which to generate model types")
 }
 
@@ -43,11 +55,11 @@ WHERE type ='table'AND  name NOT LIKE 'sqlite_%';
 `
 
 func generateRecordTypes(tables []string) {
-	Logger.Printf("Tables, passed on the command line: %#v", tables)
+	slovo.Logger.Printf("Tables, passed on the command line: %#v", tables)
 	dbh := model.DB()
 	rows, err := dbh.Query(selectTables)
 	if err != nil {
-		Logger.Warn("Error" + err.Error())
+		slovo.Logger.Warn("Error" + err.Error())
 		return
 	}
 	var tablesInDB []string
@@ -56,15 +68,15 @@ func generateRecordTypes(tables []string) {
 		var objType string
 		err = rows.Scan(&objectName, &objType)
 		if err != nil {
-			Logger.Warn("Error" + err.Error())
+			slovo.Logger.Warn("Error" + err.Error())
 			return
 		}
-		Logger.Debug(objectName + " " + objType)
+		slovo.Logger.Debug(objectName + " " + objType)
 		if slices.Contains(tables, objectName) {
 			tablesInDB = append(tablesInDB, objectName)
 		}
 	}
-	Logger.Printf("The following of the requested tables wer found in the database: %#v", tablesInDB)
+	slovo.Logger.Printf("The following of the requested tables wer found in the database: %#v", tablesInDB)
 	//p := model.Products{}
 	p := model.Stranici{}
 	model.GetByID(&p, 1)

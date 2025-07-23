@@ -39,7 +39,7 @@ var Logger = slovo.Logger
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "slovo2",
+	Use:   slovo.Bin,
 	Short: "Наследникът на Слово – многократно по-бърз.",
 	Long: `Наследникът на Слово – многократно по-бърз. Със запазен дух, но
 изцяло осъществен наново на езика за програмиране Go. Автоматично открива и
