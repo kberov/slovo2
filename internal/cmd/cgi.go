@@ -13,16 +13,14 @@ import (
 // cgiCmd represents the cgi command
 var cgiCmd = &cobra.Command{
 	Use:   "cgi",
-	Short: "Run Slovo as a CGI script.",
-	Long: `This command will be executed automatically if the GATEWAY_INTERFACE
-environment variable is set. In other words Slovo2 autodetects from the
+	Short: spf("Run %s as a CGI script.", slovo.Bin),
+	Long: spf(`
+This command will be executed automatically by %[1]s if the GATEWAY_INTERFACE
+environment variable is set. In other words %[1]s autodetects from the
 environment, if it is invoked by a web server like Apache or as a commandline
-application. Also this is how we cheat Slovo2 to test it on the command line.`,
-	// I had to move init* functions here to make sure that only the parent and
-	// respective command's init* are run.
-	PreRun: func(cmd *cobra.Command, args []string) {
-		// Logger.Debugf("cgiCmd.PreRun(cgiCmd): args: %v", args)
-	},
+application. Also this is how we cheat %[1]s to test it on the command line.
+`, slovo.Bin),
+	PreRun: cgiPreRun,
 	Run: func(cmd *cobra.Command, args []string) {
 		slovo.StartCGI(Logger)
 	},
@@ -30,16 +28,9 @@ application. Also this is how we cheat Slovo2 to test it on the command line.`,
 
 func init() {
 	rootCmd.AddCommand(cgiCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// cgiCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// cgiCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 	slovo.CgiInitFlags(cgiCmd.Flags())
+}
+
+func cgiPreRun(cgi *cobra.Command, args []string) {
+	Logger.Debugf("cgiCmd.PreRun(cgiCmd): args: %v", args)
 }

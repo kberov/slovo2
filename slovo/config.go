@@ -45,7 +45,7 @@ type Config struct {
 	Langs []string `yaml:"Langs"`
 	Debug bool     `yaml:"Debug"`
 	// DomoveRoot is the root folder for static content and templates of parked
-	// domains. Defaults to `BinDir()/domove`.
+	// domains. Defaults to `HomeDir()/domove`.
 	DomoveRoot string `yaml:"DomoveRoot"`
 	// DomovePrefixes is a common list of prefixes, used in parked domains to
 	// create subdomains for various purposes. These prefixes are cut and then
