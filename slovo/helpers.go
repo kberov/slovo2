@@ -112,27 +112,11 @@ func domainName(c echo.Context) string {
 
 var binDir string
 
-// BinDir returns the directory where the binary resides. We assume that this
-// is the root of the project.
-func BinDir() string {
-	if binDir != "" {
-		return binDir
-	}
-	exe, err := os.Executable()
-	if err != nil {
-		panic(err)
-	}
-	binDir = filepath.Dir(exe)
-	return binDir
-}
-
-var homeDir string
-
 // HomeDir returns the slovo2 installation directory. This is the directory
 // where we have the `domove` directory.
 func HomeDir() string {
-	if homeDir != "" {
-		return homeDir
+	if binDir != "" {
+		return binDir
 	}
 	cwd, _ := os.Getwd()
 	dir := `domove`
@@ -141,7 +125,6 @@ func HomeDir() string {
 		_, err := os.Stat(path)
 		if err != nil && errors.Is(err, os.ErrNotExist) {
 			path = filepath.Dir(path)
-			println(path)
 			path = filepath.Join(filepath.Dir(path), dir)
 			continue
 		}
@@ -149,8 +132,7 @@ func HomeDir() string {
 		if path == "" {
 			panic("HomeDir could not be found")
 		}
-		homeDir = filepath.Dir(path)
-		break
+		binDir = filepath.Dir(path)
+		return binDir
 	}
-	return homeDir
 }

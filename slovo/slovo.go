@@ -8,6 +8,7 @@ import (
 	"net/http/cgi"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/kberov/slovo2/model"
@@ -25,9 +26,16 @@ const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 // See https://echo.labstack.com/docs/customization
 const DefaultLogHeader = `${prefix}:${level}:${short_file}:${line}`
 
-var Logger = log.New("slovo2")
+// Logger is an instance of github.com/labstack/gommon/log.
+var Logger *log.Logger
+
+// Bin is the file name with which the program is run - the last element
+// of the full path to it. Usually this is 'slovo2'. See [filepath.Base].
+var Bin string = "slovo2"
 
 func init() {
+	Bin = filepath.Base(os.Args[0])
+	Logger = log.New(Bin)
 	//TODO: Add configuration for log file output.
 	Logger.SetOutput(os.Stderr)
 	Logger.SetHeader(DefaultLogHeader)

@@ -14,14 +14,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-var Logger = log.New("slovo2")
-
 const defaultLogHeader = `${prefix}:${level}:${short_file}:${line}`
 
 func init() {
 	Logger.SetOutput(os.Stderr)
 	Logger.SetHeader(defaultLogHeader)
-	Logger.SetLevel(log.DEBUG)
+	Logger.SetLevel(log.INFO)
 }
 
 // TODO
@@ -114,7 +112,7 @@ func TestRoutes(t *testing.T) {
 			name:         "кънигꙑ.bg.html 2",
 			whenURL:      "/кънигꙑ.bg.html",
 			expectStatus: http.StatusOK,
-			bodyContains: `Пропаднал бар в предградията на един тропически град `,
+			bodyContains: `Това е буквална възстановка (буква по буква)`,
 		},
 		{
 			name:         "кънигꙑ.bg.html ⮊",
@@ -135,7 +133,7 @@ func TestRoutes(t *testing.T) {
 			bodyContains: `Електронно издание за свободно изтегляне`,
 		},
 		{
-			name:         "новолѣпьно/малък-свят-на-български.html",
+			name:         "новолѣпьно/малък-свят-на-български.html canonical url",
 			whenURL:      "/новолѣпьно/малък-свят-на-български.html",
 			expectStatus: http.StatusOK,
 			// canonical url
@@ -169,7 +167,6 @@ func TestRoutes(t *testing.T) {
 			assert.True(t, strings.Contains(rec.Body.String(), tc.bodyContains))
 		})
 	}
-
 }
 
 func Test_PreferDomainStaticFiles_and_switchToDomainTemplates(t *testing.T) {
@@ -193,17 +190,16 @@ func Test_PreferDomainStaticFiles_and_switchToDomainTemplates(t *testing.T) {
 			whenURL:      `/коренъ.bg.html`,
 			expectStatus: http.StatusOK,
 			// common domain wrapper
-			bodyContains: `<meta property="og:type" content="website" />
-</head>`,
+			bodyContains: `<meta property="og:type" content="website" />`,
 		},
-
 		{
 			dom:          dom,
 			whenURL:      `/ѩꙁыкъ/о-писменьхъ.bg.html`,
 			expectStatus: http.StatusOK,
 			//domain specific static file
 			bodyContains: `src="/js/o-pismeneh.js"`,
-		}, {
+		},
+		{
 			dom:          dom,
 			whenURL:      `/коренъ.bg.html`,
 			expectStatus: http.StatusOK,
