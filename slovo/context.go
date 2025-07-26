@@ -1,7 +1,6 @@
 package slovo
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 	"slices"
@@ -102,12 +101,12 @@ func (c *Context) switchToDomainTemplates() {
 	}
 	domainTemlatesRoot := filepath.Join(Cfg.DomoveRoot, dom.Domain, "templates")
 	domainThemeRoot := filepath.Join(domainTemlatesRoot, dom.Templates)
-	gl := c.Echo().Renderer.(*EchoRenderer)
-	c.Logger().Debugf("Template roots: %#v", gl.Roots)
+	gledka := c.Echo().Renderer.(*EchoRenderer)
+	c.Logger().Debugf("Template roots: %#v", gledka.Roots)
 	// Check if templates are already at first and second place in Roots.
 	// Prepended during the previous request which happened to be to the same
 	// domain.
-	if len(gl.Roots) > 2 && gl.Roots[0] == domainThemeRoot && gl.Roots[1] == domainTemlatesRoot {
+	if len(gledka.Roots) > 2 && gledka.Roots[0] == domainThemeRoot && gledka.Roots[1] == domainTemlatesRoot {
 		return
 	}
 	// Check if there is already a template root in domove.
@@ -117,12 +116,12 @@ func (c *Context) switchToDomainTemplates() {
 		return
 	}
 	// To be safe, remove any root which is under Cfg.DomoveRoot
-	gl.Roots = slices.DeleteFunc(gl.Roots, func(path string) bool {
+	gledka.Roots = slices.DeleteFunc(gledka.Roots, func(path string) bool {
 		return strings.Contains(path, Cfg.DomoveRoot)
 	})
 	// Now prepend the new roots to be searched for templates
-	gl.Roots = slices.Insert(gl.Roots, 0, domainThemeRoot, domainTemlatesRoot)
-	c.Logger().Debugf("Template roots: %#v", gl.Roots)
+	gledka.Roots = slices.Insert(gledka.Roots, 0, domainThemeRoot, domainTemlatesRoot)
+	c.Logger().Debugf("Template roots: %#v", gledka.Roots)
 }
 
 /*
@@ -155,8 +154,5 @@ func SlovoContext(next echo.HandlerFunc) echo.HandlerFunc {
 // copied from gledki
 func dirExists(path string) bool {
 	finfo, err := os.Stat(path)
-	if err != nil && errors.Is(err, os.ErrNotExist) || !finfo.IsDir() {
-		return false
-	}
-	return true
+	return err == nil && finfo.IsDir()
 }

@@ -2,7 +2,6 @@ package slovo
 
 import (
 	"net/http"
-	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -73,7 +72,7 @@ type Config struct {
 	// DomoveStaticFiles is a regex of file extensions. If a file, matching the
 	// regex is requested, we will look into the domain specific public folder
 	// and serve it if found.
-	DomoveStaticFiles string `yaml:DomoveStaticFiles`
+	DomoveStaticFiles string `yaml:"DomoveStaticFiles"`
 	// DB is for database configuration. For now we use sqlite3.
 	DB DBConfig `yaml:"DB"`
 	// Rewrite is used to pass configuration values to
@@ -116,7 +115,7 @@ type Route struct {
 	// Path is the REQUEST_PATH
 	Path string `yaml:"Path"`
 	// MiddlewareFuncs is optional
-	MiddlewareFuncs []string `yaml:"MiddlewareFunc"`
+	MiddlewareFuncs []string `yaml:"MiddlewareFuncs"`
 	// Name is the name of the route. Used to generate URIs. See
 	// https://echo.labstack.com/docs/routing#route-naming
 	Name string `yaml:"Name"`
@@ -228,9 +227,10 @@ func init() {
 	Cfg = Config{
 		Debug:   true,
 		GuestID: guestID,
-		File:    "etc/config.yaml",
-		Langs:   Cfg.Langs,
-		Serve:   Serve{Location: spf("%s:3000", defaultHost)},
+		// Relative to HomeDir().
+		File:  "etc/config.yaml",
+		Langs: Cfg.Langs,
+		Serve: Serve{Location: ":3000"},
 		StartCGI: ServeCGI{
 			// These are set as environment variables when the command `cgi` is
 			// executed on the command line and if they are not passed as flags
@@ -276,8 +276,8 @@ func init() {
 			},
 		},
 		Renderer: Renderer{
-			// Templates root folder. Must exist.
-			TemplateRoots: []string{filepath.Join(HomeDir(), "templates")},
+			// Templates root folder. Must exist relative to HomeDir().
+			TemplateRoots: []string{"./templates"},
 			Ext:           ".htm",
 			// Delimiters for template tags
 			Tags: [2]string{"${", "}"},
@@ -293,11 +293,12 @@ func init() {
 		DomoveStaticFiles: `(?i:\.(?:|png|webp|gif|jpe?g|js|css|html|pdf|woff2?))$`,
 		DomovePrefixes:    []string{`dev.`, `www.`, `qa.`, `bg.`, `en.`},
 		DB: DBConfig{
-			DSN: filepath.Join(HomeDir(), "data/slovo.dev.sqlite"),
+			// Relative to HomeDir().
+			DSN: `./data/slovo.dev.sqlite`,
 		},
 		CachePages: true,
 	}
-
-	Cfg.DomoveRoot = filepath.Join(HomeDir(), `domove`)
+	// Relative to HomeDir().
+	Cfg.DomoveRoot = `domove`
 	Cfg.CachePages = false
 } // end init()

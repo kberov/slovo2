@@ -56,9 +56,9 @@ func canCachePage(c *Context) bool {
 	return true
 }
 
-// PreferDomainStaticFiles serves static files from domain specific
+// preferDomainStaticFiles serves static files from domain specific
 // directories if these files exist.
-func PreferDomainStaticFiles(next echo.HandlerFunc) echo.HandlerFunc {
+func preferDomainStaticFiles(next echo.HandlerFunc) echo.HandlerFunc {
 	reStaticFile := regexp.MustCompile(Cfg.DomoveStaticFiles)
 	return func(c echo.Context) error {
 		path := c.Request().URL.Path

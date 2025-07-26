@@ -157,7 +157,7 @@ func TestRoutes(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			url := `http://` + Cfg.Serve.Location + tc.whenURL
+			url := `http://` + defaultHost + Cfg.Serve.Location + tc.whenURL
 			req := httptest.NewRequest(http.MethodGet, url, nil)
 			rec := httptest.NewRecorder()
 
