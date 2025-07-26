@@ -89,7 +89,7 @@ type Stranici struct {
 	Published   uint8
 	Hidden      bool
 	Deleted     bool
-	ChangedBy   string
+	ChangedBy   sql.NullString
 	/*
 		Here are fields from Celini. We may get them with some Get, when we
 		select from both tables. When selecting only from stranici table, these
@@ -318,7 +318,7 @@ type Groups struct {
 	Description string
 	Disabled    int32
 	CreatedBy   int32
-	ChangedBy   int32
+	ChangedBy   sql.NullInt32
 }
 
 type UserGroup struct {
@@ -372,7 +372,7 @@ type Invoices struct {
 	UserInvoiceID int32
 	UserID        int32
 	OrderID       int32
-	ChangedBy     int32
+	ChangedBy     sql.NullInt32
 }
 
 type UsersInvoicesLastID struct {
