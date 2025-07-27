@@ -53,10 +53,7 @@ func FileIsReadable(path string) bool {
 	if err != nil && errors.Is(err, os.ErrNotExist) {
 		return false
 	}
-	if finfo.Mode().IsRegular() && finfo.Mode().Perm()&0400 == 0400 {
-		return true
-	}
-	return false
+	return finfo.Mode().IsRegular() && finfo.Mode().Perm()&0400 == 0400
 }
 
 var reHTML = regexp.MustCompile(`<[^>]+>`)

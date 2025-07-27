@@ -35,23 +35,22 @@ func pEpubcpu(c echo.Context) error {
 	return c.String(http.StatusOK, "TODO!")
 }
 
-// GET / hello
+// GET /hello
 func hello(c echo.Context) error {
 	c.Logger().Debugf("in hello")
-	// We can use all methods of gledki.Gledki
-	g := c.Echo().Renderer.(*EchoRenderer)
-	g.Stash = Stash{
-		"generator": "Slovo2",
-		"version":   VERSION,
-		"codename":  CODENAME,
+	stash := gledki.Stash{
+		"generator":  Bin,
+		"version":    VERSION,
+		"codename":   CODENAME,
+		"title":      "Здравейте!",
+		"greeting":   "Добре дошли на нашата страница!",
+		"source_url": "https://github.com/kberov/slovo2",
 	}
+	stash["message"] = c.Echo().Renderer.(*EchoRenderer).FtExecString(
+		`Тя се задвижва от ${generator} ${version}/${codename}! Изходният код е на адрес
+		<a href="${source_url}" target="_blank">${source_url}</a>.`, stash)
 
-	return c.Render(200, "hello",
-		Stash{
-			"title":    "Здравейте!",
-			"greeting": "Добре дошли!",
-		},
-	)
+	return c.Render(200, "hello", stash)
 }
 
 func handleNotFound(c *Context, err error) error {

@@ -196,8 +196,10 @@ var rewriteConfigSkippers = map[string]middleware.Skipper{
 }
 
 // We need this map because the function names are stored in yaml config as
-// strings. This map is used in loadRoutes() to match HTTP handlerFuncs by name.
-var handlerFuncs = map[string]echo.HandlerFunc{
+// strings and Go cannot identify function names from strings (it would be a
+// dynamic language then). This map is used in loadRoutes() to match HTTP
+// HandlersRegistry by name.
+var HandlersRegistry = map[string]echo.HandlerFunc{
 	"hello":           hello,
 	"ppdfcpu":         ppdfcpu,
 	"ppdfcpuForm":     ppdfcpuForm,
@@ -247,6 +249,7 @@ func init() {
 		Routes: Routes{
 			// Routes are not as powerful as in Mojolicious. We need the RewriteConfig.Rules below
 			Route{Method: echo.GET, Path: "/", Handler: "straniciExecute", Name: "/"},
+			Route{Method: echo.GET, Path: "/hello", Handler: "hello", Name: "hello"},
 			Route{Method: ANY, Path: "/:stranica/:lang/:format", Handler: "straniciExecute",
 				MiddlewareFuncs: []string{"SlovoContext", "CachePages"}, Name: "stranica"},
 			Route{Method: ANY, Path: "/:stranica/:celina/:lang/:format", Handler: "celiniExecute",
