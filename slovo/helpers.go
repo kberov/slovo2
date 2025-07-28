@@ -53,10 +53,7 @@ func FileIsReadable(path string) bool {
 	if err != nil && errors.Is(err, os.ErrNotExist) {
 		return false
 	}
-	if finfo.Mode().IsRegular() && finfo.Mode().Perm()&0400 == 0400 {
-		return true
-	}
-	return false
+	return finfo.Mode().IsRegular() && finfo.Mode().Perm()&0400 == 0400
 }
 
 var reHTML = regexp.MustCompile(`<[^>]+>`)
@@ -110,29 +107,27 @@ func domainName(c echo.Context) string {
 	return domainName
 }
 
-var binDir string
+var homeDir string
 
 // HomeDir returns the slovo2 installation directory. This is the directory
-// where we have the `domove` directory.
+// where we have the [Cfg.DomoveRoot] directory. Panics if path is exhausted
+// and homedir is still not found.
 func HomeDir() string {
-	if binDir != "" {
-		return binDir
+	if homeDir != "" {
+		return homeDir
 	}
 	cwd, _ := os.Getwd()
-	dir := `domove`
-	path := filepath.Join(cwd, dir)
+	path := filepath.Join(cwd, Cfg.DomoveRoot)
 	for {
-		_, err := os.Stat(path)
-		if err != nil && errors.Is(err, os.ErrNotExist) {
-			path = filepath.Dir(path)
-			path = filepath.Join(filepath.Dir(path), dir)
-			continue
+		finfo, err := os.Stat(path)
+		if err == nil && finfo.IsDir() {
+			homeDir = filepath.Dir(path)
+			return homeDir
 		}
-
-		if path == "" {
-			panic("HomeDir could not be found")
+		// go up
+		path = filepath.Dir(path)
+		if cwd[len(cwd)-1] == filepath.Separator {
+			panic(err)
 		}
-		binDir = filepath.Dir(path)
-		return binDir
 	}
 }

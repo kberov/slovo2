@@ -91,7 +91,7 @@ func init() {
 	pflags := rootCmd.PersistentFlags()
 	pflags.StringVarP(&cfgFile, "config_file", "c", "",
 		`Config file to use or you can set SLOVO_CONFIG environment variable to the
-file to be read.  Alternatively we fall to sane internal defaults. See also
+file to be read. Alternatively we fall to sane internal defaults. See also
 command 'config'.`)
 	pflags.BoolVarP(&slovo.Cfg.Debug, "debug", "d", slovo.Cfg.Debug,
 		"Display more verbose output in console.")
@@ -103,13 +103,16 @@ command 'config'.`)
 	cobra.OnInitialize(rootInitConfig)
 }
 
+// TODO: Move this function to package slovo and invoke it from there. Change
+// slightly the logic for cfgFile and avoid using it. use rather the
+// slovo.Cfg.File.
 func rootInitConfig() {
 	// If cfgFile is not passed on the command line and SLOVO_CONFIG is set,
 	// use the path to config file in it.
-	if len(cfgFile) == 0 {
+	if cfgFile == "" {
 		cfgFile = os.Getenv("SLOVO_CONFIG")
 	}
-	if len(cfgFile) == 0 {
+	if cfgFile == "" {
 		if slovo.Cfg.Debug {
 			Logger.SetLevel(log.DEBUG)
 		}

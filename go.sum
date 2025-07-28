@@ -9,8 +9,8 @@ github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/jmoiron/sqlx v1.4.0 h1:1PLqN7S1UYp5t4SrVVnt4nUVNemrDAtxlulVe+Qgm3o=
 github.com/jmoiron/sqlx v1.4.0/go.mod h1:ZrZ7UsYB/weZdl2Bxg6jCRO9c3YHl8r3ahlKmRT4JLY=
-github.com/kberov/gledki v0.7.1 h1:De85lmW9ZrdtUgRt5OOvLhYsL9CSuPXeugPYr+mFoJM=
-github.com/kberov/gledki v0.7.1/go.mod h1:o8VJh9FqgO2kBTpZmpAQ/PAst43z/G1dEShMLqmRc08=
+github.com/kberov/gledki v0.7.2 h1:w8IoSrXrK/ewdNByKo3z8+rnCtdsL/6eiWmrzbjGn3E=
+github.com/kberov/gledki v0.7.2/go.mod h1:wkpZRaB6mylj9tS09GP9lPCf3UolsWOsO7bXsVfBouc=
 github.com/labstack/echo/v4 v4.13.4 h1:oTZZW+T3s9gAu5L8vmzihV7/lkXGZuITzTQkTEhcXEA=
 github.com/labstack/echo/v4 v4.13.4/go.mod h1:g63b33BZ5vZzcIUF8AtRH40DrTlXnx4UMC8rBdndmjQ=
 github.com/labstack/gommon v0.4.2 h1:F8qTUNXgG1+6WQmqoUWnz8WiEU60mXVVw0P4ht1WRA0=
