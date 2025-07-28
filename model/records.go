@@ -89,7 +89,7 @@ type Stranici struct {
 	Published   uint8
 	Hidden      bool
 	Deleted     bool
-	ChangedBy   sql.NullString
+	ChangedBy   sql.NullInt32
 	/*
 		Here are fields from Celini. We may get them with some Get, when we
 		select from both tables. When selecting only from stranici table, these
