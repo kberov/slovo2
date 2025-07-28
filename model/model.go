@@ -30,10 +30,11 @@ record type in a table with the same name in lowercase. Note! these types
 respective table name.
 Example: UsersInvoicesLastID === users_invoices_last_id
 */
-type Record interface {
-	Aliases | Celini | Domove | FirstLogin | Groups | Invoices | Orders |
-		PasswLogin | Products | Stranici | UserGroup | Users | UsersInvoicesLastID
-}
+// TODO: Research and learn how to add additional Records constraints from
+// extensions. How it is done in Go? Should I use some interface as constraint
+// or what? The idea is extensions to be able to use the type constrained
+// functions like Record2Table(record) and GetByID(id)
+type Record interface{}
 
 var record2Table = map[string]string{}
 
@@ -78,7 +79,7 @@ func DB() *sqlx.DB {
 }
 
 /*
-SQLFor compooses an SQL query for the given key. Returns the composed query.
+SQLFor composes an SQL query for the given key. Returns the composed query.
 */
 func SQLFor(query, table string) string {
 	q := queryTemplates[query].(string)
