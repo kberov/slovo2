@@ -110,15 +110,14 @@ func domainName(c echo.Context) string {
 var homeDir string
 
 // HomeDir returns the slovo2 installation directory. This is the directory
-// where we have the `domove` directory. Panics if path is exhausted and
-// homedir is still not found.
+// where we have the [Cfg.DomoveRoot] directory. Panics if path is exhausted
+// and homedir is still not found.
 func HomeDir() string {
 	if homeDir != "" {
 		return homeDir
 	}
 	cwd, _ := os.Getwd()
-	dir := `domove`
-	path := filepath.Join(cwd, dir)
+	path := filepath.Join(cwd, Cfg.DomoveRoot)
 	for {
 		finfo, err := os.Stat(path)
 		if err == nil && finfo.IsDir() {
