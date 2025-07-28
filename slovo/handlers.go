@@ -38,7 +38,7 @@ func pEpubcpu(c echo.Context) error {
 // GET /hello
 func hello(c echo.Context) error {
 	c.Logger().Debugf("in hello")
-	stash := gledki.Stash{
+	stash := Stash{
 		"generator":  Bin,
 		"version":    VERSION,
 		"codename":   CODENAME,

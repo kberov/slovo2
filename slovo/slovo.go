@@ -86,10 +86,10 @@ func loadRoutes(e *echo.Echo) {
 			}
 		}
 		if route.Method == ANY {
-			e.Any(route.Path, HandlersRegistry[route.Handler], definedMFuncs...)
+			e.Any(route.Path, handlerFuncs[route.Handler], definedMFuncs...)
 			continue
 		}
-		e.Add(route.Method, route.Path, HandlersRegistry[route.Handler], definedMFuncs...).Name = route.Name
+		e.Add(route.Method, route.Path, handlerFuncs[route.Handler], definedMFuncs...).Name = route.Name
 	}
 }
 

@@ -9,30 +9,62 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-// ANY is an aggregate for any http method.
-const ANY = "ANY"
+const (
+	// ANY is an aggregate for any http method.
+	ANY = "ANY"
 
-// SLOG is a regular expression capturing group to match what is possible to
-// have between two slashes in an URL path. Used in RegexRules for rewriting
-// urls for the Routes parser. At least three any unicode letter, dash or
-// underscore.
-// Note! REQUEST_URI is url-escaped at this time. We currently use Skipper to
-// unnescape the raw RequestURI.
-const SLOG = `([\pL\-_\d]{3,})`
+	// SLOG is a regular expression capturing group to match what is possible to
+	// have between two slashes in an URL path. Used in RegexRules for rewriting
+	// urls for the Routes parser. At least three unicode letters, dash or
+	// underscore.
+	// Note! REQUEST_URI is url-escaped at this time of request handling. We
+	// currently use Skipper to unnescape the raw RequestURI.
+	SLOG = `([\pL\-_\d]{3,})`
 
-// LNG is a regular expression for language notation.
-const LNG = `((?:[a-z]{2}-[a-z]{2})|[a-z]{2})`
+	// LNG is a regular expression for language and locale notation.
+	LNG = `((?:[a-z]{2}-[a-z]{2})|[a-z]{2})`
 
-const format = `html`
+	format = `html`
 
-// EXT is a regular expression for the requested default format.
-const EXT = `(html?)`
+	// EXT is a regular expression for the requested default format.
+	EXT = `(html?)`
 
-// QS stands for QUERY_STRING - this is the rest of the URL. We match anything.
-const QS = `(.*)?`
+	// QS stands for QUERY_STRING - this is the rest of the URL. We match anything.
+	QS = `(.*)?`
 
-const rootAlias = `коренъ`
-const guestID = 2
+	rootAlias = `коренъ`
+	guestID   = 2
+)
+
+var (
+	// We need this map because the function names are stored in yaml config as
+	// strings and Go cannot identify function names from strings (it would be a
+	// dynamic language then). This map is used in loadRoutes() to match HTTP
+	// handlers by name.
+	handlerFuncs = map[string]echo.HandlerFunc{
+		"hello":           hello,
+		"ppdfcpu":         ppdfcpu,
+		"ppdfcpuForm":     ppdfcpuForm,
+		"straniciExecute": straniciExecute,
+		"celiniExecute":   celiniExecute,
+	}
+
+	// We need this map because the function names are stored in yaml config as
+	// strings. These are functions only for the corresponding HandlerFunc where
+	// their key-names are mentioned.
+	middlewareFuncs = map[string]echo.MiddlewareFunc{
+		"SlovoContext": SlovoContext,
+		"CachePages":   middleware.BodyDump(cachePages),
+	}
+
+	defaultHost = "dev.xn--b1arjbl.xn--90ae"
+
+	// Cfg is the global configuration structure for slovo. The default is
+	// hardcodded and it can be dumped to YAML by using the command `slovo2 config
+	// dump`. To read automatically the YAML file on startup, the SLOVO_CONFIG
+	// environment variable must be set to the config file path.
+	Cfg Config
+)
 
 // Config is the root structure of the configuration for slovo. We preserve the
 // case and style of each node and scalar item between YAML file and Go source
@@ -119,6 +151,8 @@ type Route struct {
 	// Name is the name of the route. Used to generate URIs. See
 	// https://echo.labstack.com/docs/routing#route-naming
 	Name string `yaml:"Name"`
+	// Off disables a Route if set to 'true'.
+	Off bool `yaml:"Off"`
 }
 
 type Routes []Route
@@ -194,34 +228,6 @@ var rewriteConfigSkippers = map[string]middleware.Skipper{
 		return false
 	},
 }
-
-// We need this map because the function names are stored in yaml config as
-// strings and Go cannot identify function names from strings (it would be a
-// dynamic language then). This map is used in loadRoutes() to match HTTP
-// HandlersRegistry by name.
-var HandlersRegistry = map[string]echo.HandlerFunc{
-	"hello":           hello,
-	"ppdfcpu":         ppdfcpu,
-	"ppdfcpuForm":     ppdfcpuForm,
-	"straniciExecute": straniciExecute,
-	"celiniExecute":   celiniExecute,
-}
-
-// We need this map because the function names are stored in yaml config as
-// strings. These are functions only for the corresponding HandlerFunc where
-// their key-names are mentioned.
-var middlewareFuncs = map[string]echo.MiddlewareFunc{
-	"SlovoContext": SlovoContext,
-	"CachePages":   middleware.BodyDump(cachePages),
-}
-
-var defaultHost = "dev.xn--b1arjbl.xn--90ae"
-
-// Cfg is the global configuration structure for slovo. The default is
-// hardcodded and it can be dumped to YAML by using the command `slovo2 config
-// dump`. To read automatically the YAML file on startup, the SLOVO_CONFIG
-// environment variable must be set to the config file path.
-var Cfg Config
 
 func init() {
 	// Default configuration

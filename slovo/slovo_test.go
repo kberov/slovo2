@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -20,6 +21,7 @@ func init() {
 	Logger.SetOutput(os.Stderr)
 	Logger.SetHeader(defaultLogHeader)
 	Logger.SetLevel(log.INFO)
+	Cfg.DB.DSN = filepath.Join(HomeDir(), Cfg.DB.DSN)
 }
 
 // TODO
