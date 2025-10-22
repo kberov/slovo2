@@ -1,8 +1,6 @@
-//lint:file-ignore ST1000 Already documented in root.go
-/*
-Copyright © 2024 Красимир Беров
-*/
 package cmd
+
+//lint:file-ignore ST1000 Already documented in root.go
 
 import (
 	"fmt"
@@ -11,14 +9,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// versionCmd represents the version command
+// versionCmd represents the version command.
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Текущо издание на Слово",
 	Long: `Пълно описание на изданието на Слово. Показва дата на изданието и
 кода. Кодът е буква от глаголицата и обозначава някаква стъпка в развитието
 на приложението.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Printf(
 			`VERSION: %s
 CODENAME: %s 

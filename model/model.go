@@ -9,7 +9,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/kberov/slovo2/util"
 	"github.com/labstack/gommon/log"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3" // init go-sqlite3
 	"github.com/valyala/fasttemplate"
 )
 
@@ -33,7 +33,7 @@ Example: UsersInvoicesLastID === users_invoices_last_id
 // TODO: Research and learn how to add additional Records constraints from
 // extensions. How it is done in Go? Should I use some interface as constraint
 // or what? The idea is extensions to be able to use the type constrained
-// functions like Record2Table(record) and GetByID(id)
+// functions like Record2Table(record) and GetByID(id).
 type Record interface{}
 
 var record2Table = map[string]string{}
@@ -53,13 +53,14 @@ func Record2Table[T Record](record *T) string {
 }
 
 /*
-Table is the base implementation for all tables in the database
+Table is the base implementation for all tables in the database.
 */
 type Table struct {
 	queries SQLMap
 	table   string
 }
 
+// GetByID gets a record by its ID field.
 func GetByID[T Record](r *T, id int32) error {
 	sql := SQLFor("GetByID", Record2Table(r))
 	return DB().Get(r, sql, id)
@@ -67,6 +68,7 @@ func GetByID[T Record](r *T, id int32) error {
 
 var global *sqlx.DB
 
+// DB returns a singleton pool of sqlx connections.
 func DB() *sqlx.DB {
 	if global != nil {
 		return global

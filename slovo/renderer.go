@@ -7,11 +7,16 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// EchoRenderer implements the [echo.Rendere] interface by embedding
+// [gledki.Gledki] and implmenting the method [EchoRenderer.Render].
 type EchoRenderer struct {
 	*gledki.Gledki
 }
 
+// GledkiMust instantiates [EchoRenderer]. Stops the appliaction if it happen
+// to fail with a Fatal message in the log.
 func GledkiMust(roots []string, ext string, tags [2]string, loadFiles bool, logger gledki.Logger) *EchoRenderer {
+	_ = loadFiles // FIXME: Research and see what I had in mind with this variable.
 	gledki.CacheTemplates = true
 	logger.Debugf("CacheTemplates: %v", gledki.CacheTemplates)
 	tpls, err := gledki.New(roots, ext, tags, false)

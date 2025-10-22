@@ -14,6 +14,7 @@ const cached = `cached`
 // Cache pages so when Apache finds a ready page, slovo is not invoked at all.
 // Invoked by echo middleware.BodyDump().
 func cachePages(ec echo.Context, reqBody, resBody []byte) {
+	_ = reqBody
 	c := ec.(*Context)
 	if !canCachePage(c) {
 		return

@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// Stash is an alias of [gledki.Stash].
 type Stash = gledki.Stash
 
 var spf = fmt.Sprintf
@@ -31,11 +32,12 @@ c.FormValue("name") - string  "First Last"
 c.FormValue("email") - string "em@site.com"
 c.FormValue("payed") - bool "yes|1"/"no|0"
 */
+//nolint:unused
 func pEpubcpu(c echo.Context) error {
 	return c.String(http.StatusOK, "TODO!")
 }
 
-// GET /hello
+// GET /hello.
 func hello(c echo.Context) error {
 	c.Logger().Debugf("in hello")
 	stash := Stash{
@@ -64,11 +66,11 @@ func handleNotFound(c *Context, err error) error {
 }
 
 func tryHandleCachedPage(c *Context) error {
-	err := errors.New(`page is not cached.`)
+	err := errors.New(`page is not cached`)
 	if !canCachePage(c) {
 		return err
 	}
-	fullPath := filepath.Join(c.DomainRoot, `public`, cached, c.CanonicalPath())
+	fullPath := filepath.Clean(filepath.Join(c.DomainRoot, `public`, cached, c.CanonicalPath()))
 	if FileIsReadable(fullPath) {
 		data, _ := os.ReadFile(fullPath)
 		c.Logger().Debugf("tryHandleCachedPage: %s", c.CanonicalPath())

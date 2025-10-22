@@ -53,8 +53,8 @@ var (
 	// strings. These are functions only for the corresponding HandlerFunc where
 	// their key-names are mentioned.
 	middlewareFuncs = map[string]echo.MiddlewareFunc{
-		"SlovoContext": SlovoContext,
-		"CachePages":   middleware.BodyDump(cachePages),
+		"CustomContext": CustomContext,
+		"CachePages":    middleware.BodyDump(cachePages),
 	}
 
 	defaultHost = "dev.xn--b1arjbl.xn--90ae"
@@ -81,7 +81,7 @@ type Config struct {
 	// DomovePrefixes is a common list of prefixes, used in parked domains to
 	// create subdomains for various purposes. These prefixes are cut and then
 	// the domain name is used for domain root.
-	DomovePrefixes []string `yaml:DomovePrefixes`
+	DomovePrefixes []string `yaml:"DomovePrefixes"`
 	// GuestID is the id of the user when a guest (unauthenticated) visits the
 	// site.
 	GuestID int32 `yaml:"GuestID"`
@@ -115,10 +115,14 @@ type Config struct {
 	CachePages bool `yaml:"CachePages"`
 }
 
+// DBConfig holds conffiguration for the database to connect to.
 type DBConfig struct {
+	// DSN is the connection string to the database.
 	DSN string `yaml:"DSN"`
 }
 
+// StaticRoutes is a slice of [StaticRoute], describing routes for serving
+// static files.
 type StaticRoutes []StaticRoute
 
 // StaticRoute describes a file path which will be served by echo.
@@ -135,6 +139,8 @@ type Renderer struct {
 	LoadFiles     bool      `yaml:"LoadFiles"`
 }
 
+// Route holds configuration data of a route. This data is used to load routes
+// during startup of the application.
 type Route struct {
 	// Method is a method name from echo.Echo.
 	Method string `yaml:"Method"`
@@ -155,6 +161,9 @@ type Route struct {
 	Off bool `yaml:"Off"`
 }
 
+// Routes is a slice of [Route] configuration data structures. We iterate over
+// this slice and use it's items to generate routes during startup of the
+// application.
 type Routes []Route
 
 // Serve has configuration properties, passed to [slovo.Start].
@@ -166,6 +175,8 @@ type Serve struct {
 // ServeCGI contains minimum ENV values for emulating a CGI request on
 // the command line. All of these can be overridden via flags.
 // See https://www.rfc-editor.org/rfc/rfc3875
+//
+//nolint:revive
 type ServeCGI struct {
 	HTTP_HOST      string `yaml:"HTTP_HOST"`
 	REQUEST_URI    string `yaml:"REQUEST_URI"`
@@ -180,6 +191,8 @@ type ServeCGI struct {
 // Rewrite is used to pass configuration values to
 // [middleware.RewriteWithConfig].
 type Rewrite struct {
+	// SkipperFuncName is the name of the function, which will be used in
+	// method [Rewrite.ToRewriteRules] to set a Skipper function for each rule.
 	SkipperFuncName string `yaml:"SkipperFuncName"`
 	// Rules is a map of string to string in which the key is a regular
 	// expression and the value is the resulting route mapping description
@@ -257,9 +270,9 @@ func init() {
 			Route{Method: echo.GET, Path: "/", Handler: "straniciExecute", Name: "/"},
 			Route{Method: echo.GET, Path: "/hello", Handler: "hello", Name: "hello"},
 			Route{Method: ANY, Path: "/:stranica/:lang/:format", Handler: "straniciExecute",
-				MiddlewareFuncs: []string{"SlovoContext", "CachePages"}, Name: "stranica"},
+				MiddlewareFuncs: []string{"CustomContext", "CachePages"}, Name: "stranica"},
 			Route{Method: ANY, Path: "/:stranica/:celina/:lang/:format", Handler: "celiniExecute",
-				MiddlewareFuncs: []string{"SlovoContext", "CachePages"}, Name: "celina"},
+				MiddlewareFuncs: []string{"CustomContext", "CachePages"}, Name: "celina"},
 			Route{Method: echo.GET, Path: "/v2/ppdfcpu", Handler: "ppdfcpuForm", Name: "ppdfcpu"},
 			Route{Method: echo.POST, Path: "/v2/ppdfcpu", Handler: "ppdfcpu", Name: "ppdfcpuForm"},
 		},

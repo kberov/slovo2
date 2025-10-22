@@ -48,6 +48,7 @@ func publishedStatus(c echo.Context) int {
 	return 2
 }
 
+// FileIsReadable returns true if the file is readable by the application.
 func FileIsReadable(path string) bool {
 	finfo, err := os.Stat(path)
 	if err != nil && errors.Is(err, os.ErrNotExist) {

@@ -30,11 +30,11 @@ func ppdfcpu(c echo.Context) error {
 	// TODO: store it in the yaml struct for the book and get it from there.
 	t := time.Now()
 	year, month, day := t.Date()
-	hour, min := t.Hour(), t.Minute()
+	hour, mins := t.Hour(), t.Minute()
 
 	sourceFileName := "data/pdf/IS.pdf"
 	dir := spf("data/pdf/%d/%d/%d", year, month, day)
-	downloadFileName := spf("%s/%d%d-%sIS.pdf", dir, hour, min, passw[:3])
+	downloadFileName := spf("%s/%d%d-%sIS.pdf", dir, hour, mins, passw[:3])
 	pdfMsg := pdfcpuMessage{
 		Download: downloadFileName,
 		Passwd:   passw,
@@ -42,7 +42,9 @@ func ppdfcpu(c echo.Context) error {
 		Email:    "ala@bala.bg",
 		Msg:      spf(`Gotowo: <a href://"site.com/%s">Ime na kniga</a>`, downloadFileName),
 	}
-	os.MkdirAll(dir, 0755)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
 	// TODO: add most of these to DefaultConfig
 	cmdArgs := []string{
 		spf("За %s<%s>", pdfMsg.Name, pdfMsg.Email),
@@ -51,7 +53,7 @@ func ppdfcpu(c echo.Context) error {
 		downloadFileName,
 		passw,
 	}
-	c.Echo().Logger.Debugf("pdfcpu.sh %v", cmdArgs)
+	c.Logger().Debugf("pdfcpu.sh %v", cmdArgs)
 	externalCmd := "./bin/pdfcpu_stamp_encrypt.sh"
 	cmd := exec.Command(externalCmd, cmdArgs...)
 	err := cmd.Start()
@@ -82,5 +84,6 @@ rendering by slovo2 or Apache (when running in CGI mode).
 GET /v2/epub
 */
 func ppdfcpuForm(c echo.Context) error {
+	_ = c
 	return errors.New("temporary until we have a renderer")
 }

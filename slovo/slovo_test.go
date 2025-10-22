@@ -72,101 +72,100 @@ func Test_publishedStatus(t *testing.T) {
 	}
 }
 
+var testRoutesCases = []struct {
+	name         string
+	whenURL      string
+	expectStatus int
+	bodyContains string
+}{
+	{
+		name:         "/",
+		whenURL:      "/",
+		expectStatus: http.StatusOK,
+		bodyContains: `Знакът Ⱄ в горния ляв ъгъл е буква.`,
+	},
+	{
+		name:         "index.html",
+		whenURL:      "/index.html",
+		expectStatus: http.StatusOK,
+		bodyContains: `Знакът Ⱄ в горния ляв ъгъл е буква.`,
+	},
+	{
+		name:         "коренъ.html",
+		whenURL:      "/коренъ.html",
+		expectStatus: http.StatusOK,
+		bodyContains: `Знакът Ⱄ в горния ляв ъгъл е буква.`,
+	},
+	{
+		name:         "коренъ.bg.html",
+		whenURL:      "/коренъ.bg.html",
+		expectStatus: http.StatusOK,
+		bodyContains: `Знакът Ⱄ в горния ляв ъгъл е буква.`,
+	},
+	{
+		name:         "кънигꙑ.bg.html",
+		whenURL:      "/кънигꙑ.bg.html",
+		expectStatus: http.StatusOK,
+		bodyContains: `Тук предлагаме книги, които ни се`,
+	},
+	{
+		name:         "кънигꙑ.bg.html 2",
+		whenURL:      "/кънигꙑ.bg.html",
+		expectStatus: http.StatusOK,
+		bodyContains: `Това е буквална възстановка (буква по буква)`,
+	},
+	{
+		name:         "кънигꙑ.bg.html ⮊",
+		whenURL:      "/кънигꙑ.bg.html",
+		expectStatus: http.StatusOK,
+		bodyContains: `⮊`,
+	},
+	{
+		name:         "кънигꙑ.bg.html?limit=10&offset=10",
+		whenURL:      "/кънигꙑ.bg.html?limit=10&offset=10",
+		expectStatus: http.StatusOK,
+		bodyContains: `Черно на черно`,
+	},
+	{
+		name:         "кънигꙑ/матере-нашѧ-параскеви.bg.html",
+		whenURL:      "/кънигꙑ/матере-нашѧ-параскеви.bg.html",
+		expectStatus: http.StatusOK,
+		bodyContains: `Електронно издание за свободно изтегляне`,
+	},
+	{
+		name:         "новолѣпьно/малък-свят-на-български.html canonical url",
+		whenURL:      "/новолѣпьно/малък-свят-на-български.html",
+		expectStatus: http.StatusOK,
+		// canonical url
+		bodyContains: `https://xn--b1arjbl.xn--90ae/новолѣпьно/малък-свят-на-български.bg.html`,
+	},
+	{
+		name:         "новолѣпьно/малък-свят-на-български.bg.html",
+		whenURL:      "/новолѣпьно/малък-свят-на-български.bg.html",
+		expectStatus: http.StatusOK,
+		bodyContains: `<h1>Гуарески за първи път на български</h1>`,
+	},
+	{
+		name:         "notfound.bg.html",
+		whenURL:      "/новолѣпьно/unknown.html",
+		expectStatus: http.StatusNotFound,
+		bodyContains: `<h1>Няма такава страница!</h1>`,
+	},
+}
+
 func TestRoutes(t *testing.T) {
-
-	var testCases = []struct {
-		name         string
-		whenURL      string
-		expectStatus int
-		bodyContains string
-	}{
-		{
-			name:         "/",
-			whenURL:      "/",
-			expectStatus: http.StatusOK,
-			bodyContains: `Знакът Ⱄ в горния ляв ъгъл е буква.`,
-		},
-		{
-			name:         "index.html",
-			whenURL:      "/index.html",
-			expectStatus: http.StatusOK,
-			bodyContains: `Знакът Ⱄ в горния ляв ъгъл е буква.`,
-		},
-		{
-			name:         "коренъ.html",
-			whenURL:      "/коренъ.html",
-			expectStatus: http.StatusOK,
-			bodyContains: `Знакът Ⱄ в горния ляв ъгъл е буква.`,
-		},
-		{
-			name:         "коренъ.bg.html",
-			whenURL:      "/коренъ.bg.html",
-			expectStatus: http.StatusOK,
-			bodyContains: `Знакът Ⱄ в горния ляв ъгъл е буква.`,
-		},
-		{
-			name:         "кънигꙑ.bg.html",
-			whenURL:      "/кънигꙑ.bg.html",
-			expectStatus: http.StatusOK,
-			bodyContains: `Тук предлагаме книги, които ни се`,
-		},
-		{
-			name:         "кънигꙑ.bg.html 2",
-			whenURL:      "/кънигꙑ.bg.html",
-			expectStatus: http.StatusOK,
-			bodyContains: `Това е буквална възстановка (буква по буква)`,
-		},
-		{
-			name:         "кънигꙑ.bg.html ⮊",
-			whenURL:      "/кънигꙑ.bg.html",
-			expectStatus: http.StatusOK,
-			bodyContains: `⮊`,
-		},
-		{
-			name:         "кънигꙑ.bg.html?limit=10&offset=10",
-			whenURL:      "/кънигꙑ.bg.html?limit=10&offset=10",
-			expectStatus: http.StatusOK,
-			bodyContains: `Черно на черно`,
-		},
-		{
-			name:         "кънигꙑ/матере-нашѧ-параскеви.bg.html",
-			whenURL:      "/кънигꙑ/матере-нашѧ-параскеви.bg.html",
-			expectStatus: http.StatusOK,
-			bodyContains: `Електронно издание за свободно изтегляне`,
-		},
-		{
-			name:         "новолѣпьно/малък-свят-на-български.html canonical url",
-			whenURL:      "/новолѣпьно/малък-свят-на-български.html",
-			expectStatus: http.StatusOK,
-			// canonical url
-			bodyContains: `https://xn--b1arjbl.xn--90ae/новолѣпьно/малък-свят-на-български.bg.html`,
-		},
-		{
-			name:         "новолѣпьно/малък-свят-на-български.bg.html",
-			whenURL:      "/новолѣпьно/малък-свят-на-български.bg.html",
-			expectStatus: http.StatusOK,
-			bodyContains: `<h1>Гуарески за първи път на български</h1>`,
-		},
-		{
-			name:         "notfound.bg.html",
-			whenURL:      "/новолѣпьно/unknown.html",
-			expectStatus: http.StatusNotFound,
-			bodyContains: `<h1>Няма такава страница!</h1>`,
-		},
-	}
-
 	e := initEcho(Logger)
 
-	for _, tc := range testCases {
+	for _, tc := range testRoutesCases {
 		t.Run(tc.name, func(t *testing.T) {
 			url := `http://` + defaultHost + Cfg.Serve.Location + tc.whenURL
 			req := httptest.NewRequest(http.MethodGet, url, nil)
-			rec := httptest.NewRecorder()
+			response := httptest.NewRecorder()
 
-			e.ServeHTTP(rec, req)
+			e.ServeHTTP(response, req)
 
-			assert.Equal(t, tc.expectStatus, rec.Code)
-			assert.True(t, strings.Contains(rec.Body.String(), tc.bodyContains))
+			assert.Equal(t, tc.expectStatus, response.Code)
+			assert.True(t, strings.Contains(response.Body.String(), tc.bodyContains))
 		})
 	}
 }
@@ -198,14 +197,14 @@ func Test_PreferDomainStaticFiles_and_switchToDomainTemplates(t *testing.T) {
 			dom:          dom,
 			whenURL:      `/ѩꙁыкъ/о-писменьхъ.bg.html`,
 			expectStatus: http.StatusOK,
-			//domain specific static file
+			// domain specific static file
 			bodyContains: `src="/js/o-pismeneh.js"`,
 		},
 		{
 			dom:          dom,
 			whenURL:      `/коренъ.bg.html`,
 			expectStatus: http.StatusOK,
-			//domain specific wrapper
+			// domain specific wrapper
 			bodyContains: `<meta property="og:type" content="website" />
   <script src="/js/jquery-3.7.1.min.js"></script>
 </head>`,
@@ -223,8 +222,8 @@ func Test_PreferDomainStaticFiles_and_switchToDomainTemplates(t *testing.T) {
 
 			assert.Equal(t, tc.expectStatus, rec.Code)
 			assert.True(t, strings.Contains(rec.Body.String(), tc.bodyContains))
-			//t.Logf("tc.bodyContains: %s", tc.bodyContains)
-			//t.Logf("rec.Body.String(): %s", rec.Body.String())
+			// t.Logf("tc.bodyContains: %s", tc.bodyContains)
+			// t.Logf("rec.Body.String(): %s", rec.Body.String())
 		})
 	}
 }

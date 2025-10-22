@@ -13,7 +13,7 @@ import (
 var spf = fmt.Sprintf
 var defaultCfg = slovo.Cfg
 
-// configCmd represents the config command
+// configCmd represents the config command.
 var configCmd = &cobra.Command{
 	Use:   "config [action]",
 	Short: "A command to manage slovo2 configuration",
@@ -26,7 +26,7 @@ Available actions are:
 	Args: cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			cmd.Help()
+			_ = cmd.Help()
 			os.Exit(0)
 		}
 		switch args[0] {
@@ -60,7 +60,7 @@ func dumpConfig() {
 	fmt.Printf("Default configuration file is %s.\n", defaultCfg.File)
 	finfo, err := os.Stat(cfgFile)
 	if err != nil && errors.Is(err, os.ErrNotExist) {
-		// fine
+		Logger.Infof(`file %s does not exist yet`, cfgFile)
 	} else if finfo.Mode().IsRegular() && finfo.Mode().Perm()&0400 == 0400 {
 		// backup the existing file if it exists
 		if e := os.Rename(cfgFile, cfgFile+".old"); e != nil {

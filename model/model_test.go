@@ -1,4 +1,4 @@
-package model
+package model //nolint:testpackage
 
 import (
 	"os"
@@ -57,7 +57,7 @@ func TestSQLFor(t *testing.T) {
 	if strings.Contains(SQL, "${") {
 		t.Fatalf("SQL contains placeholders:\n%s", SQL)
 	}
-	//t.Log(SQL)
+	// t.Log(SQL)
 }
 
 func TestSelectMenuItems(t *testing.T) {
@@ -92,22 +92,14 @@ func TestGetDomain(t *testing.T) {
 	for k, v := range domains {
 		t.Run(k, func(t *testing.T) {
 			dom := new(Domove)
-			dom.GetByName(k)
+			err := dom.GetByName(k)
+			if err != nil {
+				t.Errorf(`Got err from dom.GetByName(%s): %s`, k, err.Error())
+			}
 			if dom.Domain != v {
 				t.Fatalf("Unexpectedly got domain %s. Expected: %s", dom.Domain, v)
 			}
 			// t.Logf("%s => %#v", k, dom)
 		})
 	}
-}
-
-func expectPanic(t *testing.T, f func()) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Fatalf("MISSING PANIC")
-		} else {
-			t.Log(r)
-		}
-	}()
-	f()
 }

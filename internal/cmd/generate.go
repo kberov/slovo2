@@ -1,19 +1,17 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/kberov/slovo2/internal/cmd/generate"
 	"github.com/spf13/cobra"
 )
 
-// generateCmd represents the generate command
+// generateCmd represents the generate command.
 var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate model, extensions, controllers etc.",
 	Long:  `TODO: detailed explanation..`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("generate called")
+	Run: func(_ *cobra.Command, args []string) {
+		Logger.Debugf("generate called with args %+v", args)
 	},
 }
 

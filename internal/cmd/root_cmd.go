@@ -28,6 +28,7 @@ package cmd
 import (
 	"errors"
 	"os"
+	"path/filepath"
 
 	"github.com/kberov/slovo2/slovo"
 	"github.com/labstack/gommon/log"
@@ -35,9 +36,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Logger is the global logger, provided by package slovo.
 var Logger = slovo.Logger
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
 	Use:   slovo.Bin,
 	Short: "Наследникът на Слово – многократно по-бърз.",
@@ -99,7 +101,7 @@ command 'config'.`)
 	// You will additionally define flags and handle configuration in your init() function.
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	//rootCmd.Flags().StringVar("config_file", "c", , "Read configuration from this file")
+	// rootCmd.Flags().StringVar("config_file", "c", , "Read configuration from this file")
 	cobra.OnInitialize(rootInitConfig)
 }
 
@@ -118,19 +120,21 @@ func rootInitConfig() {
 		}
 		return
 	}
+	cfgFile = filepath.Clean(cfgFile)
 	// Try to Load YAML config if cfgFile exists. Otherwise
 	// fallback to default configuration in slovo/config.go.
 	finfo, err := os.Stat(cfgFile)
 	if err != nil && errors.Is(err, os.ErrNotExist) {
 		Logger.Warnf("File %s does not exist. Falling back to internal configuration.", cfgFile)
 	} else if finfo.Mode().IsRegular() && finfo.Mode().Perm()&0400 == 0400 {
-		cfg, _ := os.ReadFile(cfgFile)
+		cfg, err := os.ReadFile(cfgFile)
+		if err != nil {
+			Logger.Fatal(err)
+		}
 		if err := yaml.Unmarshal(cfg, &slovo.Cfg); err != nil {
 			Logger.Fatal(err)
-		} else {
-			if !slovo.Cfg.Debug {
-				Logger.SetLevel(log.INFO)
-			}
+		} else if !slovo.Cfg.Debug {
+			Logger.SetLevel(log.INFO)
 		}
 	}
 }

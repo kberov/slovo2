@@ -40,6 +40,7 @@ type Context struct {
 	Domain *m.Domove
 }
 
+// DB is attached to our custom context to have a pool of database connections.
 func (c *Context) DB() *sqlx.DB {
 	return m.DB()
 }
@@ -51,16 +52,20 @@ func (c *Context) BindArgs() (*m.StraniciArgs, error) {
 	if c.StraniciArgs.UserID > 0 {
 		return c.StraniciArgs, nil
 	}
-	err := c.Bind(c.StraniciArgs)
+	if err := c.Bind(c.StraniciArgs); err != nil {
+		return nil, err
+	}
 
 	// Make sure we use only the domain name without any prefix.
 	дом := new(m.Domove)
-	дом.GetByName(c.StraniciArgs.Domain)
+	if err := дом.GetByName(c.StraniciArgs.Domain); err != nil {
+		return nil, err
+	}
 	c.StraniciArgs.Domain = дом.Domain
 	c.DomainRoot = filepath.Join(Cfg.DomoveRoot, c.StraniciArgs.Domain)
-	//c.Logger().Debugf("Domain:%#v", dom)
+	// c.Logger().Debugf("Domain:%#v", dom)
 	c.Domain = дом
-	return c.StraniciArgs, err
+	return c.StraniciArgs, nil
 }
 
 // CanonicalPath returns the canonical URL for the current page.
@@ -125,7 +130,7 @@ func (c *Context) switchToDomainTemplates() {
 }
 
 /*
-SlovoContext is a middleware function which instantiates slovo's custom context
+CustomContext is a middleware function which instantiates slovo's custom context
 and executes some tasks common to all pages in the site. These are:
   - [Context.BindArgs]
   - renders (spits out) cached pages
@@ -135,9 +140,9 @@ and executes some tasks common to all pages in the site. These are:
     templates column. This way every domain can have it's own templates.
   - prepares some default items in [gledki.Stash]
 */
-func SlovoContext(next echo.HandlerFunc) echo.HandlerFunc {
+func CustomContext(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		c.Logger().Debugf("in SlovoContext")
+		c.Logger().Debugf("in CustomContext")
 		sc := &Context{Context: c, StraniciArgs: new(m.StraniciArgs)}
 		if _, err := sc.BindArgs(); err != nil {
 			return err
@@ -151,7 +156,7 @@ func SlovoContext(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-// copied from gledki
+// copied from gledki.
 func dirExists(path string) bool {
 	finfo, err := os.Stat(path)
 	return err == nil && finfo.IsDir()

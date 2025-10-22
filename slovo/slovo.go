@@ -18,7 +18,13 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
+// VERSION is the current version of the framework. It is produced after the
+// release date + short explanatory text.
 const VERSION = "2024.04.11-alpha-015"
+
+// CODENAME changes when a substantial difference in the frame	work is
+// introduced. It follows the Glagolitic alphabet until the letters are over
+// and then we will switch to the Cyrillic alphabet.
 const CODENAME = "U+2C16 GLAGOLITIC CAPITAL LETTER UKU (Ⱆ)"
 
 // DefaultLogHeader = `${prefix}:${time_rfc3339}:${level}:${short_file}:${line}`
@@ -31,7 +37,7 @@ var Logger *log.Logger
 
 // Bin is the file name with which the program is run - the last element
 // of the full path to it. Usually this is 'slovo2'. See [filepath.Base].
-var Bin string = "slovo2"
+var Bin = "slovo2"
 
 func init() {
 	Bin = filepath.Base(os.Args[0])
@@ -66,7 +72,7 @@ func initEcho(logger *log.Logger) *echo.Echo {
 	for _, path := range Cfg.StaticRoutes {
 		e.Static(path.Prefix, path.Root)
 	}
-	// TODO add Validator  and other needed stugff. See
+	// TODO add Validator  and other needed stuff. See
 	// https://echo.labstack.com/docs/customization
 	// e.GET("/", hello)...
 	loadRoutes(e)
@@ -135,7 +141,6 @@ func CgiInitFlags(flags *flag.FlagSet) {
 		&Cfg.StartCGI.CONTENT_TYPE,
 		"CONTENT_TYPE", "T",
 		Cfg.StartCGI.CONTENT_TYPE, "Content-Type")
-
 }
 
 // CgiInitEnvVarsFromConfig initialises environment variables from Cfg, if not
@@ -151,8 +156,8 @@ func CgiInitEnvVarsFromConfig() {
 		"SERVER_PROTOCOL":   Cfg.StartCGI.SERVER_PROTOCOL,
 		"REQUEST_METHOD":    Cfg.StartCGI.REQUEST_METHOD,
 		"HTTP_HOST":         Cfg.StartCGI.HTTP_HOST,
-		//"HTTP_REFERER":        "elsewhere",
-		//"HTTP_USER_AGENT":     "slovo2client",
+		// "HTTP_REFERER":        "elsewhere",
+		// "HTTP_USER_AGENT":     "slovo2client",
 		"HTTP_ACCEPT_CHARSET": Cfg.StartCGI.HTTP_ACCEPT_CHARSET,
 		// "HTTP_FOO_BAR":    "baz",
 		"REQUEST_URI": escapeRequestURI(Cfg.StartCGI.REQUEST_URI),
@@ -161,10 +166,11 @@ func CgiInitEnvVarsFromConfig() {
 		// "REMOTE_ADDR":     "5.6.7.8",
 		// "REMOTE_PORT":     "54321",
 	}
+
 	for k, v := range env {
 		if os.Getenv(k) == "" {
 			// Logger.Debugf("Setting %s: %s", k, v)
-			os.Setenv(k, v)
+			_ = os.Setenv(k, v)
 		}
 	}
 }
@@ -179,4 +185,29 @@ func escapeRequestURI(uri string) string {
 		uri += `/` + url.PathEscape(p)
 	}
 	return uri
+}
+
+// RouteHandlers is a struct which has to be defined by any router plugin -
+// statically or dynamically linked. Each plugin can define one or more of
+// these. Then the pugin must register the definitions using
+// [slovo.AddRouteHandlers] in its init() function, which will be executed when
+// the plugin is imported or opened using [plugin.Open]. If the config file is
+// dumped once, after this plugin was loaded, the routes from this structure
+// will become part of the config file. Any route can be disabled in the config
+// file by commenting or removing it.
+type RouteHandlers struct {
+	// Handlers are the functions which will be executed by Echo to handle HTTP
+	// requests. If there is already a registered handler with the same name as
+	// one of these Slovo will panic. You will have to change the name or not
+	// load the other plugin providing a handler with same name.
+	Handlers map[string]echo.HandlerFunc
+	// Route associates the Handler with a specified Route.Path.
+	Routes          []Route
+	StaticRoutes    []StaticRoute
+	RewriteRules    map[string]string
+	MiddlewareFuncs map[string]echo.MiddlewareFunc
+}
+
+func AddRouteHandlers(rHandlers ...*RouteHandlers) { //nolint:revive
+	// TODO
 }

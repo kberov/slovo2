@@ -1,7 +1,3 @@
-//lint:file-ignore ST1000 Already documented in root.go
-/*
-Copyright © 2024 Красимир Беров
-*/
 package cmd
 
 import (
@@ -9,19 +5,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// serveCmd represents the serve command
+// serveCmd represents the serve command.
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Run Slovo as a Sever.",
 	Long:  `Starts Slovo as a HTTP server.`,
 	// I had to move init* functions here to make sure that only the parent and
 	// respective command's init* are run.
-	PreRun: func(cmd *cobra.Command, args []string) {
+	PreRun: func(_ *cobra.Command, args []string) {
 		serveInitConfig()
-		Logger.Debugf("serveCmd.Command().PreRun() called. args: %v ", args)
+		Logger.Debugf("serveCmd.Command().PreRun() called. args: %+v ", args)
 	},
-	Run: func(cmd *cobra.Command, args []string) {
-		Logger.Debug("serveCmd.Command().Run() called.")
+	Run: func(_ *cobra.Command, args []string) {
+		Logger.Debugf("serveCmd.Command().Run() called with args %+v", args)
 		slovo.Start(Logger)
 	},
 }
@@ -40,7 +36,7 @@ func init() {
 	// serveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	serveCmd.Flags().StringVarP(&slovo.Cfg.Serve.Location, "listen", "l",
 		slovo.Cfg.Serve.Location, "Location to listen on")
-	//cobra.OnInitialize(serveInitConfig)
+	// cobra.OnInitialize(serveInitConfig)
 }
 
 func serveInitConfig() {

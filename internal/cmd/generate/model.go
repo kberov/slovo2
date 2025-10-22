@@ -21,7 +21,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ModelCmd represents the `slovo generate model` command
+// ModelCmd represents the `slovo generate model` command.
 var ModelCmd = &cobra.Command{
 	Use:   "model",
 	Short: "Generates Go code for sqlx",
@@ -33,7 +33,7 @@ own queries and data objects almost like an ORM. We use sqlite3 and extract all
 the meta data for the model from the database. Please, pass the path to your
 database file or add it to the configuration section Cfg.Db.DSN
 `,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		// logger.Warnf("%#v", slovo.Cfg.DB.Tables)
 		slovo.Logger.Print("generate model called... TODO")
 		// generateRecordTypes(slovo.Cfg.DB.Tables)
@@ -42,13 +42,11 @@ database file or add it to the configuration section Cfg.Db.DSN
 }
 
 func init() {
-
 	// Here you will define your flags and configuration settings.
 	ModelCmd.Flags().StringVarP(&slovo.Cfg.DB.DSN, "DSN", "D", slovo.Cfg.DB.DSN, "DSN for the database")
 	// modelCmd.Flags().StringSliceVarP(&slovo.Cfg.DB.Tables, "tables", "t", slovo.Cfg.DB.Tables, "Tables for which to generate model types")
 }
 
-// get table names
 var selectTables = `
 SELECT name, type FROM sqlite_schema
 WHERE type ='table'AND  name NOT LIKE 'sqlite_%';
@@ -77,7 +75,11 @@ func generateRecordTypes(tables []string) {
 		}
 	}
 	slovo.Logger.Printf("The following of the requested tables wer found in the database: %#v", tablesInDB)
-	//p := model.Products{}
+	// p := model.Products{}
 	p := model.Stranici{}
-	model.GetByID(&p, 1)
+	err = model.GetByID(&p, 1)
+	if err != nil {
+		slovo.Logger.Warn("Error" + err.Error())
+		return
+	}
 }

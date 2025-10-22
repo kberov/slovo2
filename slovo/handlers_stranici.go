@@ -56,7 +56,7 @@ func buildStraniciStash(c *Context, page *m.Stranici) Stash {
 mainMenu returns a gledki.TagFunc which prepares and returns the HTML for
 the tag `mainMenu` in the template.
 */
-func mainMenu(c echo.Context, args *m.StraniciArgs, stash Stash) string {
+func mainMenu(_ echo.Context, args *m.StraniciArgs, stash Stash) string {
 	var html strings.Builder
 	for _, p := range m.SelectMenuItems(*args) {
 		class := ""
@@ -69,7 +69,7 @@ func mainMenu(c echo.Context, args *m.StraniciArgs, stash Stash) string {
 }
 
 // categoryPages displays the list of pages in the home page.
-func categoryPages(c *Context, stash Stash) string {
+func categoryPages(c *Context, _ Stash) string {
 	t, _ := c.Echo().Renderer.(*EchoRenderer)
 
 	// File does not have directives in it self, so only LoadFile() is

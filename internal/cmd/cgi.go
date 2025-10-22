@@ -1,8 +1,3 @@
-//lint:file-ignore ST1000 Already documented in root.go
-
-/*
-Copyright © 2024 Красимир Беров
-*/
 package cmd
 
 import (
@@ -10,7 +5,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// cgiCmd represents the cgi command
+// cgiCmd represents the cgi command.
 var cgiCmd = &cobra.Command{
 	Use:   "cgi",
 	Short: spf("Run %s as a CGI script.", slovo.Bin),
@@ -21,7 +16,8 @@ environment, if it is invoked by a web server like Apache or as a commandline
 application. Also this is how we cheat %[1]s to test it on the command line.
 `, slovo.Bin),
 	PreRun: cgiPreRun,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
+		_ = args
 		slovo.StartCGI(Logger)
 	},
 }
@@ -31,6 +27,6 @@ func init() {
 	slovo.CgiInitFlags(cgiCmd.Flags())
 }
 
-func cgiPreRun(cgi *cobra.Command, args []string) {
+func cgiPreRun(_ *cobra.Command, args []string) {
 	Logger.Debugf("cgiCmd.PreRun(cgiCmd): args: %v", args)
 }

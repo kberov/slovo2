@@ -1,3 +1,4 @@
+//nolint:revive
 package model
 
 import (
@@ -16,7 +17,7 @@ type Domove struct {
 	Domain      string
 	SiteName    string
 	Description string
-	OwnerID     int32
+	OwnerID     sql.Null[int32]
 	GroupID     int32
 	Permissions string
 	Published   int32
@@ -25,23 +26,31 @@ type Domove struct {
 	Templates   string
 }
 
+// GetByName selects a domain by name.
 func (d *Domove) GetByName(domain string) error {
 	table := Record2Table(d)
 	SQL := SQLFor("GET_DOMAIN", table)
 	// Logger.Debugf("domain: %#v GetByName(GET_DOMAIN) SQL:\n%s", domain, SQL)
-	if stmt, err := DB().PrepareNamed(SQL); err != nil {
+	stmt, err := DB().PrepareNamed(SQL)
+	defer func() { _ = stmt.Close() }()
+	if err != nil {
 		return err
-	} else {
-		args := struct{ Domain string }{Domain: domain}
-		return stmt.Get(d, args)
 	}
+	args := struct{ Domain string }{Domain: domain}
+	if err := stmt.Get(d, args); err != nil {
+		return err
+	}
+	return stmt.Close()
 }
 
+// PageType can be only Regular or Root.
 type PageType string
 
 const (
+	// Regular page type.
 	Regular PageType = "regular"
-	Root    PageType = "root"
+	// Root page type.
+	Root PageType = "root"
 )
 
 // StraniciArgs is a struct which we will populate by using the Echo binding mechanizm
@@ -122,6 +131,7 @@ func (s *Stranici) FindForDisplay(args StraniciArgs) (err error) {
 	if stmt, err = DB().PrepareNamed(SQL); err != nil {
 		return err
 	}
+	defer stmt.Close()
 	return stmt.Get(s, args)
 }
 
@@ -142,23 +152,31 @@ func (s *Stranici) TemplatePath(defaultTemplate string) string {
 // ListStranici returns a slice of pages which are children of the page with
 // StraniciArgs.Alias.
 func ListStranici(args StraniciArgs) (items []Stranici) {
-
 	SQL := SQLFor("SELECT_CHILD_PAGES", "stranici")
 	// Logger.Debugf("ListStranici(%#v) SQL:\n%s", args, SQL)
-
-	if stmt, err := DB().PrepareNamed(SQL); err != nil {
+	var (
+		stmt *sqlx.NamedStmt
+		err  error
+	)
+	if stmt, err = DB().PrepareNamed(SQL); err != nil {
 		Logger.Panicf(`error from ListStranici/PrepareNamed(SQL):%v; args: %#v`, err, args)
 	} else if err = stmt.Select(&items, args); err != nil {
 		Logger.Panicf(`error from ListStranici/Select(&items, args):%v; args: %#v`, err, args)
 	}
+	defer stmt.Close()
 	return
 }
 
+// Box in the page where a celina will appear.
 type Box string
 
+//nolint:revive
 const (
-	MainBox   Box = "main"
-	LeftBox   Box = "left"
+	// MainBox of the page.
+	MainBox Box = "main"
+	// LeftBox of the page.
+	LeftBox Box = "left"
+	// RightBox of the page.
 	RightBox  Box = "right"
 	HeaderBox Box = "header"
 	FooterBox Box = "footer"
@@ -179,17 +197,22 @@ type StrMenuItem struct {
 }
 
 /*
-SelectMenuItems populates a []StrMenuItem slice and returns it or an
-error from DB().
+SelectMenuItems populates a []StrMenuItem slice and returns it or panica if
+there is an error from DB().
 */
 func SelectMenuItems(args StraniciArgs) (items []StrMenuItem) {
 	SQL := SQLFor("SELECT_PAGES_FOR_MAIN_MENU", "stranici")
 	// Logger.Debugf("SelectMenuItems(%#v) SQL:\n%s", args, SQL)
-	if stmt, err := DB().PrepareNamed(SQL); err != nil {
+	var (
+		stmt *sqlx.NamedStmt
+		err  error
+	)
+	if stmt, err = DB().PrepareNamed(SQL); err != nil {
 		Logger.Panicf(`error from SelectMenuItems/PrepareNamed(SQL):%v; args: %#v`, err, args)
 	} else if err = stmt.Select(&items, args); err != nil {
 		Logger.Panicf(`error from SelectMenuItems/Select(&items, args):%v; args: %#v`, err, args)
 	}
+	defer stmt.Close()
 	return items
 }
 
@@ -199,9 +222,10 @@ func (s *StrMenuItem) IsDir() bool { return strings.HasPrefix(s.Permissions, "d"
 // CelDataType represents the logical data type for a celina. Based on it we
 // choose the appropriate template for displaying it.
 // "default": "note",
-// "enum":["title", "note", "writing", "book", "chapter", "question", "answer", "paragraph"]
+// "enum":["title", "note", "writing", "book", "chapter", "question", "answer", "paragraph"].
 type CelDataType string
 
+//nolint:revive
 const (
 	Title     CelDataType = "title"
 	Note      CelDataType = "note"
@@ -217,6 +241,7 @@ func (d CelDataType) String() string {
 	return string(d)
 }
 
+// Celini is mapped to table celini.
 type Celini struct {
 	ID          int32
 	Alias       string
@@ -248,20 +273,22 @@ type Celini struct {
 	Published   uint8
 }
 
+// FindForDisplay selects a single page to be displayed.
 func (cel *Celini) FindForDisplay(args StraniciArgs) error {
 	SQL := SQLFor("GET_CELINA_FOR_DISPLAY", Record2Table(cel))
 	// Logger.Debugf("GET_CELINA_FOR_DISPLAY SQL:\n%s", SQL)
-	if stmt, err := DB().PrepareNamed(SQL); err != nil {
+	stmt, err := DB().PrepareNamed(SQL)
+	defer func() { _ = stmt.Close() }()
+	if err != nil {
 		return err
-	} else {
-		return stmt.Get(cel, args)
 	}
+	return stmt.Get(cel, args)
 }
 
 var celiniTemplatesDir = "celini/"
 
-func (cel *Celini) TemplatePath(defaultTemplate string) string {
-
+// TemplatePath returns the path to the template for the repective celina type.
+func (cel *Celini) TemplatePath() string {
 	switch cel.DataType {
 	case Writing, Book, Note:
 		return celiniTemplatesDir + cel.DataType.String()
@@ -277,15 +304,21 @@ func (cel *Celini) TemplatePath(defaultTemplate string) string {
 func ListCelini(args StraniciArgs) (items []Celini) {
 	SQL := SQLFor("CELINI_FOR_LIST_IN_PAGE", "celini")
 	// Logger.Debugf("ListCelini(%#v) SQL:\n%s", args, SQL)
-
-	if stmt, err := DB().PrepareNamed(SQL); err != nil {
+	var (
+		stmt *sqlx.NamedStmt
+		err  error
+	)
+	if stmt, err = DB().PrepareNamed(SQL); err != nil {
 		Logger.Panicf("error from model.ListStranici/PrepareNamed(SQL): %v", err)
 	} else if err = stmt.Select(&items, args); err != nil {
 		Logger.Panicf("error from model.ListStranici/Select(&items, args): %v", err)
 	}
+	defer stmt.Close()
 	return items
 }
 
+// Aliases maps old to new aliases so we can redirect old links to renamed
+// celini.
 type Aliases struct {
 	ID         int32
 	OldAlias   string
@@ -294,6 +327,7 @@ type Aliases struct {
 	AliasTable string
 }
 
+// Users represents table users.
 type Users struct {
 	ID            int32
 	LoginName     string
@@ -312,6 +346,7 @@ type Users struct {
 	ChangedBy     int32
 }
 
+// Groups represents table groups.
 type Groups struct {
 	ID          int32
 	Name        string
@@ -321,11 +356,13 @@ type Groups struct {
 	ChangedBy   sql.NullInt32
 }
 
+// UserGroup maps to table user_group.
 type UserGroup struct {
 	UserID  int32
 	GroupID int32
 }
 
+// FirstLogin maps to table first_login.
 type FirstLogin struct {
 	ID        int32
 	Token     string
@@ -335,6 +372,7 @@ type FirstLogin struct {
 	StopDate  int32
 }
 
+// PasswLogin maps to table passw_login.
 type PasswLogin struct {
 	ID        int32
 	Token     string
@@ -343,6 +381,7 @@ type PasswLogin struct {
 	StopDate  int32
 }
 
+// Products maps to table products.
 type Products struct {
 	ID         int32
 	Sku        string
@@ -352,6 +391,7 @@ type Products struct {
 	Properties string
 }
 
+// Orders maps to table orders.
 type Orders struct {
 	ID          int32
 	Name        string

@@ -23,7 +23,6 @@ package main
 
 import (
 	"github.com/kberov/slovo2/internal/cmd"
-	_ "github.com/kberov/slovo2/internal/cmd/generate"
 )
 
 func main() {

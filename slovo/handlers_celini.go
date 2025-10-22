@@ -17,13 +17,15 @@ func celiniExecute(ec echo.Context) error {
 		log.Errorf("celina: %#v; error:%w; ErrType: %T; args: %#v", cel, err, err, c.StraniciArgs)
 		return handleNotFound(c, err)
 	}
-	return c.Render(http.StatusOK, cel.TemplatePath("celini/note"), buildCeliniStash(c, cel))
+	return c.Render(http.StatusOK, cel.TemplatePath(), buildCeliniStash(c, cel))
 }
 
 func buildCeliniStash(c *Context, cel *model.Celini) Stash {
 	args := c.StraniciArgs
 	user := new(model.Users)
-	model.GetByID(user, cel.UserID)
+	if err := model.GetByID(user, cel.UserID); err != nil {
+		c.Logger().Panicf("Error getting user %w", err)
+	}
 	created := time.Unix(int64(cel.CreatedAt), 0)
 	tstmp := time.Unix(int64(cel.Tstamp), 0)
 	stash := Stash{
@@ -63,7 +65,7 @@ var reOgImage = regexp.MustCompile(`(?i:<img.+?src="([^"]+\.(?:png|jpe?g|webp)))
 ogImage finds the first image tag in the celBody string and returns the value
 of its src attribute. If not found, returns an empty string
 */
-func ogImage(c *Context, celBody string) string {
+func ogImage(_ *Context, celBody string) string {
 	match := reOgImage.FindStringSubmatch(celBody)
 	if len(match) > 0 {
 		return match[1]

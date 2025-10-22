@@ -74,6 +74,7 @@ var queryTemplates = SQLMap{
 	ORDER BY featured DESC, id DESC, sorting ASC
 	LIMIT :limit OFFSET :offset
 		`,
+	// To be embedded in other queries
 	"AND_FOR_DISPLAY": `
 		AND ${table}.deleted = 0
 		AND ( ${table}.start = 0 OR ${table}.start < :now )
