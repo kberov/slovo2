@@ -577,10 +577,10 @@ DROP TABLE IF EXISTS passw_login;
 
 -- 202012010000 up
 -- Note!!! We will not recreate the table just for a check constraint. We
--- will define the new possible values in lib/Slovo/resources/api-v1.0.json 
+-- will define the new possible values in lib/Slovo/resources/api-v1.0.json
 -- Only the RENAME TABLE, ADD COLUMN, and RENAME COLUMN variants of the ALTER
 -- TABLE command are supported. Other kinds of ALTER TABLE operations such as
--- DROP COLUMN, ALTER COLUMN, ADD CONSTRAINT, and so forth are omitted. 
+-- DROP COLUMN, ALTER COLUMN, ADD CONSTRAINT, and so forth are omitted.
 -- See https://www.sqlite.org/omitted.html
 -- 1. Set all existing celini.data_type values to the new values.
 UPDATE celini SET data_type='title' WHERE data_type='заглавѥ';
@@ -691,6 +691,5 @@ BEGIN
 END;
 
 -- 202102010000 down
-DROP TRIGGER IF EXISTS stranici_bu; 
+DROP TRIGGER IF EXISTS stranici_bu;
 DROP TRIGGER IF EXISTS celini_bu;
-

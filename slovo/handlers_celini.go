@@ -63,7 +63,7 @@ var reOgImage = regexp.MustCompile(`(?i:<img.+?src="([^"]+\.(?:png|jpe?g|webp)))
 
 /*
 ogImage finds the first image tag in the celBody string and returns the value
-of its src attribute. If not found, returns an empty string
+of its src attribute. If not found, returns an empty string.
 */
 func ogImage(_ *Context, celBody string) string {
 	match := reOgImage.FindStringSubmatch(celBody)

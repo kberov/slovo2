@@ -16,7 +16,7 @@ import (
 // helper functions for the slovo package
 
 // hostName extracts punycode encoded domain name and returns it. For decoded
-// unicode domain name use iHostName(c)
+// unicode domain name use iHostName(c).
 func hostName(c echo.Context) (host string) {
 	host = c.Request().Host
 	if !strings.Contains(host, ":") {
@@ -39,7 +39,7 @@ func iHostName(c echo.Context) (host string) {
 	return
 }
 
-// Allow only valid values 0,1,2
+// Allow only valid values 0,1,2.
 func publishedStatus(c echo.Context) int {
 	preview := c.QueryParam("preview")
 	if preview != "" {
@@ -69,12 +69,12 @@ is at offset zero. If LENGTH is 0, returns everything through the end of the
 string. String is a string of runes.
 */
 
-func substring(expr string, offset uint, length uint) string {
+func substring(expr string, offset int, length int) string {
 	characters := utf8.RuneCountInString(expr)
 	if length == 0 {
 		return expr
 	}
-	if uint(characters) < offset+length {
+	if characters < offset+length {
 		return expr
 	}
 	return string([]rune(expr)[offset:length])
@@ -84,14 +84,14 @@ func substring(expr string, offset uint, length uint) string {
 substringWithTail does the same as substring, but adds a tail string in case
 the input string was longer than the output string.
 */
-func substringWithTail(expr string, offset uint, length uint, tail string) string {
-	if utf8.RuneCountInString(expr) > int(length) {
+func substringWithTail(expr string, offset int, length int, tail string) string {
+	if utf8.RuneCountInString(expr) > length {
 		return substring(expr, offset, length) + tail
 	}
 	return expr
 }
 
-// domainName return the current domain name without common prefixes like
+// domainName returns the current domain name without common prefixes like
 // dev,www,qa etc, as listed in Cfg.DomovePrefixes.
 func domainName(c echo.Context) string {
 	domainName, ok := c.Get(`domainName`).(string)
@@ -99,10 +99,10 @@ func domainName(c echo.Context) string {
 		return domainName
 	}
 	for _, prefix := range Cfg.DomovePrefixes {
-		domainName, isCut := strings.CutPrefix(hostName(c), prefix)
+		dom, isCut := strings.CutPrefix(hostName(c), prefix)
 		if isCut {
-			c.Set(`domainName`, domainName)
-			return domainName
+			c.Set(`domainName`, dom)
+			return dom
 		}
 	}
 	return domainName

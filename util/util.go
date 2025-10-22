@@ -1,5 +1,5 @@
 // Package util contains utilitiy functions, used across slovo2.
-package util
+package util //nolint:revive
 
 import (
 	"strings"

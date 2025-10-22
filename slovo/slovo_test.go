@@ -1,4 +1,4 @@
-package slovo
+package slovo //nolint:testpackage
 
 import (
 	"net/http"
@@ -24,7 +24,7 @@ func init() {
 	Cfg.DB.DSN = filepath.Join(HomeDir(), Cfg.DB.DSN)
 }
 
-// TODO
+// TODO...
 func TestSLOG(t *testing.T) {
 	r := regexp.MustCompile(spf(`^/%s$`, SLOG))
 	path := "/коренъ"

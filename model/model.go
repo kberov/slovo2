@@ -52,14 +52,6 @@ func Record2Table[T Record](record *T) string {
 	return record2Table[typestr]
 }
 
-/*
-Table is the base implementation for all tables in the database.
-*/
-type Table struct {
-	queries SQLMap
-	table   string
-}
-
 // GetByID gets a record by its ID field.
 func GetByID[T Record](r *T, id int32) error {
 	sql := SQLFor("GetByID", Record2Table(r))

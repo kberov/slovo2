@@ -14,9 +14,6 @@ subcommands may be:
 package generate
 
 import (
-	"slices"
-
-	"github.com/kberov/slovo2/model"
 	"github.com/kberov/slovo2/slovo"
 	"github.com/spf13/cobra"
 )
@@ -47,39 +44,4 @@ func init() {
 	// modelCmd.Flags().StringSliceVarP(&slovo.Cfg.DB.Tables, "tables", "t", slovo.Cfg.DB.Tables, "Tables for which to generate model types")
 }
 
-var selectTables = `
-SELECT name, type FROM sqlite_schema
-WHERE type ='table'AND  name NOT LIKE 'sqlite_%';
-`
-
-func generateRecordTypes(tables []string) {
-	slovo.Logger.Printf("Tables, passed on the command line: %#v", tables)
-	dbh := model.DB()
-	rows, err := dbh.Query(selectTables)
-	if err != nil {
-		slovo.Logger.Warn("Error" + err.Error())
-		return
-	}
-	var tablesInDB []string
-	for rows.Next() {
-		var objectName string
-		var objType string
-		err = rows.Scan(&objectName, &objType)
-		if err != nil {
-			slovo.Logger.Warn("Error" + err.Error())
-			return
-		}
-		slovo.Logger.Debug(objectName + " " + objType)
-		if slices.Contains(tables, objectName) {
-			tablesInDB = append(tablesInDB, objectName)
-		}
-	}
-	slovo.Logger.Printf("The following of the requested tables wer found in the database: %#v", tablesInDB)
-	// p := model.Products{}
-	p := model.Stranici{}
-	err = model.GetByID(&p, 1)
-	if err != nil {
-		slovo.Logger.Warn("Error" + err.Error())
-		return
-	}
-}
+// TODO: Integrate kberov/rowx into this command

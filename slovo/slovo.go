@@ -20,7 +20,7 @@ import (
 
 // VERSION is the current version of the framework. It is produced after the
 // release date + short explanatory text.
-const VERSION = "2024.04.11-alpha-015"
+const VERSION = "2025.10.22-alpha-016"
 
 // CODENAME changes when a substantial difference in the frame	work is
 // introduced. It follows the Glagolitic alphabet until the letters are over

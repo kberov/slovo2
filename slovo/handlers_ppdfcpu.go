@@ -23,7 +23,7 @@ order the file can be retreived again in case of loss or file corruption.
 POST /v2/ppdfcpu application/json
 c.FormValue("name") - string  "First Last"
 c.FormValue("email") - string "em@site.com"
-c.FormValue("order") - string "1JK123"
+c.FormValue("order") - string "1JK123".
 */
 func ppdfcpu(c echo.Context) error {
 	passw := random.String(8, random.Uppercase, random.Numeric)
@@ -42,7 +42,7 @@ func ppdfcpu(c echo.Context) error {
 		Email:    "ala@bala.bg",
 		Msg:      spf(`Gotowo: <a href://"site.com/%s">Ime na kniga</a>`, downloadFileName),
 	}
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0750); err != nil {
 		return err
 	}
 	// TODO: add most of these to DefaultConfig
@@ -55,7 +55,7 @@ func ppdfcpu(c echo.Context) error {
 	}
 	c.Logger().Debugf("pdfcpu.sh %v", cmdArgs)
 	externalCmd := "./bin/pdfcpu_stamp_encrypt.sh"
-	cmd := exec.Command(externalCmd, cmdArgs...)
+	cmd := exec.Command(externalCmd, cmdArgs...) //nolint:gosec
 	err := cmd.Start()
 	if err != nil {
 		c.Logger().Panic(err)
@@ -69,7 +69,7 @@ func ppdfcpu(c echo.Context) error {
 	return c.JSON(http.StatusCreated, pdfMsg)
 }
 
-// pdfcpuMessage is produced by ppdfcpu()
+// pdfcpuMessage is produced by ppdfcpu().
 type pdfcpuMessage struct {
 	Download string `json:"download" xml:"download" form:"download" query:"download"`
 	Passwd   string `json:"passwd" xml:"passwd" form:"passwd" query:"passwd"`
@@ -81,7 +81,7 @@ type pdfcpuMessage struct {
 /*
 Displays a HTML form for ppdfcpu() and caches it on disk for subsequent static
 rendering by slovo2 or Apache (when running in CGI mode).
-GET /v2/epub
+GET /v2/epub .
 */
 func ppdfcpuForm(c echo.Context) error {
 	_ = c
